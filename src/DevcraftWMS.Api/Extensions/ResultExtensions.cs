@@ -97,6 +97,30 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status400BadRequest
             },
+            "structures.structure.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "structures.section.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "structures.structure.code_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "structures.section.mismatch" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
             "auth.email_exists" => new ProblemDetails
             {
                 Title = "Conflict",

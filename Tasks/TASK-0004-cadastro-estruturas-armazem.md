@@ -59,3 +59,18 @@ Nao existe representacao de estruturas fisicas no modelo.
 
 ## Riscos / Questões em Aberto
 - Definir enum StructureType com DisplayName.
+
+## Status
+Concluida (DONE)
+
+## Progresso / Notas
+- Entidade Estrutura criada com relacionamento 1:N com Secao.
+- CRUD API implementado com CQRS + MediatR e RequestResult.
+- Telas DemoMvc (Index/Details/Create/Edit/Delete) implementadas com Grid + filtros.
+- Migrations criadas e aplicadas (AddStructures).
+- Testes unitarios e de integracao adicionados.
+
+## Checklist de Aceitacao
+- [x] Endpoints API + DemoMvc completos.
+- [x] Migrations criadas/aplicadas.
+- [x] Testes unitarios e integracao.

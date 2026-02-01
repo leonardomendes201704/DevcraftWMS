@@ -8,4 +8,5 @@ public sealed class Section : AuditableEntity
     public string? Description { get; set; }
 
     public Sector? Sector { get; set; }
+    public ICollection<Structure> Structures { get; set; } = new List<Structure>();
 }

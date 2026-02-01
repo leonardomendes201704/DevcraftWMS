@@ -61,6 +61,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SettingsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.WarehousesApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SectorsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SectionsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.StructuresApiClient>();
 
 var app = builder.Build();
 

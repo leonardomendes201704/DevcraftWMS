@@ -11,6 +11,7 @@ using DevcraftWMS.Application.Features.Emails;
 using DevcraftWMS.Application.Features.Warehouses;
 using DevcraftWMS.Application.Features.Sectors;
 using DevcraftWMS.Application.Features.Sections;
+using DevcraftWMS.Application.Features.Structures;
 
 namespace DevcraftWMS.Application;
 
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IWarehouseService, WarehouseService>();
         services.AddScoped<ISectorService, SectorService>();
         services.AddScoped<ISectionService, SectionService>();
+        services.AddScoped<IStructureService, StructureService>();
 
         return services;
     }

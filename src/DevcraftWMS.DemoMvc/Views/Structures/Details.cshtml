@@ -1,0 +1,35 @@
+@using DevcraftWMS.DemoMvc.ViewModels.Shared
+@model DevcraftWMS.DemoMvc.ViewModels.Structures.StructureDetailViewModel
+@{
+    ViewData["Title"] = "Structure Details";
+    ViewData["Subtitle"] = $"{Model.Code} - {Model.Name}";
+
+    var coreInfo = new InfoListViewModel
+    {
+        Title = "Core details",
+        Items = new List<InfoListItem>
+        {
+            new() { Label = "Code", Value = Model.Code },
+            new() { Label = "Name", Value = Model.Name },
+            new() { Label = "Type", Value = Model.StructureType.ToString() },
+            new() { Label = "Levels", Value = Model.Levels.ToString() },
+            new() { Label = "Section", Value = Model.SectionId.ToString() },
+            new() { Label = "Status", Value = Model.IsActive ? "Active" : "Inactive", BadgeText = Model.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.IsActive ? "text-bg-success" : "text-bg-secondary" },
+            new() { Label = "Created", Value = Model.CreatedAtUtc.ToLocalTime().ToString("g") }
+        }
+    };
+}
+
+<div class="card mb-3">
+    <div class="card-body d-flex gap-2">
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Deactivate</a>
+        <a class="btn btn-light border" asp-action="Index">Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <partial name="_InfoList" model="coreInfo" />
+    </div>
+</div>

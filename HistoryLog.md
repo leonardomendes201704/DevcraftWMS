@@ -18,3 +18,5 @@
   - Key changes: added sector entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSectors.
 - TASK-0003 - E2E section management (Sections) completed.
   - Key changes: added section entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSections.
+- TASK-0004 - E2E structure management (Structures) completed.
+  - Key changes: added structure entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddStructures.
