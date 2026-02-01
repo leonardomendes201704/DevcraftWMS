@@ -1,0 +1,91 @@
+@model PerfectApiTemplate.DemoMvc.ViewModels.Shared.SignalRLogOptions
+<script>
+    (function () {
+        if (typeof signalR === "undefined") {
+            console.warn("[SignalR] Client library not loaded.");
+            return;
+        }
+
+        function setStatus(connected) {
+            var el = document.querySelector("[data-signalr-status]");
+            if (!el) {
+                return;
+            }
+            el.classList.toggle("text-bg-success", connected);
+            el.classList.toggle("text-bg-secondary", !connected);
+            el.textContent = connected ? "SignalR: connected" : "SignalR: disconnected";
+        }
+
+        function isAutoRefreshEnabled() {
+            var key = "@Model.ToggleStorageKey";
+            var value = window.localStorage.getItem(key);
+            if (value === null) {
+                return true;
+            }
+            return value === "true";
+        }
+
+        function wireAutoRefreshToggle() {
+            var toggle = document.querySelector("[data-signalr-toggle]");
+            if (!toggle) {
+                return;
+            }
+            toggle.checked = isAutoRefreshEnabled();
+            toggle.addEventListener("change", function () {
+                window.localStorage.setItem("@Model.ToggleStorageKey", toggle.checked ? "true" : "false");
+            });
+        }
+
+        var baseUrl = "@Model.ApiBaseUrl".replace(/\/+$/, "");
+        var hubUrl = baseUrl + "/hubs/notifications";
+        console.info("[SignalR] Connecting to", hubUrl);
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl)
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("@Model.EventName", function () {
+            console.info("[SignalR] Event received:", "@Model.EventName");
+            if (!isAutoRefreshEnabled()) {
+                console.info("[SignalR] Auto-refresh disabled.");
+                return;
+            }
+            var alert = document.createElement("div");
+            alert.className = "alert alert-info mt-3";
+            alert.textContent = "@Model.ReloadMessage";
+            document.querySelector("main.container-fluid")?.prepend(alert);
+            setTimeout(function () { window.location.reload(); }, 800);
+        });
+
+        connection.onreconnecting(function (error) {
+            console.warn("[SignalR] Reconnecting", error);
+            setStatus(false);
+        });
+
+        connection.onreconnected(function (connectionId) {
+            console.info("[SignalR] Reconnected", connectionId);
+            setStatus(true);
+        });
+
+        connection.onclose(function (error) {
+            console.warn("[SignalR] Closed", error);
+            setStatus(false);
+        });
+
+        connection.start()
+            .then(function () {
+                console.info("[SignalR] Connected");
+                setStatus(true);
+                wireAutoRefreshToggle();
+                return connection.invoke("JoinChannel", "@Model.Channel");
+            })
+            .then(function () {
+                console.info("[SignalR] Joined channel:", "@Model.Channel");
+            })
+            .catch(function (err) {
+                console.error("[SignalR] Connection failed:", err);
+                setStatus(false);
+            });
+    })();
+</script>

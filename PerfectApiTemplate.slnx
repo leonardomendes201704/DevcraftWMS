@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PerfectApiTemplate.Api/PerfectApiTemplate.Api.csproj" />
+    <Project Path="src/PerfectApiTemplate.Application/PerfectApiTemplate.Application.csproj" />
+    <Project Path="src/PerfectApiTemplate.DemoMvc/PerfectApiTemplate.DemoMvc.csproj" />
+    <Project Path="src/PerfectApiTemplate.Domain/PerfectApiTemplate.Domain.csproj" />
+    <Project Path="src/PerfectApiTemplate.Infrastructure/PerfectApiTemplate.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PerfectApiTemplate.Tests.Integration/PerfectApiTemplate.Tests.Integration.csproj" />
+    <Project Path="tests/PerfectApiTemplate.Tests.Unit/PerfectApiTemplate.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
+

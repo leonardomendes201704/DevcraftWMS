@@ -1,0 +1,19 @@
+﻿@model InfoListViewModel
+<div class="card">
+    <div class="card-body">
+        <h6 class="mb-3">@Model.Title</h6>
+        <dl class="row mb-0">
+            @foreach (var item in Model.Items)
+            {
+                <dt class="col-5 text-muted">@item.Label</dt>
+                <dd class="col-7 mb-2">
+                    @item.Value
+                    @if (!string.IsNullOrWhiteSpace(item.BadgeText))
+                    {
+                        <span class="badge @item.BadgeCssClass ms-2">@item.BadgeText</span>
+                    }
+                </dd>
+            }
+        </dl>
+    </div>
+</div>

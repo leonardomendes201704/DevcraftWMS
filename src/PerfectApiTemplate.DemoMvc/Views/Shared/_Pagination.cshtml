@@ -1,0 +1,34 @@
+@model PaginationViewModel
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            @{
+                var prevDisabled = Model.PageNumber <= 1 ? "disabled" : string.Empty;
+                var nextDisabled = Model.PageNumber >= Model.TotalPages ? "disabled" : string.Empty;
+                string BuildUrl(int page)
+                {
+                    var values = new Dictionary<string, string?>(Model.Query)
+                    {
+                        ["PageNumber"] = page.ToString(),
+                        ["PageSize"] = Model.PageSize.ToString()
+                    };
+                    return Url.Action(Model.Action, Model.Controller, values) ?? "#";
+                }
+            }
+            <li class="page-item @prevDisabled">
+                <a class="page-link" href="@BuildUrl(Model.PageNumber - 1)">Previous</a>
+            </li>
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                var active = i == Model.PageNumber ? "active" : string.Empty;
+                <li class="page-item @active">
+                    <a class="page-link" href="@BuildUrl(i)">@i</a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" href="@BuildUrl(Model.PageNumber + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

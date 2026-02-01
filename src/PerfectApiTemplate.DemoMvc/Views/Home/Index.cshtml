@@ -1,0 +1,132 @@
+﻿@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Overview of API health and recent activity";
+
+    var statusCard = new StatCardViewModel
+    {
+        Title = "API Status",
+        Value = Model.ApiHealthy ? "Healthy" : "Unavailable",
+        BadgeText = Model.ApiHealthy ? "Up" : "Down",
+        BadgeCssClass = Model.ApiHealthy ? "text-bg-success" : "text-bg-danger",
+        ActionText = "Settings",
+        ActionUrl = Url.Action("Index", "Settings")
+    };
+
+    var quickLinks = new QuickLinksViewModel
+    {
+        Title = "Quick Links",
+        Links = new List<QuickLinkItem>
+        {
+            new() { Text = "Customers", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
+            new() { Text = "Email Test", Url = Url.Action("Index", "Email") ?? "#", IconClass = "bi bi-envelope" },
+            new() { Text = "Logs", Url = Url.Action("Requests", "Logs") ?? "#", IconClass = "bi bi-activity" }
+        }
+    };
+
+    var requestPageSize = Math.Max(Model.RecentRequests.Count, 1);
+    var requestPagination = new PaginationViewModel
+    {
+        PageNumber = 1,
+        PageSize = requestPageSize,
+        TotalCount = Model.RecentRequests.Count,
+        Action = "Requests",
+        Controller = "Logs"
+    };
+
+    var requestQueryOptions = new GridQueryOptions
+    {
+        Action = "Requests",
+        Controller = "Logs",
+        PageSize = requestPageSize
+    };
+
+    var requestGrid = new GridBuilder<RequestLogDto>()
+        .WithTitle("Recent Requests")
+        .WithSubtitle(Model.RecentRequests.Count == 0 ? "No request logs yet." : $"Total: {Model.RecentRequests.Count}")
+        .WithItems(Model.RecentRequests)
+        .WithPagination(requestPagination)
+        .WithQueryOptions(requestQueryOptions)
+        .WithEmptyMessage("No request logs yet.")
+        .WithTableCssClass("table table-sm align-middle mb-0 grid-table")
+        .AddColumn("Time", item => new HtmlString(item.StartedAtUtc.ToLocalTime().ToString("g")))
+        .AddColumn("Method", item => new HtmlString(HtmlEncoder.Default.Encode(item.Method)))
+        .AddColumn("Path", item => new HtmlString(HtmlEncoder.Default.Encode(item.Path)))
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-light border\">{item.StatusCode}</span>"))
+        .Build();
+
+    var errorPageSize = Math.Max(Model.RecentErrors.Count, 1);
+    var errorPagination = new PaginationViewModel
+    {
+        PageNumber = 1,
+        PageSize = errorPageSize,
+        TotalCount = Model.RecentErrors.Count,
+        Action = "Errors",
+        Controller = "Logs"
+    };
+
+    var errorQueryOptions = new GridQueryOptions
+    {
+        Action = "Errors",
+        Controller = "Logs",
+        PageSize = errorPageSize
+    };
+
+    var errorGrid = new GridBuilder<ErrorLogDto>()
+        .WithTitle("Recent Errors")
+        .WithSubtitle(Model.RecentErrors.Count == 0 ? "No errors logged." : $"Total: {Model.RecentErrors.Count}")
+        .WithItems(Model.RecentErrors)
+        .WithPagination(errorPagination)
+        .WithQueryOptions(errorQueryOptions)
+        .WithEmptyMessage("No errors logged.")
+        .WithTableCssClass("table table-sm align-middle mb-0 grid-table")
+        .AddColumn("Time", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")))
+        .AddColumn("Type", item => new HtmlString(HtmlEncoder.Default.Encode(item.ExceptionType)))
+        .AddColumn("Message", item =>
+        {
+            var message = HtmlEncoder.Default.Encode(item.Message);
+            return new HtmlString($"<span class=\"text-truncate d-inline-block\" style=\"max-width: 240px;\">{message}</span>");
+        })
+        .Build();
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="statusCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_QuickLinks" model="quickLinks" />
+    </div>
+    <div class="col-lg-6">
+        <partial name="_Grid" model="requestGrid" />
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <partial name="_Grid" model="errorGrid" />
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-muted small">UI Showcase</div>
+                <p class="mt-2">Explore reusable components for forms, tables, and empty states.</p>
+                <a class="btn btn-primary btn-sm" asp-controller="Ui" asp-action="Showcase">Open UI Showcase</a>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="text-muted small">Telemetry Test</div>
+                <p class="mt-2">Force a UI exception to validate frontend log capture.</p>
+                <form asp-controller="Home" asp-action="Throw" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        Force UI Error
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

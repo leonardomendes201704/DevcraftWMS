@@ -1,0 +1,7 @@
+﻿@PerfectApiTemplate.Api_HostAddress = http://localhost:5137
+
+GET {{PerfectApiTemplate.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+

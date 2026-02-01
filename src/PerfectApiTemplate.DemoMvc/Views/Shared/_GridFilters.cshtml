@@ -1,0 +1,47 @@
+﻿@model GridFilterViewModel
+<form method="get" asp-action="@Model.Action" asp-controller="@Model.Controller" class="row g-2 align-items-end">
+    @foreach (var field in Model.Fields)
+    {
+        if (field.IsHidden)
+        {
+            <input type="hidden" name="@field.Name" value="@field.Value" />
+            continue;
+        }
+
+        <div class="col-12">
+            <label class="form-label">@field.Label</label>
+            @switch (field.Type)
+            {
+                case GridFilterType.Select:
+                    <select name="@field.Name" class="form-select @field.CssClass">
+                        @foreach (var option in field.Options)
+                        {
+                            <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                        }
+                    </select>
+                    break;
+                case GridFilterType.Checkbox:
+                    <div class="form-check">
+                        <input class="form-check-input @field.CssClass" type="checkbox" name="@field.Name" value="true" checked="@field.IsChecked" />
+                        <label class="form-check-label">@field.Placeholder</label>
+                    </div>
+                    break;
+                case GridFilterType.Date:
+                    <input type="date" name="@field.Name" value="@field.Value" class="form-control @field.CssClass" placeholder="@field.Placeholder" />
+                    break;
+                default:
+                    <input name="@field.Name" value="@field.Value" class="form-control @field.CssClass" placeholder="@field.Placeholder" />
+                    break;
+            }
+        </div>
+    }
+    <div class="col-12 d-grid">
+        <button class="btn btn-primary" type="submit">@Model.SubmitText</button>
+    </div>
+    @if (Model.ShowReset && !string.IsNullOrWhiteSpace(Model.ResetUrl))
+    {
+        <div class="col-12 d-grid">
+            <a class="btn btn-outline-secondary" href="@Model.ResetUrl">Reset</a>
+        </div>
+    }
+</form>

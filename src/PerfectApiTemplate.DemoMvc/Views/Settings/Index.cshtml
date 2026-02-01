@@ -1,0 +1,230 @@
+@model SettingsPageViewModel
+@{
+    ViewData["Title"] = "Settings";
+    ViewData["Subtitle"] = "Configure DemoMvc and view API settings";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="alert alert-light border">
+                <i class="bi bi-info-circle me-1"></i>
+                Settings are stored in <strong>App_Data/ui-settings.json</strong> (demo-only). No masking is applied.
+            </div>
+            <div class="accordion" id="frontendSettingsFormAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="frontend-demo-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#frontend-demo-body">
+                            DemoMvc
+                        </button>
+                    </h2>
+                    <div id="frontend-demo-body" class="accordion-collapse collapse show" data-bs-parent="#frontendSettingsFormAccordion">
+                        <div class="accordion-body">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">ApiBaseUrl</label>
+                                    <input asp-for="Form.ApiBaseUrl" class="form-control" />
+                                    <div class="form-hint">Base URL used by DemoMvc to call the API.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.ApiBaseUrl"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="frontend-telemetry-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#frontend-telemetry-body">
+                            Telemetry
+                        </button>
+                    </h2>
+                    <div id="frontend-telemetry-body" class="accordion-collapse collapse" data-bs-parent="#frontendSettingsFormAccordion">
+                        <div class="accordion-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Telemetry:EndpointPath</label>
+                                    <input asp-for="Form.TelemetryEndpointPath" class="form-control" />
+                                    <div class="form-hint">API path for sending client telemetry events.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryEndpointPath"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:BatchSize</label>
+                                    <input asp-for="Form.TelemetryBatchSize" class="form-control" type="number" />
+                                    <div class="form-hint">Number of telemetry events per batch.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryBatchSize"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:FlushIntervalMs</label>
+                                    <input asp-for="Form.TelemetryFlushIntervalMs" class="form-control" type="number" />
+                                    <div class="form-hint">Flush interval for sending batches.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryFlushIntervalMs"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:QueueCapacity</label>
+                                    <input asp-for="Form.TelemetryQueueCapacity" class="form-control" type="number" />
+                                    <div class="form-hint">In-memory telemetry queue capacity.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryQueueCapacity"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:SlowCallThresholdMs</label>
+                                    <input asp-for="Form.TelemetrySlowCallThresholdMs" class="form-control" type="number" />
+                                    <div class="form-hint">Slow API call threshold for telemetry.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetrySlowCallThresholdMs"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:RetryCount</label>
+                                    <input asp-for="Form.TelemetryRetryCount" class="form-control" type="number" />
+                                    <div class="form-hint">Retry attempts for telemetry sending.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryRetryCount"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Telemetry:InternalKeyHeader</label>
+                                    <input asp-for="Form.TelemetryInternalKeyHeader" class="form-control" />
+                                    <div class="form-hint">Header name for telemetry internal key.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryInternalKeyHeader"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Telemetry:InternalKey</label>
+                                    <input asp-for="Form.TelemetryInternalKey" class="form-control" />
+                                    <div class="form-hint">Internal key value used by DemoMvc.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryInternalKey"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:CircuitBreaker:FailureThreshold</label>
+                                    <input asp-for="Form.TelemetryCircuitFailureThreshold" class="form-control" type="number" />
+                                    <div class="form-hint">Failures before opening circuit breaker.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryCircuitFailureThreshold"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Telemetry:CircuitBreaker:BreakDurationSeconds</label>
+                                    <input asp-for="Form.TelemetryCircuitBreakDurationSeconds" class="form-control" type="number" />
+                                    <div class="form-hint">Circuit breaker open duration.</div>
+                                    <span class="text-danger small" asp-validation-for="Form.TelemetryCircuitBreakDurationSeconds"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit">Save</button>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small">API Settings (read-only)</div>
+                <div class="fw-semibold">Fetched from /api/settings</div>
+            </div>
+            <div class="text-muted small">
+                @Model.ApiSettings?.RetrievedAtUtc.ToLocalTime().ToString("g")
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ApiSettingsError))
+        {
+            <div class="alert alert-warning mt-3 mb-0">
+                @Model.ApiSettingsError
+            </div>
+        }
+        else if (Model.ApiSettings is null || Model.ApiSettings.Sections.Count == 0)
+        {
+            <div class="empty-state mt-3">API settings not available.</div>
+        }
+        else
+        {
+            <div class="accordion mt-3" id="apiSettingsAccordion">
+                @for (var i = 0; i < Model.ApiSettings.Sections.Count; i++)
+                {
+                    var apiSection = Model.ApiSettings.Sections[i];
+                    var collapseId = $"section-{i}";
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-@i">
+                            <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                                @apiSection.Name
+                            </button>
+                        </h2>
+                        <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#apiSettingsAccordion">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 30%">Key</th>
+                                                <th>Value</th>
+                                                <th style="width: 40%">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in apiSection.Items)
+                                            {
+                                                <tr>
+                                                    <td class="text-muted">@item.Key</td>
+                                                    <td><code>@item.Value</code></td>
+                                                    <td class="text-muted">@item.Description</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="text-muted small">DemoMvc Settings (read-only)</div>
+        <div class="fw-semibold">All frontend keys from configuration</div>
+
+        <div class="accordion mt-3" id="frontendSettingsAccordion">
+            @for (var i = 0; i < Model.FrontendSections.Count; i++)
+            {
+                var frontendSection = Model.FrontendSections[i];
+                var collapseId = $"frontend-section-{i}";
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="frontend-heading-@i">
+                        <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                            @frontendSection.Name
+                        </button>
+                    </h2>
+                    <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#frontendSettingsAccordion">
+                        <div class="accordion-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%">Key</th>
+                                            <th>Value</th>
+                                            <th style="width: 40%">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in frontendSection.Items)
+                                        {
+                                            <tr>
+                                                <td class="text-muted">@item.Key</td>
+                                                <td><code>@item.Value</code></td>
+                                                <td class="text-muted">@item.Description</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

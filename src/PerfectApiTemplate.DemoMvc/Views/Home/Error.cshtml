@@ -1,0 +1,18 @@
+﻿@model PerfectApiTemplate.DemoMvc.ViewModels.Shared.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+    ViewData["Subtitle"] = "Something went wrong";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-danger" role="alert">
+            <strong>We ran into a problem.</strong> Please try again.
+        </div>
+        <p class="text-muted mb-2">Correlation ID: <code>@Model.RequestId</code></p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="javascript:location.reload()">Try again</a>
+            <a class="btn btn-light border" asp-controller="Home" asp-action="Index">Go home</a>
+        </div>
+    </div>
+</div>

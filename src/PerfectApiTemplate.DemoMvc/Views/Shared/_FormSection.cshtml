@@ -1,0 +1,10 @@
+﻿@model FormSectionViewModel
+<div class="d-flex justify-content-between align-items-baseline mb-2">
+    <div>
+        <h6 class="mb-0">@Model.Title</h6>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <small class="text-muted">@Model.Description</small>
+        }
+    </div>
+</div>

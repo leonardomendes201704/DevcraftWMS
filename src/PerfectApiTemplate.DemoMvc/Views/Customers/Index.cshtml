@@ -1,0 +1,97 @@
+﻿@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model CustomerListViewModel
+@{
+    ViewData["Title"] = "Customers";
+    ViewData["Subtitle"] = "Manage customer records with pagination and filters";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Customers",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["Search"] = Model.Query.Search,
+            ["Email"] = Model.Query.Email,
+            ["Name"] = Model.Query.Name,
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Customers",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Search",
+                Name = "Search",
+                Value = Model.Query.Search,
+                Placeholder = "Name or email"
+            },
+            new()
+            {
+                Label = "Email",
+                Name = "Email",
+                Value = Model.Query.Email
+            },
+            new()
+            {
+                Label = "Name",
+                Name = "Name",
+                Value = Model.Query.Name
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Customers")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "customersFilters",
+        Title = "Customer filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<CustomerDto>()
+        .WithTitle("Customers")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Customer", Url.Action("Create", "Customers") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
+        .AddColumn("Email", item => new HtmlString(HtmlEncoder.Default.Encode(item.Email)), "Email")
+        .AddColumn("Date of Birth", item => new HtmlString(item.DateOfBirth.ToString("yyyy-MM-dd")), "DateOfBirth")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Customers", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Customers", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Customers", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

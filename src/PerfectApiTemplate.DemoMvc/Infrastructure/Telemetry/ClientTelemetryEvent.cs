@@ -1,0 +1,26 @@
+﻿namespace PerfectApiTemplate.DemoMvc.Infrastructure.Telemetry;
+
+public sealed record ClientTelemetryEvent(
+    string EventType,
+    string Severity,
+    string ClientApp,
+    string ClientEnv,
+    string ClientUrl,
+    string ClientRoute,
+    string HttpMethod,
+    string CorrelationId,
+    string? RequestId,
+    string? ApiRequestId,
+    string? ApiMethod,
+    string? ApiPath,
+    int? ApiStatusCode,
+    long? DurationMs,
+    string Message,
+    string? ExceptionType,
+    string? StackTrace,
+    string? DetailsJson,
+    string? UserId,
+    string? TenantId,
+    string? UserAgent,
+    string? Tags,
+    DateTimeOffset? OccurredAtUtc);

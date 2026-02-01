@@ -1,0 +1,101 @@
+﻿@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@inject PerfectApiTemplate.DemoMvc.Infrastructure.ApiUrlProvider ApiUrlProvider
+@model TransactionLogsViewModel
+@{
+    ViewData["Title"] = "Transaction Logs";
+    ViewData["Subtitle"] = "Entity changes with before/after snapshots";
+
+    var signalrOptions = new PerfectApiTemplate.DemoMvc.ViewModels.Shared.SignalRLogOptions
+    {
+        ApiBaseUrl = ApiUrlProvider.GetBaseUrl(),
+        Channel = "logs.transactions",
+        EventName = "transactionLog.created",
+        ReloadMessage = "New transaction log received. Refreshing...",
+        ToggleStorageKey = "signalr.autorefresh.transactions"
+    };
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Transactions",
+        Controller = "Logs",
+        OrderBy = Model.Filters.OrderBy,
+        OrderDir = Model.Filters.OrderDir,
+        PageSize = Model.Filters.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["EntityName"] = Model.Filters.EntityName,
+            ["Operation"] = Model.Filters.Operation,
+            ["FromUtc"] = Model.Filters.FromUtc?.ToString("O"),
+            ["ToUtc"] = Model.Filters.ToUtc?.ToString("O"),
+            ["PageSize"] = Model.Filters.PageSize.ToString()
+        }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Transactions",
+        Controller = "Logs",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Filters.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Filters.OrderDir, IsHidden = true },
+            new() { Label = "Entity", Name = "EntityName", Value = Model.Filters.EntityName },
+            new() { Label = "Operation", Name = "Operation", Value = Model.Filters.Operation },
+            new() { Label = "From (UTC)", Name = "FromUtc", Type = GridFilterType.Date, Value = Model.Filters.FromUtc?.ToString("yyyy-MM-dd") },
+            new() { Label = "To (UTC)", Name = "ToUtc", Type = GridFilterType.Date, Value = Model.Filters.ToUtc?.ToString("yyyy-MM-dd") },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Filters.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Filters.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Filters.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Transactions", "Logs")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "transactionLogsFilters",
+        Title = "Transaction log filters",
+        Filters = filters,
+        ButtonText = "Filters"
+    };
+
+    var grid = new GridBuilder<TransactionLogDto>()
+        .WithTitle("Transaction Logs")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Time", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddColumn("Entity", item => new HtmlString(HtmlEncoder.Default.Encode(item.EntityName)), "EntityName")
+        .AddColumn("Operation", item => new HtmlString(HtmlEncoder.Default.Encode(item.Operation)), "Operation")
+        .AddColumn("Entity Id", item => new HtmlString(HtmlEncoder.Default.Encode(item.EntityId ?? string.Empty)), "EntityId")
+        .AddAction("Details", item => Url.Action("Transaction", "Logs", new { id = item.Id }))
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<div class="mt-3">
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-secondary" data-signalr-status>SignalR: disconnected</span>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="autoRefreshTransactions" data-signalr-toggle>
+            <label class="form-check-label" for="autoRefreshTransactions">Auto-refresh</label>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_SignalRLogs" model="signalrOptions" />
+}

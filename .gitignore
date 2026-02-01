@@ -1,0 +1,14 @@
+﻿.vs/
+**/.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+app.db
+logs.db
+logs.db-shm
+logs.db-wal
+App_Data/
+

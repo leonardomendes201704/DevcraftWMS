@@ -1,0 +1,21 @@
+﻿@model QuickLinksViewModel
+<div class="card">
+    <div class="card-body">
+        <h6 class="mb-3">@Model.Title</h6>
+        <div class="d-grid gap-2">
+            @foreach (var link in Model.Links)
+            {
+                <a class="btn btn-sm btn-light border d-flex align-items-center justify-content-between" href="@link.Url">
+                    <span>
+                        @if (!string.IsNullOrWhiteSpace(link.IconClass))
+                        {
+                            <i class="@link.IconClass me-2"></i>
+                        }
+                        @link.Text
+                    </span>
+                    <i class="bi bi-arrow-right-short"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>

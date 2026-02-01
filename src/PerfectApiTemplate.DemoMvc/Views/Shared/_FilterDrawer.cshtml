@@ -1,0 +1,16 @@
+﻿@model FilterDrawerViewModel
+<div class="d-flex justify-content-end mb-3">
+    <button class="@Model.ButtonCssClass" type="button" data-bs-toggle="offcanvas" data-bs-target="#@Model.Id" aria-controls="@Model.Id">
+        <i class="bi bi-funnel me-1"></i>@Model.ButtonText
+    </button>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="@Model.Id" aria-labelledby="@Model.Id-label">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="@Model.Id-label">@Model.Title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <partial name="_GridFilters" model="Model.Filters" />
+    </div>
+</div>

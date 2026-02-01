@@ -1,0 +1,49 @@
+@model TransactionLogDetailViewModel
+@{
+    ViewData["Title"] = "Transaction Details";
+    ViewData["Subtitle"] = "Before/after change snapshot";
+}
+
+@if (Model.Log is null)
+{
+    <div class="empty-state">Transaction log not found.</div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5>@Model.Log.EntityName</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-muted small">Operation</div>
+                    <div>@Model.Log.Operation</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Entity Id</div>
+                    <div>@Model.Log.EntityId</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Created</div>
+                    <div>@Model.Log.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="text-muted small">Changed Properties</div>
+                <div>@Model.Log.ChangedProperties</div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="text-muted small">Before</div>
+                    <pre class="bg-light p-3 rounded">@Model.Log.BeforeJson</pre>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">After</div>
+                    <pre class="bg-light p-3 rounded">@Model.Log.AfterJson</pre>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a class="btn btn-light border" asp-action="Transactions">Back</a>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,35 @@
+@model CustomerFormViewModel
+@{
+    ViewData["Title"] = "New Customer";
+    ViewData["Subtitle"] = "Create a new customer record";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" />
+                <span class="text-danger small" asp-validation-for="Name"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span class="text-danger small" asp-validation-for="Email"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input asp-for="DateOfBirth" class="form-control" />
+                <span class="text-danger small" asp-validation-for="DateOfBirth"></span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Create</button>
+                <a class="btn btn-light border" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

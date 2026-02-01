@@ -1,0 +1,83 @@
+@model PerfectApiTemplate.DemoMvc.ViewModels.Logs.ErrorLogDetailViewModel
+@{
+    ViewData["Title"] = "Frontend Error Details";
+    ViewData["Subtitle"] = "Client telemetry event details";
+}
+
+@if (Model.Log is null)
+{
+    <div class="empty-state">Frontend error not found.</div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5>@Model.Log.ExceptionType</h5>
+            <p class="text-muted">@Model.Log.Message</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="text-muted small">Client URL</div>
+                    <div>@(Model.Log.ClientUrl ?? "-")</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Created</div>
+                    <div>@Model.Log.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="text-muted small">Event Type</div>
+                    <div>@(Model.Log.EventType ?? "-")</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="text-muted small">Severity</div>
+                    <div>@(Model.Log.Severity ?? "-")</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="text-muted small">API Status</div>
+                    <div>@(Model.Log.ApiStatusCode?.ToString() ?? "-")</div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Correlation Id</div>
+                    <div>@(Model.Log.CorrelationId ?? "-")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Request Id</div>
+                    <div>@(Model.Log.RequestId ?? "-")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">API Request Id</div>
+                    <div>@(Model.Log.ApiRequestId ?? "-")</div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="text-muted small">API Path</div>
+                    <div>@(Model.Log.ApiPath ?? "-")</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Duration (ms)</div>
+                    <div>@(Model.Log.DurationMs?.ToString() ?? "-")</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Tags</div>
+                    <div>@(Model.Log.Tags ?? "-")</div>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Log.DetailsJson))
+            {
+                <div class="mt-3">
+                    <div class="text-muted small">Details</div>
+                    <pre class="bg-light p-3 rounded">@Model.Log.DetailsJson</pre>
+                </div>
+            }
+            <div class="mt-3">
+                <div class="text-muted small">Stack Trace</div>
+                <pre class="bg-light p-3 rounded">@Model.Log.StackTrace</pre>
+            </div>
+            <div class="mt-3">
+                <a class="btn btn-light border" asp-action="Errors">Back</a>
+            </div>
+        </div>
+    </div>
+}

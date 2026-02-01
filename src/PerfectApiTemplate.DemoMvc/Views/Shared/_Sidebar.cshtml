@@ -1,0 +1,46 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string Active(string name) => controller.Equals(name, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="d-flex align-items-center gap-2">
+            <span class="logo-circle"><i class="bi bi-grid-fill"></i></span>
+            <div>
+                <div class="fw-semibold">Demo Console</div>
+                <div class="text-muted small">Perfect API Template</div>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="nav-link @Active("Customers")" asp-controller="Customers" asp-action="Index">
+            <i class="bi bi-people"></i> Customers
+        </a>
+        <a class="nav-link @Active("Email")" asp-controller="Email" asp-action="Index">
+            <i class="bi bi-envelope"></i> Email Test
+        </a>
+        <div class="nav-section">Logs</div>
+        <a class="nav-link @Active("Logs")" asp-controller="Logs" asp-action="Requests">
+            <i class="bi bi-card-list"></i> Requests
+        </a>
+        <a class="nav-link @Active("Logs")" asp-controller="Logs" asp-action="Errors">
+            <i class="bi bi-exclamation-triangle"></i> Errors
+        </a>
+        <a class="nav-link @Active("Logs")" asp-controller="Logs" asp-action="Transactions">
+            <i class="bi bi-arrow-left-right"></i> Transactions
+        </a>
+        <div class="nav-section">Frontend Logs</div>
+        <a class="nav-link @Active("ClientLogs")" asp-controller="ClientLogs" asp-action="Errors">
+            <i class="bi bi-exclamation-octagon"></i> Errors
+        </a>
+        <a class="nav-link @Active("Ui")" asp-controller="Ui" asp-action="Showcase">
+            <i class="bi bi-layers"></i> UI Showcase
+        </a>
+        <a class="nav-link @Active("Settings")" asp-controller="Settings" asp-action="Index">
+            <i class="bi bi-sliders"></i> Settings
+        </a>
+    </nav>
+</aside>
