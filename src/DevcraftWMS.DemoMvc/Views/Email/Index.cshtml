@@ -11,21 +11,33 @@
                 <form method="post">
                     <div class="mb-3">
                         <label class="form-label">From</label>
-                        <input asp-for="From" class="form-control" />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope-at"></i></span>
+                            <input asp-for="From" class="form-control" />
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">To</label>
-                        <input asp-for="To" class="form-control" />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="To" class="form-control" />
+                        </div>
                         <span class="text-danger small" asp-validation-for="To"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Subject</label>
-                        <input asp-for="Subject" class="form-control" />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                            <input asp-for="Subject" class="form-control" />
+                        </div>
                         <span class="text-danger small" asp-validation-for="Subject"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Body</label>
-                        <textarea asp-for="Body" class="form-control" rows="6"></textarea>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-textarea-t"></i></span>
+                            <textarea asp-for="Body" class="form-control" rows="6"></textarea>
+                        </div>
                         <span class="text-danger small" asp-validation-for="Body"></span>
                     </div>
                     <div class="form-check mb-3">

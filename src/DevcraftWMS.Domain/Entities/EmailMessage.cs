@@ -1,10 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DevcraftWMS.Domain.Entities;
 
 public enum EmailMessageStatus
 {
+    [Display(Name = "Pending")]
     Pending = 0,
+    [Display(Name = "Sending")]
     Sending = 1,
+    [Display(Name = "Sent")]
     Sent = 2,
+    [Display(Name = "Failed")]
     Failed = 3
 }
 

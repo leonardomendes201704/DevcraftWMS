@@ -18,9 +18,20 @@ public sealed class CustomersApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<CustomerDto>>> ListAsync(CustomerListQuery query, CancellationToken cancellationToken)
     {
-        var url = $"/api/customers/paged?pageNumber={query.PageNumber}&pageSize={query.PageSize}&orderBy={query.OrderBy}&orderDir={query.OrderDir}" +
-                  $"&search={Uri.EscapeDataString(query.Search ?? string.Empty)}&email={Uri.EscapeDataString(query.Email ?? string.Empty)}" +
-                  $"&name={Uri.EscapeDataString(query.Name ?? string.Empty)}&includeInactive={query.IncludeInactive}";
+        var basePath = "/api/customers/paged";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["pageNumber"] = query.PageNumber.ToString(),
+            ["pageSize"] = query.PageSize.ToString(),
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir,
+            ["search"] = query.Search,
+            ["email"] = query.Email,
+            ["name"] = query.Name,
+            ["includeInactive"] = query.IncludeInactive ? "true" : "false"
+        };
+
+        var url = BuildUrl(basePath, queryParams);
         return GetAsync<PagedResultDto<CustomerDto>>(url, cancellationToken);
     }
 

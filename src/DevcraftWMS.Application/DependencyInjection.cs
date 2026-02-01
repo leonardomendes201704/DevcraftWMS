@@ -8,6 +8,7 @@ using DevcraftWMS.Application.Abstractions.Notifications;
 using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Features.Auth;
 using DevcraftWMS.Application.Features.Emails;
+using DevcraftWMS.Application.Features.Warehouses;
 
 namespace DevcraftWMS.Application;
 
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IOutboxEnqueuer, OutboxEnqueuer>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IWarehouseService, WarehouseService>();
 
         return services;
     }

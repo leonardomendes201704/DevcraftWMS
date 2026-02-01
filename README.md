@@ -298,6 +298,11 @@ AdminUser:FullName                 -> Admin display name
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path
 Telemetry:BatchSize                 -> Demo MVC telemetry batch size
+ExternalServices:Ibge:BaseUrl       -> IBGE base URL for address lookups
+ExternalServices:Ibge:StatesPath    -> IBGE states path (relative)
+ExternalServices:Ibge:CitiesByStatePath -> IBGE cities path template (relative, includes {uf})
+ExternalServices:ViaCep:BaseUrl     -> ViaCEP base URL for postal code lookups
+ExternalServices:ViaCep:LookupPath  -> ViaCEP lookup path template (relative, includes {cep})
 Telemetry:FlushIntervalMs           -> Demo MVC telemetry flush interval (ms)
 Telemetry:QueueCapacity             -> Demo MVC telemetry queue capacity
 Telemetry:SlowCallThresholdMs       -> Demo MVC slow-call threshold (ms)
@@ -325,3 +330,9 @@ or the GitHub CLI with the template repo.
 
 
 
+
+## Static checks
+Run the no-hardcoded-URLs check:
+```
+pwsh tools/check-no-hardcoded-urls.ps1
+```

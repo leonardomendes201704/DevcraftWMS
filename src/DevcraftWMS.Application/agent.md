@@ -17,6 +17,8 @@
   - Domain invariants belong in Domain.
 - Use async APIs for any I/O (through abstractions, never direct EF).
 - Any outbound side-effects must be enqueued via `IOutboxEnqueuer`.
+- Any external service integration must be defined as an abstraction; URLs are never hardcoded in Application.
+- Enums must include DisplayName for every member.
 
 ## Forbidden actions
 - Any Infrastructure dependencies (EF Core, HttpClient implementations, file system, etc.).

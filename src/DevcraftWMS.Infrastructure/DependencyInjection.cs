@@ -39,13 +39,16 @@ public static class DependencyInjection
             options.UseSqlite(logsConnection));
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserProviderRepository, UserProviderRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddHttpClient<IExternalAuthService, ExternalAuthService>();
-        services.Configure<ExternalAuthOptions>(options =>
-            configuration.GetSection("ExternalAuth").Bind(options));
+        services.AddOptions<ExternalAuthOptions>()
+            .Bind(configuration.GetSection("ExternalAuth"))
+            .ValidateOnStart();
+        services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<ExternalAuthOptions>, ExternalAuthOptionsValidation>();
         services.Configure<AdminUserOptions>(options =>
             configuration.GetSection("AdminUser").Bind(options));
         services.AddScoped<AdminUserSeeder>();

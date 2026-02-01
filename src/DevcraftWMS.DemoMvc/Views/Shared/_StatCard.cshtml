@@ -2,13 +2,21 @@
 <div class="card">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <div class="text-muted small">@Model.Title</div>
-                <div class="h5 mb-0">@Model.Value</div>
-                @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+            <div class="d-flex gap-3 align-items-start">
+                @if (!string.IsNullOrWhiteSpace(Model.IconClass))
                 {
-                    <div class="text-muted small mt-1">@Model.Subtitle</div>
+                    <div class="rounded-3 px-2 py-1 @Model.IconCssClass">
+                        <i class="@Model.IconClass"></i>
+                    </div>
                 }
+                <div>
+                    <div class="text-muted small">@Model.Title</div>
+                    <div class="h5 mb-0">@Model.Value</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                    {
+                        <div class="text-muted small mt-1">@Model.Subtitle</div>
+                    }
+                </div>
             </div>
             @if (!string.IsNullOrWhiteSpace(Model.BadgeText))
             {

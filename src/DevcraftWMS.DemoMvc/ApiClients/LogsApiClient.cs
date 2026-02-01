@@ -16,17 +16,41 @@ public sealed class LogsApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<RequestLogDto>>> ListRequestsAsync(RequestLogQuery query, CancellationToken cancellationToken)
     {
-        var url = $"/api/logs/requests?pageNumber={query.PageNumber}&pageSize={query.PageSize}&orderBy={query.OrderBy}&orderDir={query.OrderDir}" +
-                  $"&statusCode={query.StatusCode}&pathContains={Uri.EscapeDataString(query.PathContains ?? string.Empty)}" +
-                  $"&fromUtc={query.FromUtc:O}&toUtc={query.ToUtc:O}";
+        var basePath = "/api/logs/requests";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["pageNumber"] = query.PageNumber.ToString(),
+            ["pageSize"] = query.PageSize.ToString(),
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir,
+            ["statusCode"] = query.StatusCode?.ToString(),
+            ["pathContains"] = query.PathContains,
+            ["fromUtc"] = query.FromUtc?.ToString("O"),
+            ["toUtc"] = query.ToUtc?.ToString("O")
+        };
+
+        var url = BuildUrl(basePath, queryParams);
         return GetAsync<PagedResultDto<RequestLogDto>>(url, cancellationToken);
     }
 
     public Task<ApiResult<PagedResultDto<ErrorLogDto>>> ListErrorsAsync(ErrorLogQuery query, CancellationToken cancellationToken)
     {
-        var url = $"/api/logs/errors?pageNumber={query.PageNumber}&pageSize={query.PageSize}&orderBy={query.OrderBy}&orderDir={query.OrderDir}" +
-                  $"&source={Uri.EscapeDataString(query.Source ?? string.Empty)}&eventType={Uri.EscapeDataString(query.EventType ?? string.Empty)}&severity={Uri.EscapeDataString(query.Severity ?? string.Empty)}" +
-                  $"&exceptionType={Uri.EscapeDataString(query.ExceptionType ?? string.Empty)}&fromUtc={query.FromUtc:O}&toUtc={query.ToUtc:O}";
+        var basePath = "/api/logs/errors";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["pageNumber"] = query.PageNumber.ToString(),
+            ["pageSize"] = query.PageSize.ToString(),
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir,
+            ["source"] = query.Source,
+            ["eventType"] = query.EventType,
+            ["severity"] = query.Severity,
+            ["exceptionType"] = query.ExceptionType,
+            ["fromUtc"] = query.FromUtc?.ToString("O"),
+            ["toUtc"] = query.ToUtc?.ToString("O")
+        };
+
+        var url = BuildUrl(basePath, queryParams);
         return GetAsync<PagedResultDto<ErrorLogDto>>(url, cancellationToken);
     }
 
@@ -35,9 +59,20 @@ public sealed class LogsApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<TransactionLogDto>>> ListTransactionsAsync(TransactionLogQuery query, CancellationToken cancellationToken)
     {
-        var url = $"/api/logs/transactions?pageNumber={query.PageNumber}&pageSize={query.PageSize}&orderBy={query.OrderBy}&orderDir={query.OrderDir}" +
-                  $"&entityName={Uri.EscapeDataString(query.EntityName ?? string.Empty)}&operation={Uri.EscapeDataString(query.Operation ?? string.Empty)}" +
-                  $"&fromUtc={query.FromUtc:O}&toUtc={query.ToUtc:O}";
+        var basePath = "/api/logs/transactions";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["pageNumber"] = query.PageNumber.ToString(),
+            ["pageSize"] = query.PageSize.ToString(),
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir,
+            ["entityName"] = query.EntityName,
+            ["operation"] = query.Operation,
+            ["fromUtc"] = query.FromUtc?.ToString("O"),
+            ["toUtc"] = query.ToUtc?.ToString("O")
+        };
+
+        var url = BuildUrl(basePath, queryParams);
         return GetAsync<PagedResultDto<TransactionLogDto>>(url, cancellationToken);
     }
 

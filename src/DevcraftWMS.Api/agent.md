@@ -14,6 +14,8 @@
 - Ensure error responses include `correlationId`.
 - Endpoints must be documented (summary + response types) and grouped by feature/tag.
 - Outbox usage is not allowed in API; side-effects go through Application services.
+- External endpoints must be configured via appsettings-bound Options; no hardcoded URLs in API code.
+- Enums must include DisplayName for every member.
 
 ## Forbidden actions
 - Business logic in controllers or filters.

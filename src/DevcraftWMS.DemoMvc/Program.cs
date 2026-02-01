@@ -1,4 +1,5 @@
 using DevcraftWMS.DemoMvc.Infrastructure;
+using DevcraftWMS.DemoMvc.Infrastructure.ExternalServices;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("App_Data/ui-settings.json", optional: true, reloadOnChange: true);
@@ -17,9 +18,16 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.Configure<DevcraftWMS.DemoMvc.Infrastructure.DemoOptions>(builder.Configuration);
+builder.Services.AddOptions<DevcraftWMS.DemoMvc.Infrastructure.DemoOptions>()
+    .Bind(builder.Configuration)
+    .Validate(options => Uri.TryCreate(options.ApiBaseUrl, UriKind.Absolute, out _), "DemoMvc ApiBaseUrl must be an absolute URL.")
+    .ValidateOnStart();
 builder.Services.AddSingleton<DevcraftWMS.DemoMvc.Infrastructure.ApiUrlProvider>();
 builder.Services.Configure<DevcraftWMS.DemoMvc.Infrastructure.Telemetry.ClientTelemetryOptions>(builder.Configuration.GetSection("Telemetry"));
+builder.Services.AddOptions<ExternalServicesOptions>()
+    .Bind(builder.Configuration.GetSection("ExternalServices"))
+    .ValidateOnStart();
+builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<ExternalServicesOptions>, ExternalServicesOptionsValidation>();
 builder.Services.AddSingleton<DevcraftWMS.DemoMvc.Infrastructure.Settings.IUiSettingsStore, DevcraftWMS.DemoMvc.Infrastructure.Settings.FileUiSettingsStore>();
 builder.Services.AddSingleton<DevcraftWMS.DemoMvc.Infrastructure.Settings.FrontendSettingsReader>();
 builder.Services.AddSingleton<DevcraftWMS.DemoMvc.Infrastructure.Telemetry.ClientTelemetryQueue>(sp =>
@@ -34,12 +42,23 @@ builder.Services.AddHostedService<DevcraftWMS.DemoMvc.Infrastructure.Telemetry.T
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<DevcraftWMS.DemoMvc.Infrastructure.Telemetry.TelemetryApiClient>();
+builder.Services.AddHttpClient<IIbgeClient, IbgeClient>((sp, client) =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ExternalServicesOptions>>().Value;
+    client.BaseAddress = new Uri(options.Ibge.BaseUrl);
+});
+builder.Services.AddHttpClient<IViaCepClient, ViaCepClient>((sp, client) =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ExternalServicesOptions>>().Value;
+    client.BaseAddress = new Uri(options.ViaCep.BaseUrl);
+});
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.HealthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.AuthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.CustomersApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.EmailApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LogsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SettingsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.WarehousesApiClient>();
 
 var app = builder.Build();
 
@@ -47,7 +66,6 @@ var app = builder.Build();
 app.UseExceptionHandler("/Home/Error");
 if (!app.Environment.IsDevelopment())
 {
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

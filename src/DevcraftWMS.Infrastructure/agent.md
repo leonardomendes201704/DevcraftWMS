@@ -16,6 +16,8 @@
 - Register infrastructure services via a single DI entry point (e.g., `DependencyInjection` extension).
 - External clients must be behind Application abstractions (interfaces defined in Application).
 - Outbox processor is a hosted service, and publishers implement `INotificationPublisher`.
+- External endpoints must be configured via Options + validation; no hardcoded URLs in Infrastructure.
+- Enums must include DisplayName for every member.
 
 ## Forbidden actions
 - Business rules in persistence/integration code.

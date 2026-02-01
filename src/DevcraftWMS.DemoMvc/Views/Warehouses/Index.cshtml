@@ -1,0 +1,189 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseListPageViewModel
+@{
+    ViewData["Title"] = "Warehouses";
+    ViewData["Subtitle"] = "Manage warehouse master data with filters and pagination";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Warehouses",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["Search"] = Model.Query.Search,
+            ["Code"] = Model.Query.Code,
+            ["Name"] = Model.Query.Name,
+            ["WarehouseType"] = Model.Query.WarehouseType?.ToString(),
+            ["City"] = Model.Query.City,
+            ["State"] = Model.Query.State,
+            ["Country"] = Model.Query.Country,
+            ["ExternalId"] = Model.Query.ExternalId,
+            ["ErpCode"] = Model.Query.ErpCode,
+            ["CostCenterCode"] = Model.Query.CostCenterCode,
+            ["IsPrimary"] = Model.Query.IsPrimary?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var typeOptions = Enum.GetValues<WarehouseType>()
+        .Select(t => new GridSelectOption
+        {
+            Value = t.ToString(),
+            Text = t.ToString(),
+            Selected = Model.Query.WarehouseType == t
+        })
+        .ToList();
+
+    typeOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All types", Selected = Model.Query.WarehouseType is null });
+
+    var boolOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "All", Selected = Model.Query.IsPrimary is null },
+        new() { Value = "true", Text = "Yes", Selected = Model.Query.IsPrimary == true },
+        new() { Value = "false", Text = "No", Selected = Model.Query.IsPrimary == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Warehouses",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Search",
+                Name = "Search",
+                Value = Model.Query.Search,
+                Placeholder = "Code or name"
+            },
+            new()
+            {
+                Label = "Code",
+                Name = "Code",
+                Value = Model.Query.Code
+            },
+            new()
+            {
+                Label = "Name",
+                Name = "Name",
+                Value = Model.Query.Name
+            },
+            new()
+            {
+                Label = "Type",
+                Name = "WarehouseType",
+                Type = GridFilterType.Select,
+                Options = typeOptions
+            },
+            new()
+            {
+                Label = "City",
+                Name = "City",
+                Value = Model.Query.City
+            },
+            new()
+            {
+                Label = "State",
+                Name = "State",
+                Value = Model.Query.State
+            },
+            new()
+            {
+                Label = "Country",
+                Name = "Country",
+                Value = Model.Query.Country
+            },
+            new()
+            {
+                Label = "External Id",
+                Name = "ExternalId",
+                Value = Model.Query.ExternalId
+            },
+            new()
+            {
+                Label = "ERP Code",
+                Name = "ErpCode",
+                Value = Model.Query.ErpCode
+            },
+            new()
+            {
+                Label = "Cost Center",
+                Name = "CostCenterCode",
+                Value = Model.Query.CostCenterCode
+            },
+            new()
+            {
+                Label = "Primary",
+                Name = "IsPrimary",
+                Type = GridFilterType.Select,
+                Options = boolOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Warehouses")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "warehousesFilters",
+        Title = "Warehouse filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<WarehouseListItemViewModel>()
+        .WithTitle("Warehouses")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Warehouse", Url.Action("Create", "Warehouses") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
+        .AddColumn("Type", item => new HtmlString(item.WarehouseType.ToString()), "WarehouseType")
+        .AddColumn("City", item => new HtmlString(HtmlEncoder.Default.Encode(item.City ?? "-")), "City")
+        .AddColumn("State", item => new HtmlString(HtmlEncoder.Default.Encode(item.State ?? "-")), "State")
+        .AddColumn("Primary", item => new HtmlString(item.IsPrimary ? "<span class=\"badge text-bg-primary\">Yes</span>" : "<span class=\"badge text-bg-light border\">No</span>"), "IsPrimary")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Warehouses", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Warehouses", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Warehouses", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

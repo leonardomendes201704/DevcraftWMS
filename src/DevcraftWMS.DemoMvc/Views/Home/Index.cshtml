@@ -12,7 +12,22 @@
         BadgeText = Model.ApiHealthy ? "Up" : "Down",
         BadgeCssClass = Model.ApiHealthy ? "text-bg-success" : "text-bg-danger",
         ActionText = "Settings",
-        ActionUrl = Url.Action("Index", "Settings")
+        ActionUrl = Url.Action("Index", "Settings"),
+        IconClass = "bi bi-shield-check",
+        IconCssClass = Model.ApiHealthy ? "text-bg-success-subtle text-success" : "text-bg-danger-subtle text-danger"
+    };
+
+    var warehousesCard = new StatCardViewModel
+    {
+        Title = "Active Warehouses",
+        Value = Model.ActiveWarehouses.ToString("N0"),
+        Subtitle = "Operational locations",
+        BadgeText = Model.ActiveWarehouses > 0 ? "Active" : "None",
+        BadgeCssClass = Model.ActiveWarehouses > 0 ? "text-bg-primary" : "text-bg-secondary",
+        ActionText = "Manage",
+        ActionUrl = Url.Action("Index", "Warehouses"),
+        IconClass = "bi bi-box-seam",
+        IconCssClass = "text-bg-light border"
     };
 
     var quickLinks = new QuickLinksViewModel
@@ -21,6 +36,7 @@
         Links = new List<QuickLinkItem>
         {
             new() { Text = "Customers", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
+            new() { Text = "Warehouses", Url = Url.Action("Index", "Warehouses") ?? "#", IconClass = "bi bi-box-seam" },
             new() { Text = "Email Test", Url = Url.Action("Index", "Email") ?? "#", IconClass = "bi bi-envelope" },
             new() { Text = "Logs", Url = Url.Action("Requests", "Logs") ?? "#", IconClass = "bi bi-activity" }
         }
@@ -95,6 +111,9 @@
 <div class="row g-3 mb-4">
     <div class="col-lg-3 col-md-6">
         <partial name="_StatCard" model="statusCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="warehousesCard" />
     </div>
     <div class="col-lg-3 col-md-6">
         <partial name="_QuickLinks" model="quickLinks" />

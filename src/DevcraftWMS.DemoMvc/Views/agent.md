@@ -12,6 +12,8 @@
 - Update UI Showcase whenever a reusable component changes.
 - Use the frontend logs views (ClientLogs) for client telemetry only; backend logs stay under Logs.
 - When showing errors, include correlation id if available (from ErrorViewModel).
+- All form fields must use Bootstrap input groups with left icons.
+- Address blocks must use the reusable Address component (CEP lookup + IBGE UF/city).
 
 ## Forbidden actions
 - Direct API calls or heavy logic in views.

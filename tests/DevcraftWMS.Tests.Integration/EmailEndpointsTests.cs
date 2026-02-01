@@ -62,13 +62,15 @@ public sealed class EmailEndpointsTests : IClassFixture<CustomWebApplicationFact
             isHtml = false
         });
 
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var beforeCount = await db.EmailMessages.CountAsync();
+
         var response = await client.PostAsync("/api/emails", new StringContent(payload, Encoding.UTF8, "application/json"));
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var count = await db.EmailMessages.CountAsync();
-        count.Should().Be(0);
+        var afterCount = await db.EmailMessages.CountAsync();
+        afterCount.Should().Be(beforeCount);
     }
 }
 

@@ -1,10 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DevcraftWMS.Domain.Entities;
 
 public enum EmailInboxStatus
 {
+    [Display(Name = "New")]
     New = 0,
+    [Display(Name = "Processed")]
     Processed = 1,
+    [Display(Name = "Failed")]
     Failed = 2,
+    [Display(Name = "Ignored")]
     Ignored = 3
 }
 

@@ -21,6 +21,10 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
     public DbSet<EmailDeliveryAttempt> EmailDeliveryAttempts => Set<EmailDeliveryAttempt>();
     public DbSet<EmailInboxMessage> EmailInboxMessages => Set<EmailInboxMessage>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<WarehouseAddress> WarehouseAddresses => Set<WarehouseAddress>();
+    public DbSet<WarehouseContact> WarehouseContacts => Set<WarehouseContact>();
+    public DbSet<WarehouseCapacity> WarehouseCapacities => Set<WarehouseCapacity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

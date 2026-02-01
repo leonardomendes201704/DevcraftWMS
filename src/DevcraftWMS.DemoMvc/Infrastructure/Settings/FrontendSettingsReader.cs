@@ -53,6 +53,18 @@ public sealed class FrontendSettingsReader
             },
             new()
             {
+                Name = "ExternalServices",
+                Items = new List<SettingsItemViewModel>
+                {
+                    Item("ExternalServices:Ibge:BaseUrl", "IBGE base URL for address lookups."),
+                    Item("ExternalServices:Ibge:StatesPath", "IBGE path to retrieve states."),
+                    Item("ExternalServices:Ibge:CitiesByStatePath", "IBGE path template to retrieve cities for a UF."),
+                    Item("ExternalServices:ViaCep:BaseUrl", "ViaCEP base URL for postal code lookup."),
+                    Item("ExternalServices:ViaCep:LookupPath", "ViaCEP lookup path template.")
+                }
+            },
+            new()
+            {
                 Name = "Demo",
                 Items = new List<SettingsItemViewModel>
                 {

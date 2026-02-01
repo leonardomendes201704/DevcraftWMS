@@ -1,0 +1,223 @@
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+            <input class="form-control" asp-for="Code" />
+        </div>
+        <span class="text-danger" asp-validation-for="Code"></span>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-building"></i></span>
+            <input class="form-control" asp-for="Name" />
+        </div>
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Short Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-type"></i></span>
+            <input class="form-control" asp-for="ShortName" />
+        </div>
+        <span class="text-danger" asp-validation-for="ShortName"></span>
+    </div>
+    <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+            <textarea class="form-control" asp-for="Description" rows="2"></textarea>
+        </div>
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Type</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-diagram-3"></i></span>
+            <select class="form-select" asp-for="WarehouseType" asp-items="Html.GetEnumSelectList<WarehouseType>()"></select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">External Id</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-arrow-up-right"></i></span>
+            <input class="form-control" asp-for="ExternalId" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">ERP Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+            <input class="form-control" asp-for="ErpCode" />
+        </div>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h6 class="text-muted">Operational Flags</h6>
+<div class="row g-3">
+    <div class="col-md-2 form-check">
+        <input class="form-check-input" asp-for="IsPrimary" />
+        <label class="form-check-label" asp-for="IsPrimary">Primary</label>
+    </div>
+    <div class="col-md-2 form-check">
+        <input class="form-check-input" asp-for="IsPickingEnabled" />
+        <label class="form-check-label" asp-for="IsPickingEnabled">Picking</label>
+    </div>
+    <div class="col-md-2 form-check">
+        <input class="form-check-input" asp-for="IsReceivingEnabled" />
+        <label class="form-check-label" asp-for="IsReceivingEnabled">Receiving</label>
+    </div>
+    <div class="col-md-2 form-check">
+        <input class="form-check-input" asp-for="IsShippingEnabled" />
+        <label class="form-check-label" asp-for="IsShippingEnabled">Shipping</label>
+    </div>
+    <div class="col-md-2 form-check">
+        <input class="form-check-input" asp-for="IsReturnsEnabled" />
+        <label class="form-check-label" asp-for="IsReturnsEnabled">Returns</label>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h6 class="text-muted">Cost Center & SLA</h6>
+<div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Cost Center Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-diagram-2"></i></span>
+            <input class="form-control" asp-for="CostCenterCode" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Cost Center Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-fonts"></i></span>
+            <input class="form-control" asp-for="CostCenterName" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Cutoff Time</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-clock"></i></span>
+            <input class="form-control" type="time" asp-for="CutoffTime" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Timezone</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-globe"></i></span>
+            <input class="form-control" asp-for="Timezone" placeholder="America/Sao_Paulo" />
+        </div>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+@await Html.PartialAsync("_AddressForm", new DevcraftWMS.DemoMvc.ViewModels.Shared.AddressFormSectionViewModel
+{
+    Title = "Address",
+    Prefix = "Address",
+    EnableCepLookup = true,
+    EnableIbgeLookup = true,
+    ShowGeoCoordinates = true,
+    Address = Model.Address ?? new DevcraftWMS.DemoMvc.ViewModels.Shared.AddressInputViewModel()
+})
+
+<hr class="my-4" />
+
+<h6 class="text-muted">Contact</h6>
+<div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Contact Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input class="form-control" asp-for="Contact!.ContactName" />
+        </div>
+        <span class="text-danger" asp-validation-for="Contact!.ContactName"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Contact Email</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input class="form-control" asp-for="Contact!.ContactEmail" type="email" />
+        </div>
+        <span class="text-danger" asp-validation-for="Contact!.ContactEmail"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Contact Phone</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+            <input class="form-control" asp-for="Contact!.ContactPhone" />
+        </div>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h6 class="text-muted">Capacity & Dimensions</h6>
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Length (m)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+            <input class="form-control" asp-for="Capacity!.LengthMeters" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Width (m)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+            <input class="form-control" asp-for="Capacity!.WidthMeters" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Height (m)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+            <input class="form-control" asp-for="Capacity!.HeightMeters" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Total Area (m2)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-bounding-box"></i></span>
+            <input class="form-control" asp-for="Capacity!.TotalAreaM2" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Total Capacity</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+            <input class="form-control" asp-for="Capacity!.TotalCapacity" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Capacity Unit</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-speedometer"></i></span>
+            <select class="form-select" asp-for="Capacity!.CapacityUnit" asp-items="Html.GetEnumSelectList<CapacityUnit>()">
+                <option value="">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Max Weight (kg)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-weight"></i></span>
+            <input class="form-control" asp-for="Capacity!.MaxWeightKg" type="number" step="0.01" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Operational Area</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
+            <input class="form-control" asp-for="Capacity!.OperationalArea" type="number" step="0.01" />
+        </div>
+    </div>
+</div>

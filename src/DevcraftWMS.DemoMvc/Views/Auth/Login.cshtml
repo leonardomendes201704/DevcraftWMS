@@ -12,12 +12,18 @@
                 <form method="post" asp-action="Login">
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input asp-for="Email" class="form-control" />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
                         <span class="text-danger small" asp-validation-for="Email"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
-                        <input asp-for="Password" class="form-control" />
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input asp-for="Password" class="form-control" />
+                        </div>
                         <span class="text-danger small" asp-validation-for="Password"></span>
                     </div>
                     <button class="btn btn-primary" type="submit">Login</button>
@@ -33,7 +39,10 @@
                     <input type="hidden" name="mode" value="token" />
                     <div class="mb-3">
                         <label class="form-label">Token</label>
-                        <textarea asp-for="Token" class="form-control" rows="6"></textarea>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                            <textarea asp-for="Token" class="form-control" rows="6"></textarea>
+                        </div>
                         <span class="text-danger small" asp-validation-for="Token"></span>
                     </div>
                     <button class="btn btn-outline-primary" type="submit">Store Token</button>

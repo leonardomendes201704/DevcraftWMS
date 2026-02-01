@@ -212,15 +212,13 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Swagger:OpenO
     {
         try
         {
-            // Resolve actual bound addresses (e.g., http://localhost:5000)
             var server = app.Services.GetRequiredService<IServer>();
             var addressesFeature = server.Features.Get<IServerAddressesFeature>();
             var baseAddress = addressesFeature?.Addresses?.FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(baseAddress))
             {
-                // Fallback if addresses not available
-                baseAddress = "http://localhost:5000";
+                return;
             }
 
             // Replace wildcard host with localhost for browser

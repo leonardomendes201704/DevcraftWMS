@@ -9,5 +9,7 @@ public sealed class StatCardViewModel
     public string BadgeCssClass { get; init; } = "text-bg-secondary";
     public string? ActionText { get; init; }
     public string? ActionUrl { get; init; }
+    public string? IconClass { get; init; }
+    public string IconCssClass { get; init; } = "text-bg-light";
 }
 

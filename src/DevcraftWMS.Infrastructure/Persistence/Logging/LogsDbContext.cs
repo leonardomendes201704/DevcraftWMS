@@ -16,7 +16,9 @@ public sealed class LogsDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LogsDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(LogsDbContext).Assembly,
+            type => type.Namespace is not null && type.Namespace.Contains("Persistence.Logging.Configurations"));
         base.OnModelCreating(modelBuilder);
     }
 }

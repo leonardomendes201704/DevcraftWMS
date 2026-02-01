@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Html;
 
 namespace DevcraftWMS.DemoMvc.ViewModels.Shared;
@@ -68,13 +69,18 @@ public sealed class GridFilterField
     public bool IsChecked { get; init; }
     public string? CssClass { get; init; }
     public bool IsHidden { get; init; }
+    public string? IconClass { get; init; }
 }
 
 public enum GridFilterType
 {
+    [Display(Name = "Text")]
     Text,
+    [Display(Name = "Select")]
     Select,
+    [Display(Name = "Checkbox")]
     Checkbox,
+    [Display(Name = "Date")]
     Date
 }
 

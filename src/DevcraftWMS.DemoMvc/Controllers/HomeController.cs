@@ -8,11 +8,13 @@ public sealed class HomeController : Controller
 {
     private readonly HealthApiClient _healthClient;
     private readonly LogsApiClient _logsClient;
+    private readonly WarehousesApiClient _warehousesClient;
 
-    public HomeController(HealthApiClient healthClient, LogsApiClient logsClient)
+    public HomeController(HealthApiClient healthClient, LogsApiClient logsClient, WarehousesApiClient warehousesClient)
     {
         _healthClient = healthClient;
         _logsClient = logsClient;
+        _warehousesClient = warehousesClient;
     }
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -27,11 +29,17 @@ public sealed class HomeController : Controller
             new ErrorLogQuery(1, 5, "CreatedAtUtc", "desc", null, null, null, null, null, null),
             cancellationToken);
 
+        var warehouses = await _warehousesClient.ListAsync(
+            new DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseQuery(
+                1, 1, "CreatedAtUtc", "desc", null, null, null, null, null, null, null, null, null, null, null, false),
+            cancellationToken);
+
         var model = new DashboardViewModel
         {
             ApiHealthy = apiHealthy,
             RecentRequests = recentRequests.Data?.Items ?? Array.Empty<RequestLogDto>(),
-            RecentErrors = recentErrors.Data?.Items ?? Array.Empty<ErrorLogDto>()
+            RecentErrors = recentErrors.Data?.Items ?? Array.Empty<ErrorLogDto>(),
+            ActiveWarehouses = warehouses.Data?.TotalCount ?? 0
         };
 
         return View(model);

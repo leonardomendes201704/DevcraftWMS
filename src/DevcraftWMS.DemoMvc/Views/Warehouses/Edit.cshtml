@@ -1,0 +1,25 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseFormViewModel
+@{
+    ViewData["Title"] = "Edit Warehouse";
+    ViewData["Subtitle"] = Model.Code;
+}
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="card">
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <partial name="_WarehouseForm" model="Model" />
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/address-lookup.js" asp-append-version="true"></script>
+}

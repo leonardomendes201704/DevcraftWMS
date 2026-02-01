@@ -10,6 +10,7 @@
 - Entities are persistence-agnostic.
 - Keep invariants inside domain where possible.
 - Domain events (if introduced) must be serializable for outbox usage.
+- Enums must include DisplayName for every member.
 
 ## Forbidden actions
 - References to Application/Infrastructure.

@@ -32,6 +32,10 @@
   - camelCase for locals/parameters
   - async methods end with `Async` (except MediatR Handle)
 - Language: All code identifiers, comments, and strings intended for developers must be in EN-US (never PT-BR).
+- External endpoints: never hardcode external URLs in code; always use appsettings-bound Options with startup validation.
+  - Forbidden: `const string Url = "https://api.example.com/...";`
+  - Required: `ExternalServices` config + Options + typed HttpClient with `BaseAddress`.
+- Enums: every enum member must declare a DisplayName attribute (no exceptions).
 - Folders:
   - Features live under `Application/Features/<FeatureName>/Commands` and `/Queries`
   - Each command/query has its own folder: `<ActionName>/`
@@ -89,6 +93,8 @@ When implementing a new endpoint:
 - No SPA frameworks; minimal JS (only Bootstrap behaviors).
 - Store JWT only in server-side session (never localStorage).
 - Any new or modified reusable UI component must be added/updated in the UI Showcase page.
+- All form fields must use Bootstrap input groups with a left icon (no plain inputs).
+- Address blocks must use the reusable Address component with CEP lookup and IBGE-driven UF/city selection.
 
 ## PR checklist
 - Build succeeds (`dotnet build`).
@@ -101,11 +107,22 @@ When implementing a new endpoint:
 - Health endpoint still works (`/health`) and ProblemDetails include `correlationId`.
 - HistoryLog updated (`HistoryLog.md`) for every code change.
 - Commit and push messages include a clear title and a complete description of what was done.
+- No hardcoded external URLs; all external endpoints come from validated Options.
 
 ## Change log rule (MANDATORY)
 Every code change must append an entry to `HistoryLog.md` at solution root with:
 - Date (YYYY-MM-DD)
-- Short description of the change
+- Task Code (TASK-####) for new features or significant changes
+- Short title/summary
+- Key changes (bullets)
+- Notes (optional)
+
+## Task tracking rule (MANDATORY)
+- Every new feature must start with a task file under `Tasks/`.
+- Task code format: `TASK-####` (4 digits, incrementing).
+- File naming: `Tasks/<TASKCODE>-<kebab-case-title>.md`.
+- Task code must be referenced in commit messages and PR titles when possible.
+- Update the task file with progress notes and final acceptance checklist status.
 
 ## Appsettings/ENV documentation rule (MANDATORY)
 Whenever any appsettings key is added or modified, update the README `ENVs` section to reflect it.
