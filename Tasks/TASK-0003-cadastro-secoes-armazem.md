@@ -62,3 +62,19 @@ Nao existe entidade intermediaria entre Setor e Estrutura.
 
 ## Riscos / Questões em Aberto
 - Definir nomenclatura padrao das secoes.
+
+## Status
+Concluida (DONE)
+
+## Progresso / Notas
+- Entidade Secao criada com relacionamento 1:N com Setor.
+- CRUD API implementado com CQRS + MediatR e RequestResult.
+- Telas DemoMvc (Index/Details/Create/Edit/Delete) implementadas com Grid + filtros.
+- Migrations criadas e aplicadas (AddSections).
+- Testes unitarios e de integracao adicionados.
+
+## Checklist de Aceitacao
+- [x] Endpoints API com RequestResult.
+- [x] Views DemoMvc completas.
+- [x] Migrations criadas/aplicadas.
+- [x] Testes unitarios e integracao.

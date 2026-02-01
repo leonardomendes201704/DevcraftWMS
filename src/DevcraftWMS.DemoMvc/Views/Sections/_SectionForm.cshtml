@@ -1,0 +1,38 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Sections.SectionFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Sector</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
+            <select class="form-select" asp-for="SectorId" asp-items="Model.Sectors">
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="SectorId"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+            <input class="form-control" asp-for="Code" />
+        </div>
+        <span class="text-danger" asp-validation-for="Code"></span>
+    </div>
+    <div class="col-md-9">
+        <label class="form-label">Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+            <input class="form-control" asp-for="Name" />
+        </div>
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+    <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+            <textarea class="form-control" asp-for="Description" rows="3"></textarea>
+        </div>
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+</div>

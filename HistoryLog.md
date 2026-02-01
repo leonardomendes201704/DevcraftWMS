@@ -16,3 +16,5 @@
   - Key changes: created future task files under Tasks/ for E2E API + DemoMvc implementations.
 - TASK-0002 - E2E sector management (Sectors) completed.
   - Key changes: added sector entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSectors.
+- TASK-0003 - E2E section management (Sections) completed.
+  - Key changes: added section entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSections.

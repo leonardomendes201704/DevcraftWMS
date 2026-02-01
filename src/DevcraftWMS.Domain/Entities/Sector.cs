@@ -11,4 +11,5 @@ public sealed class Sector : AuditableEntity
     public SectorType SectorType { get; set; } = SectorType.Storage;
 
     public Warehouse? Warehouse { get; set; }
+    public ICollection<Section> Sections { get; set; } = new List<Section>();
 }

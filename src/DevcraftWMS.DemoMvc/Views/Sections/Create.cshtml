@@ -1,0 +1,18 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Sections.SectionFormViewModel
+@{
+    ViewData["Title"] = "New Section";
+    ViewData["Subtitle"] = "Create a new sector section";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <partial name="_SectionForm" model="Model" />
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-light border" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

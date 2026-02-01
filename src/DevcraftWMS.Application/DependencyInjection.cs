@@ -10,6 +10,7 @@ using DevcraftWMS.Application.Features.Auth;
 using DevcraftWMS.Application.Features.Emails;
 using DevcraftWMS.Application.Features.Warehouses;
 using DevcraftWMS.Application.Features.Sectors;
+using DevcraftWMS.Application.Features.Sections;
 
 namespace DevcraftWMS.Application;
 
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IWarehouseService, WarehouseService>();
         services.AddScoped<ISectorService, SectorService>();
+        services.AddScoped<ISectionService, SectionService>();
 
         return services;
     }
