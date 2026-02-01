@@ -25,6 +25,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<WarehouseAddress> WarehouseAddresses => Set<WarehouseAddress>();
     public DbSet<WarehouseContact> WarehouseContacts => Set<WarehouseContact>();
     public DbSet<WarehouseCapacity> WarehouseCapacities => Set<WarehouseCapacity>();
+    public DbSet<Sector> Sectors => Set<Sector>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

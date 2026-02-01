@@ -12,3 +12,7 @@
 - Enforced no-hardcoded-URLs policy with validated external service options and refactored address lookup to use typed clients.
 - TASK-0001 - Standards for task documentation and enum DisplayName metadata.
   - Key changes: added Tasks/ with TASK-0001 template, updated AGENTS rules, annotated all enums, added DisplayName helper.
+- TASK-0002 to TASK-0006 - Planned E2E warehouse structure CRUDes (sectors, sections, structures, locations, aisles).
+  - Key changes: created future task files under Tasks/ for E2E API + DemoMvc implementations.
+- TASK-0002 - E2E sector management (Sectors) completed.
+  - Key changes: added sector entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSectors.

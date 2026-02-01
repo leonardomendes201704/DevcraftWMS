@@ -1,0 +1,155 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.Sectors.SectorListPageViewModel
+@{
+    ViewData["Title"] = "Sectors";
+    ViewData["Subtitle"] = "Manage warehouse sectors with filters and pagination";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Sectors",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
+            ["Code"] = Model.Query.Code,
+            ["Name"] = Model.Query.Name,
+            ["SectorType"] = Model.Query.SectorType?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var warehouseOptions = Model.Warehouses
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+
+    var sectorTypeOptions = Enum.GetValues<SectorType>()
+        .Select(t => new GridSelectOption
+        {
+            Value = t.ToString(),
+            Text = t.ToString(),
+            Selected = Model.Query.SectorType == t
+        })
+        .ToList();
+
+    sectorTypeOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All types", Selected = Model.Query.SectorType is null });
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Sectors",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Warehouse",
+                Name = "WarehouseId",
+                Type = GridFilterType.Select,
+                Options = warehouseOptions
+            },
+            new()
+            {
+                Label = "Code",
+                Name = "Code",
+                Value = Model.Query.Code
+            },
+            new()
+            {
+                Label = "Name",
+                Name = "Name",
+                Value = Model.Query.Name
+            },
+            new()
+            {
+                Label = "Type",
+                Name = "SectorType",
+                Type = GridFilterType.Select,
+                Options = sectorTypeOptions
+            },
+            new()
+            {
+                Label = "Status",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Sectors")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "sectorsFilters",
+        Title = "Sector filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<SectorListItemViewModel>()
+        .WithTitle("Sectors")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Sector", Url.Action("Create", "Sectors") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
+        .AddColumn("Type", item => new HtmlString(item.SectorType.ToString()), "SectorType")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Sectors", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Sectors", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Sectors", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
