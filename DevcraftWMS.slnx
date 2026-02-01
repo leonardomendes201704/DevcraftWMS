@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DevcraftWMS.Api/DevcraftWMS.Api.csproj" />
+    <Project Path="src/DevcraftWMS.Application/DevcraftWMS.Application.csproj" />
+    <Project Path="src/DevcraftWMS.DemoMvc/DevcraftWMS.DemoMvc.csproj" />
+    <Project Path="src/DevcraftWMS.Domain/DevcraftWMS.Domain.csproj" />
+    <Project Path="src/DevcraftWMS.Infrastructure/DevcraftWMS.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DevcraftWMS.Tests.Integration/DevcraftWMS.Tests.Integration.csproj" />
+    <Project Path="tests/DevcraftWMS.Tests.Unit/DevcraftWMS.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
+
+

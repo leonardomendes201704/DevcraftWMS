@@ -1,4 +1,4 @@
-﻿# Perfect API Template
+# DevcraftWMS
 
 Production-ready .NET 9 API starter using Clean Architecture + CQRS (MediatR), FluentValidation, EF Core (SQLite), Serilog, Swagger, and ProblemDetails.
 
@@ -6,7 +6,7 @@ Production-ready .NET 9 API starter using Clean Architecture + CQRS (MediatR), F
 ```bash
 # from repo root
  dotnet build
- dotnet run --project src/PerfectApiTemplate.Api
+ dotnet run --project src/DevcraftWMS.Api
 ```
 
 The API will be available with Swagger at `/swagger` and health at `/health`.
@@ -14,10 +14,10 @@ The API will be available with Swagger at `/swagger` and health at `/health`.
 ## Demo MVC UI
 Run the demo UI (server-rendered MVC) that exercises API features:
 ```bash
- dotnet run --project src/PerfectApiTemplate.DemoMvc
+ dotnet run --project src/DevcraftWMS.DemoMvc
 ```
 
-By default it calls the API at `https://localhost:7263`. Update the base URL from the **Settings** screen or set `ApiBaseUrl` in `src/PerfectApiTemplate.DemoMvc/appsettings.json`.
+By default it calls the API at `https://localhost:7263`. Update the base URL from the **Settings** screen or set `ApiBaseUrl` in `src/DevcraftWMS.DemoMvc/appsettings.json`.
 
 ### GridBuilder example
 Use `GridBuilder<T>` to build reusable list grids with filters, sorting, and actions:
@@ -70,20 +70,20 @@ This template uses two databases:
  dotnet tool install --global dotnet-ef
 
 # add migration (MainDb)
- dotnet ef migrations add InitialCreate --project src/PerfectApiTemplate.Infrastructure --startup-project src/PerfectApiTemplate.Api --output-dir Persistence/Migrations/Main
+ dotnet ef migrations add InitialCreate --project src/DevcraftWMS.Infrastructure --startup-project src/DevcraftWMS.Api --output-dir Persistence/Migrations/Main
 
 # add migration (LogsDb)
- dotnet ef migrations add AddAuditLoggingTables --project src/PerfectApiTemplate.Infrastructure --startup-project src/PerfectApiTemplate.Api --context LogsDbContext --output-dir Persistence/Migrations/Logs
+ dotnet ef migrations add AddAuditLoggingTables --project src/DevcraftWMS.Infrastructure --startup-project src/DevcraftWMS.Api --context LogsDbContext --output-dir Persistence/Migrations/Logs
 
 # apply migration (MainDb)
- dotnet ef database update --project src/PerfectApiTemplate.Infrastructure --startup-project src/PerfectApiTemplate.Api
+ dotnet ef database update --project src/DevcraftWMS.Infrastructure --startup-project src/DevcraftWMS.Api
 
 # apply migration (LogsDb)
- dotnet ef database update --project src/PerfectApiTemplate.Infrastructure --startup-project src/PerfectApiTemplate.Api --context LogsDbContext
+ dotnet ef database update --project src/DevcraftWMS.Infrastructure --startup-project src/DevcraftWMS.Api --context LogsDbContext
 ```
 
 ## Add a new feature
-1. Create a feature folder in `src/PerfectApiTemplate.Application/Features/<FeatureName>`.
+1. Create a feature folder in `src/DevcraftWMS.Application/Features/<FeatureName>`.
 2. Add `Commands` and `Queries` with MediatR handlers and validators.
 3. Add API controller endpoints that call ONLY MediatR.
 4. Add mappings in Infrastructure if new entities are introduced.
@@ -224,7 +224,7 @@ GET /api/customers?orderBy=CreatedAtUtc&orderDir=desc&pageSize=50&cursor=2026-02
 ```
 
 Notes:
-- Cursor should include the last item’s ordered fields (e.g., `CreatedAtUtc|Id`) to keep ordering stable.
+- Cursor should include the last item�s ordered fields (e.g., `CreatedAtUtc|Id`) to keep ordering stable.
 - Only use OFFSET pagination when you truly need page numbers; otherwise, default to keyset.
 
 ## ENVs
@@ -309,16 +309,19 @@ Telemetry:CircuitBreaker:BreakDurationSeconds -> Demo MVC telemetry circuit-brea
 Demo:AdminEmail                     -> Default email address used in Demo UI
 ```
 
-## Use this repo as a template
-This repository is marked as a GitHub template. To create a new API:
-1. Click the **Use this template** button on GitHub.
-2. Create a new repository from the template.
-3. Clone the new repo and start coding.
+## Template origin
+This repository was created from the `perfect-api-template` GitHub template.
+If you want to start a new project from the template, use GitHub **Use this template**
+or the GitHub CLI with the template repo.
 
 ## Common commands
 ```bash
  dotnet build
  dotnet test
- dotnet run --project src/PerfectApiTemplate.Api
+ dotnet run --project src/DevcraftWMS.Api
 ```
+
+
+
+
 

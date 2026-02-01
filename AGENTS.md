@@ -1,4 +1,4 @@
-﻿# AGENTS.md - Perfect API Template
+# AGENTS.md - DevcraftWMS
 
 ## Architecture overview
 - Clean Architecture with four layers:
@@ -22,7 +22,7 @@
 - Controllers: routing, auth attributes, request/response mapping ONLY.
 - Handlers: orchestration only (call Services/Repositories), no complex business rules.
 - Services (Application): business rules, validations that require data, orchestration logic.
-- Domain: entities/value objects/domain rules that don�t depend on infrastructure.
+- Domain: entities/value objects/domain rules that don?t depend on infrastructure.
 - Infrastructure: EF Core DbContext/mappings/repositories, external clients, observability plumbing.
 - Outbox: Application enqueues via `IOutboxEnqueuer`; Infrastructure processes and publishes via `INotificationPublisher`.
 
@@ -130,11 +130,14 @@ You MUST also:
 Commands (SQLite):
 ```bash
 dotnet ef migrations add <MigrationName> \
-  --project src/PerfectApiTemplate.Infrastructure \
-  --startup-project src/PerfectApiTemplate.Api
+  --project src/DevcraftWMS.Infrastructure \
+  --startup-project src/DevcraftWMS.Api
 
 dotnet ef database update \
-  --project src/PerfectApiTemplate.Infrastructure \
-  --startup-project src/PerfectApiTemplate.Api
+  --project src/DevcraftWMS.Infrastructure \
+  --startup-project src/DevcraftWMS.Api
 ```
+
+
+
 
