@@ -51,10 +51,6 @@
                 console.info("[SignalR] Auto-refresh disabled.");
                 return;
             }
-            var alert = document.createElement("div");
-            alert.className = "alert alert-info mt-3";
-            alert.textContent = "@Model.ReloadMessage";
-            document.querySelector("main.container-fluid")?.prepend(alert);
             setTimeout(function () { window.location.reload(); }, 800);
         });
 

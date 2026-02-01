@@ -104,14 +104,34 @@ public abstract class ApiClientBase
         AddTelemetryHeaders(request, apiRequestId);
 
         var stopwatch = Stopwatch.StartNew();
-        using var response = await _httpClient.SendAsync(request, cancellationToken);
-        stopwatch.Stop();
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            stopwatch.Stop();
 
-        var result = await ReadResponseAsync<T>(response, cancellationToken);
-
-        ReportTelemetryIfNeeded(request, path, apiRequestId, result, response, stopwatch.ElapsedMilliseconds);
-
-        return result;
+            var result = await ReadResponseAsync<T>(response, cancellationToken);
+            ReportTelemetryIfNeeded(request, path, apiRequestId, result, response, stopwatch.ElapsedMilliseconds);
+            return result;
+        }
+        catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            stopwatch.Stop();
+            return ApiResult<T>.Failure("Request canceled by client.", 499);
+        }
+        catch (TaskCanceledException ex)
+        {
+            stopwatch.Stop();
+            var result = ApiResult<T>.Failure("Request timed out while contacting the API.", 504);
+            ReportTelemetryForException(request, path, apiRequestId, result, ex, stopwatch.ElapsedMilliseconds);
+            return result;
+        }
+        catch (HttpRequestException ex)
+        {
+            stopwatch.Stop();
+            var result = ApiResult<T>.Failure("Unable to reach the API.", 503);
+            ReportTelemetryForException(request, path, apiRequestId, result, ex, stopwatch.ElapsedMilliseconds);
+            return result;
+        }
     }
 
     private void ReportTelemetryIfNeeded<T>(
@@ -135,9 +155,63 @@ public abstract class ApiClientBase
             return;
         }
 
-        var telemetryEvent = new ClientTelemetryEvent(
+        EnqueueTelemetry(
             isFailure ? "api_call_failure" : "perf_slow_call",
             isFailure ? "error" : "warning",
+            request,
+            path,
+            apiRequestId,
+            result.StatusCode,
+            durationMs,
+            isFailure ? (result.Error ?? "API call failed.") : "Slow API call detected.",
+            null,
+            null,
+            null);
+    }
+
+    private void ReportTelemetryForException<T>(
+        HttpRequestMessage request,
+        string path,
+        string apiRequestId,
+        ApiResult<T> result,
+        Exception exception,
+        long durationMs)
+    {
+        if (!_telemetryOptions.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        EnqueueTelemetry(
+            "api_call_failure",
+            "error",
+            request,
+            path,
+            apiRequestId,
+            result.StatusCode,
+            durationMs,
+            result.Error ?? "API call failed.",
+            exception.GetType().Name,
+            exception.Message,
+            null);
+    }
+
+    private void EnqueueTelemetry(
+        string eventType,
+        string severity,
+        HttpRequestMessage request,
+        string path,
+        string apiRequestId,
+        int statusCode,
+        long durationMs,
+        string message,
+        string? exceptionType,
+        string? exceptionMessage,
+        string? detailsJson)
+    {
+        var telemetryEvent = new ClientTelemetryEvent(
+            eventType,
+            severity,
             "DevcraftWMS.DemoMvc",
             _environment.EnvironmentName,
             _httpContextAccessor.HttpContext?.Request.Path ?? string.Empty,
@@ -148,12 +222,12 @@ public abstract class ApiClientBase
             apiRequestId,
             request.Method.Method,
             path,
-            result.StatusCode,
+            statusCode,
             durationMs,
-            isFailure ? (result.Error ?? "API call failed.") : "Slow API call detected.",
-            null,
-            null,
-            null,
+            message,
+            exceptionType,
+            exceptionMessage,
+            detailsJson,
             null,
             null,
             _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString(),
