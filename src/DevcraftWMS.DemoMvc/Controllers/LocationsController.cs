@@ -179,8 +179,17 @@ public sealed class LocationsController : Controller
         var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
         if (warehouses.Count == 0)
         {
-            TempData["Warning"] = "Create a warehouse before adding locations.";
-            return RedirectToAction("Create", "Warehouses");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No warehouse found",
+                Message = "Locations depend on a warehouse, sector, section, and structure. Do you want to create a warehouse now?",
+                PrimaryActionText = "Create warehouse",
+                PrimaryActionUrl = Url.Action("Create", "Warehouses") ?? "#",
+                SecondaryActionText = "Back to locations",
+                SecondaryActionUrl = Url.Action("Index", "Locations") ?? "#",
+                IconClass = "bi bi-box-seam"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedWarehouseId = warehouseId.HasValue && warehouses.Any(w => w.Value == warehouseId.Value.ToString())
@@ -190,8 +199,17 @@ public sealed class LocationsController : Controller
         var sectors = await LoadSectorOptionsAsync(selectedWarehouseId, sectorId, cancellationToken);
         if (sectors.Count == 0)
         {
-            TempData["Warning"] = "Create a sector before adding locations.";
-            return RedirectToAction("Create", "Sectors");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No sector found",
+                Message = "Locations depend on a sector, section, and structure. Do you want to create a sector now?",
+                PrimaryActionText = "Create sector",
+                PrimaryActionUrl = Url.Action("Create", "Sectors", new { warehouseId = selectedWarehouseId }) ?? "#",
+                SecondaryActionText = "Back to locations",
+                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId }) ?? "#",
+                IconClass = "bi bi-grid-3x3-gap"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedSectorId = sectorId.HasValue && sectors.Any(s => s.Value == sectorId.Value.ToString())
@@ -201,8 +219,17 @@ public sealed class LocationsController : Controller
         var sections = await LoadSectionOptionsAsync(selectedSectorId, sectionId, cancellationToken);
         if (sections.Count == 0)
         {
-            TempData["Warning"] = "Create a section before adding locations.";
-            return RedirectToAction("Create", "Sections");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No section found",
+                Message = "Locations depend on a section and structure. Do you want to create a section now?",
+                PrimaryActionText = "Create section",
+                PrimaryActionUrl = Url.Action("Create", "Sections", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
+                SecondaryActionText = "Back to locations",
+                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
+                IconClass = "bi bi-layout-text-sidebar"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedSectionId = sectionId.HasValue && sections.Any(s => s.Value == sectionId.Value.ToString())
@@ -212,8 +239,17 @@ public sealed class LocationsController : Controller
         var structures = await LoadStructureOptionsAsync(selectedSectionId, structureId, cancellationToken);
         if (structures.Count == 0)
         {
-            TempData["Warning"] = "Create a structure before adding locations.";
-            return RedirectToAction("Create", "Structures");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No structure found",
+                Message = "Locations depend on a structure. Do you want to create a structure now?",
+                PrimaryActionText = "Create structure",
+                PrimaryActionUrl = Url.Action("Create", "Structures", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
+                SecondaryActionText = "Back to locations",
+                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
+                IconClass = "bi bi-stack"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedStructureId = structureId.HasValue && structures.Any(s => s.Value == structureId.Value.ToString())

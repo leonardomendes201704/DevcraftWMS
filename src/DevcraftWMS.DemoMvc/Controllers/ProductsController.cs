@@ -112,9 +112,25 @@ public sealed class ProductsController : Controller
     [HttpGet]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
+        var baseUoms = await LoadAllUomOptionsAsync(null, cancellationToken);
+        if (baseUoms.Count == 0)
+        {
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No UoM found",
+                Message = "Products require a base unit of measure. Do you want to create a UoM now?",
+                PrimaryActionText = "Create UoM",
+                PrimaryActionUrl = Url.Action("Create", "Uoms") ?? "#",
+                SecondaryActionText = "Back to products",
+                SecondaryActionUrl = Url.Action("Index", "Products") ?? "#",
+                IconClass = "bi bi-rulers"
+            };
+            return View("DependencyPrompt", prompt);
+        }
+
         var model = new ProductFormViewModel
         {
-            BaseUoms = await LoadAllUomOptionsAsync(null, cancellationToken)
+            BaseUoms = baseUoms
         };
 
         return View(model);

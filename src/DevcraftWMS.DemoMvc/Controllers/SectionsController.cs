@@ -120,8 +120,17 @@ public sealed class SectionsController : Controller
         var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
         if (warehouses.Count == 0)
         {
-            TempData["Warning"] = "Create a warehouse before adding sections.";
-            return RedirectToAction("Create", "Warehouses");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No warehouse found",
+                Message = "Sections depend on a warehouse and sector. Do you want to create a warehouse now?",
+                PrimaryActionText = "Create warehouse",
+                PrimaryActionUrl = Url.Action("Create", "Warehouses") ?? "#",
+                SecondaryActionText = "Back to sections",
+                SecondaryActionUrl = Url.Action("Index", "Sections") ?? "#",
+                IconClass = "bi bi-box-seam"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedWarehouseId = warehouseId.HasValue && warehouses.Any(w => w.Value == warehouseId.Value.ToString())
@@ -131,8 +140,17 @@ public sealed class SectionsController : Controller
         var sectors = await LoadSectorOptionsAsync(selectedWarehouseId, null, cancellationToken);
         if (sectors.Count == 0)
         {
-            TempData["Warning"] = "Create a sector before adding sections.";
-            return RedirectToAction("Create", "Sectors");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No sector found",
+                Message = "Sections depend on a sector. Do you want to create a sector now?",
+                PrimaryActionText = "Create sector",
+                PrimaryActionUrl = Url.Action("Create", "Sectors", new { warehouseId = selectedWarehouseId }) ?? "#",
+                SecondaryActionText = "Back to sections",
+                SecondaryActionUrl = Url.Action("Index", "Sections", new { warehouseId = selectedWarehouseId }) ?? "#",
+                IconClass = "bi bi-grid-3x3-gap"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var selectedSectorId = sectorId.HasValue && sectors.Any(s => s.Value == sectorId.Value.ToString())

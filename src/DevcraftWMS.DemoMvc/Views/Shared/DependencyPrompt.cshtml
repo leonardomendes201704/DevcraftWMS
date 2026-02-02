@@ -1,0 +1,23 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Shared.DependencyPromptViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Subtitle"] = "Action required to continue";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex align-items-start gap-3">
+            <div class="display-6 text-warning">
+                <i class="@Model.IconClass"></i>
+            </div>
+            <div>
+                <h5 class="mb-1">@Model.Title</h5>
+                <p class="text-muted mb-3">@Model.Message</p>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-primary" href="@Model.PrimaryActionUrl">@Model.PrimaryActionText</a>
+                    <a class="btn btn-light border" href="@Model.SecondaryActionUrl">@Model.SecondaryActionText</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

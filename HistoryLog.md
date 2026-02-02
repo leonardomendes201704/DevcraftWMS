@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0015 - Dependency feedback for dependent registrations completed.
+  - Key changes: added DependencyPrompt view/model and updated Create flows for dependent entities.
 - TASK-0008 to TASK-0014 - Planned next WMS modules and multi-client ownership.
   - Key changes: created task files for lots/validity, inventory balances, internal movements, receiving, picking/shipping, and multi-client ownership/context.
 - TASK-0007 - E2E product and UoM management completed.

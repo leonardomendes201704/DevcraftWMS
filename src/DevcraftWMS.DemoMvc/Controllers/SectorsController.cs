@@ -99,8 +99,17 @@ public sealed class SectorsController : Controller
         var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
         if (warehouses.Count == 0)
         {
-            TempData["Warning"] = "Create a warehouse before adding sectors.";
-            return RedirectToAction("Create", "Warehouses");
+            var prompt = new DependencyPromptViewModel
+            {
+                Title = "No warehouse found",
+                Message = "Sectors depend on a warehouse. Do you want to create a warehouse now?",
+                PrimaryActionText = "Create warehouse",
+                PrimaryActionUrl = Url.Action("Create", "Warehouses") ?? "#",
+                SecondaryActionText = "Back to sectors",
+                SecondaryActionUrl = Url.Action("Index", "Sectors") ?? "#",
+                IconClass = "bi bi-box-seam"
+            };
+            return View("DependencyPrompt", prompt);
         }
 
         var model = new SectorFormViewModel
