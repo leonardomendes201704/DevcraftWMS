@@ -37,6 +37,26 @@ public sealed class StructuresApiClient : ApiClientBase
         return GetAsync<PagedResultDto<StructureListItemViewModel>>(url, cancellationToken);
     }
 
+    public Task<ApiResult<PagedResultDto<StructureListItemViewModel>>> ListForCustomerAsync(StructureQuery query, CancellationToken cancellationToken)
+    {
+        var basePath = "/api/structures";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["pageNumber"] = query.PageNumber.ToString(),
+            ["pageSize"] = query.PageSize.ToString(),
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir,
+            ["code"] = query.Code,
+            ["name"] = query.Name,
+            ["structureType"] = query.StructureType?.ToString(),
+            ["isActive"] = query.IsActive is null ? null : (query.IsActive.Value ? "true" : "false"),
+            ["includeInactive"] = query.IncludeInactive ? "true" : "false"
+        };
+
+        var url = BuildUrl(basePath, queryParams);
+        return GetAsync<PagedResultDto<StructureListItemViewModel>>(url, cancellationToken);
+    }
+
     public Task<ApiResult<StructureDetailViewModel>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         => GetAsync<StructureDetailViewModel>($"/api/structures/{id}", cancellationToken);
 

@@ -19,8 +19,26 @@ public interface IStructureRepository
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
+    Task<int> CountForCustomerAsync(
+        string? code,
+        string? name,
+        StructureType? structureType,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Structure>> ListAsync(
         Guid sectionId,
+        int pageNumber,
+        int pageSize,
+        string orderBy,
+        string orderDir,
+        string? code,
+        string? name,
+        StructureType? structureType,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Structure>> ListForCustomerAsync(
         int pageNumber,
         int pageSize,
         string orderBy,

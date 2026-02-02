@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Fix - Seed movement lookup translation.
+  - Key changes: replaced StartsWith with EF.Functions.Like for SQLite translation in seed detection.
+- Fix - Inventory movements structure lookup.
+  - Key changes: added customer-scoped structures list endpoint and DemoMvc client usage to populate movement form options reliably.
 - TASK-0043 - Movimentacoes Internas (Seed + Observabilidade) completed.
   - Key changes: added optional seed for inventory movements/balances with configurable quantities and windows, plus README/env updates.
 - TASK-0042 - Movimentacoes Internas (Testes) completed.

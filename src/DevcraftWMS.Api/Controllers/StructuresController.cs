@@ -6,6 +6,7 @@ using DevcraftWMS.Application.Features.Structures.Commands.CreateStructure;
 using DevcraftWMS.Application.Features.Structures.Commands.DeactivateStructure;
 using DevcraftWMS.Application.Features.Structures.Commands.UpdateStructure;
 using DevcraftWMS.Application.Features.Structures.Queries.GetStructureById;
+using DevcraftWMS.Application.Features.Structures.Queries.ListStructuresForCustomerPaged;
 using DevcraftWMS.Application.Features.Structures.Queries.ListStructuresPaged;
 using DevcraftWMS.Domain.Enums;
 
@@ -53,6 +54,26 @@ public sealed class StructuresController : ControllerBase
     {
         var result = await _mediator.Send(
             new ListStructuresPagedQuery(sectionId, pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("structures")]
+    public async Task<IActionResult> ListStructuresForCustomer(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string orderBy = "CreatedAtUtc",
+        [FromQuery] string orderDir = "desc",
+        [FromQuery] string? code = null,
+        [FromQuery] string? name = null,
+        [FromQuery] StructureType? structureType = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ListStructuresForCustomerPagedQuery(pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);

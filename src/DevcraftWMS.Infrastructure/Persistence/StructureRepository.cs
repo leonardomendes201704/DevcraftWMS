@@ -71,6 +71,18 @@ public sealed class StructureRepository : IStructureRepository
         return await query.CountAsync(cancellationToken);
     }
 
+    public async Task<int> CountForCustomerAsync(
+        string? code,
+        string? name,
+        StructureType? structureType,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        var query = BuildCustomerQuery(code, name, structureType, isActive, includeInactive);
+        return await query.CountAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Structure>> ListAsync(
         Guid sectionId,
         int pageNumber,
@@ -93,6 +105,27 @@ public sealed class StructureRepository : IStructureRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Structure>> ListForCustomerAsync(
+        int pageNumber,
+        int pageSize,
+        string orderBy,
+        string orderDir,
+        string? code,
+        string? name,
+        StructureType? structureType,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        var query = BuildCustomerQuery(code, name, structureType, isActive, includeInactive);
+        query = ApplyOrdering(query, orderBy, orderDir);
+
+        return await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
     private IQueryable<Structure> BuildQuery(
         Guid sectionId,
         string? code,
@@ -104,6 +137,44 @@ public sealed class StructureRepository : IStructureRepository
         var customerId = GetCustomerId();
         var query = _dbContext.Structures.AsNoTracking()
             .Where(s => s.SectionId == sectionId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(s => s.IsActive == isActive.Value);
+        }
+        else if (!includeInactive)
+        {
+            query = query.Where(s => s.IsActive);
+        }
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            query = query.Where(s => s.Code.Contains(code));
+        }
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            query = query.Where(s => s.Name.Contains(name));
+        }
+
+        if (structureType.HasValue)
+        {
+            query = query.Where(s => s.StructureType == structureType);
+        }
+
+        return query;
+    }
+
+    private IQueryable<Structure> BuildCustomerQuery(
+        string? code,
+        string? name,
+        StructureType? structureType,
+        bool? isActive,
+        bool includeInactive)
+    {
+        var customerId = GetCustomerId();
+        var query = _dbContext.Structures.AsNoTracking()
+            .Where(s => s.CustomerAccesses.Any(a => a.CustomerId == customerId));
 
         if (isActive.HasValue)
         {

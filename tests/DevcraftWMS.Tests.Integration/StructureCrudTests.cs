@@ -71,6 +71,39 @@ public sealed class StructureCrudTests : IClassFixture<CustomWebApplicationFacto
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task List_Structures_For_Customer_Should_Return_Items()
+    {
+        var client = _factory.CreateClient();
+        var warehouseId = await CreateWarehouseAsync(client);
+        var sectorId = await CreateSectorAsync(client, warehouseId);
+        var sectionId = await CreateSectionAsync(client, sectorId);
+
+        var structureCode = $"R-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant();
+        var createPayload = JsonSerializer.Serialize(new
+        {
+            code = structureCode,
+            name = "Rack Customer List",
+            structureType = 0,
+            levels = 3
+        });
+
+        var createResponse = await client.PostAsync($"/api/sections/{sectionId}/structures", new StringContent(createPayload, Encoding.UTF8, "application/json"));
+        var createBody = await createResponse.Content.ReadAsStringAsync();
+        createResponse.IsSuccessStatusCode.Should().BeTrue(createBody);
+
+        using var createDoc = JsonDocument.Parse(createBody);
+        var structureId = createDoc.RootElement.GetProperty("id").GetGuid();
+
+        var listResponse = await client.GetAsync("/api/structures?pageNumber=1&pageSize=20&orderBy=CreatedAtUtc&orderDir=desc");
+        var listBody = await listResponse.Content.ReadAsStringAsync();
+        listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
+
+        using var listDoc = JsonDocument.Parse(listBody);
+        var items = listDoc.RootElement.GetProperty("items").EnumerateArray().ToList();
+        items.Should().Contain(item => item.GetProperty("id").GetGuid() == structureId);
+    }
+
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
         var code = $"WH-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();

@@ -605,7 +605,11 @@ public sealed class SampleDataSeeder
         }
 
         var existingSeedMovements = await _dbContext.InventoryMovements
-            .AnyAsync(m => m.CustomerId == customerId && m.Reference != null && m.Reference.StartsWith("SEED-MOVE-", StringComparison.OrdinalIgnoreCase), cancellationToken);
+            .AnyAsync(
+                m => m.CustomerId == customerId &&
+                     m.Reference != null &&
+                     EF.Functions.Like(m.Reference, "SEED-MOVE-%"),
+                cancellationToken);
 
         if (existingSeedMovements)
         {

@@ -253,7 +253,7 @@ public sealed class InventoryMovementsController : Controller
 
     private async Task<IReadOnlyList<SelectListItem>> LoadStructureOptionsAsync(Guid? selectedId, CancellationToken cancellationToken, bool includeAll)
     {
-        var result = await _structuresClient.ListAsync(
+        var result = await _structuresClient.ListForCustomerAsync(
             new StructureQuery(PageNumber: 1, PageSize: 100, OrderBy: "Name", OrderDir: "asc", IncludeInactive: false),
             cancellationToken);
 

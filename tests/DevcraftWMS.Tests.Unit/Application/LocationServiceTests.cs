@@ -159,8 +159,28 @@ public sealed class LocationServiceTests
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
+        public Task<int> CountForCustomerAsync(
+            string? code,
+            string? name,
+            StructureType? structureType,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default) => Task.FromResult(0);
+
         public Task<IReadOnlyList<Structure>> ListAsync(
             Guid sectionId,
+            int pageNumber,
+            int pageSize,
+            string orderBy,
+            string orderDir,
+            string? code,
+            string? name,
+            StructureType? structureType,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
+
+        public Task<IReadOnlyList<Structure>> ListForCustomerAsync(
             int pageNumber,
             int pageSize,
             string orderBy,
