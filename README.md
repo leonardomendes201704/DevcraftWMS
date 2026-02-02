@@ -27,6 +27,14 @@ Run the customer portal (server-rendered MVC) for inbound flows:
 
 By default it calls the API at `https://localhost:7263`. Update the base URL in `src/DevcraftWMS.Portal/appsettings.json`.
 
+## Portaria UI
+Run the gatehouse UI (server-rendered MVC) for inbound check-in and dock queue:
+```bash
+ dotnet run --project src/DevcraftWMS.Portaria
+```
+
+By default it calls the API at `https://localhost:7263`. Update the base URL in `src/DevcraftWMS.Portaria/appsettings.json`.
+
 ## Customer context (multi-client)
 This template supports an active customer context for multi-client scenarios:
 - DemoMvc provides a customer selector in the topbar (stored in session).
@@ -298,6 +306,7 @@ Logging:Enrichment:TenantClaim        -> Claim used for tenant id
 Logging:Enrichment:UserIdClaim        -> Claim used for user id
 DemoMvc:ApiBaseUrl                    -> API base URL for DemoMvc (key: ApiBaseUrl in DevcraftWMS.DemoMvc)
 Portal:ApiBaseUrl                     -> API base URL for Customer Portal (key: ApiBaseUrl in DevcraftWMS.Portal)
+Portaria:ApiBaseUrl                   -> API base URL for Portaria (key: ApiBaseUrl in DevcraftWMS.Portaria)
 Logging:Enrichment:TenantHeader       -> Header used for tenant id
 Logging:Queue:Capacity                -> In-memory log queue capacity
 Logging:RequestIdHeader               -> Request id header name

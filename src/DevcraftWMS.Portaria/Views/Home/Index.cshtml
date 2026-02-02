@@ -1,0 +1,87 @@
+@model DevcraftWMS.Portaria.ViewModels.Home.HomeViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Inbound overview";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">Portaria Dashboard</h4>
+        <div class="text-muted small">Monitor inbound requests and receiving activity.</div>
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#portariaDashboardHelp">
+        <i class="bi bi-question-circle"></i> Help
+    </button>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted text-uppercase small">API Status</div>
+                        <div class="fs-4 fw-semibold">@Model.StatusMessage</div>
+                    </div>
+                    <span class="badge @(Model.IsApiHealthy ? "text-bg-success" : "text-bg-danger")">
+                        @(Model.IsApiHealthy ? "Online" : "Offline")
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Welcome</h5>
+                <p class="text-muted mb-0">
+                    Use this Portaria to create inbound requests (ASNs), track inbound orders, and access receiving reports.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_DashboardHelp" />
+<div class="row g-3 mt-1">
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-file-earmark-text"></i></span>
+                    <div>
+                        <div class="text-muted small">ASNs</div>
+                        <div class="fs-5 fw-semibold">Coming soon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="stat-icon bg-success-subtle text-success"><i class="bi bi-truck"></i></span>
+                    <div>
+                        <div class="text-muted small">Inbound Orders</div>
+                        <div class="fs-5 fw-semibold">Coming soon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-bar-chart-line"></i></span>
+                    <div>
+                        <div class="text-muted small">Reports</div>
+                        <div class="fs-5 fw-semibold">Coming soon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
