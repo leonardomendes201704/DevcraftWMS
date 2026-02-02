@@ -1,0 +1,144 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryMovements.InventoryMovementListPageViewModel
+@{
+    ViewData["Title"] = "Inventory Movements";
+    ViewData["Subtitle"] = "Track transfers between locations";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "InventoryMovements",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["ProductId"] = Model.Query.ProductId?.ToString(),
+            ["FromStructureId"] = Model.Query.FromStructureId?.ToString(),
+            ["ToStructureId"] = Model.Query.ToStructureId?.ToString(),
+            ["FromLocationId"] = Model.Query.FromLocationId?.ToString(),
+            ["ToLocationId"] = Model.Query.ToLocationId?.ToString(),
+            ["LotId"] = Model.Query.LotId?.ToString(),
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["PerformedFromUtc"] = Model.Query.PerformedFromUtc?.ToString("yyyy-MM-dd"),
+            ["PerformedToUtc"] = Model.Query.PerformedToUtc?.ToString("yyyy-MM-dd"),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    List<GridSelectOption> SelectFromItems(IReadOnlyList<SelectListItem> items)
+        => items.Select(item => new GridSelectOption
+        {
+            Value = item.Value ?? string.Empty,
+            Text = item.Text ?? string.Empty,
+            Selected = item.Selected
+        }).ToList();
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<InventoryMovementStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.ToString(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "InventoryMovements",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Product", Name = "ProductId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Products) },
+            new() { Label = "From Structure", Name = "FromStructureId", Type = GridFilterType.Select, Options = SelectFromItems(Model.FromStructures) },
+            new() { Label = "From Location", Name = "FromLocationId", Type = GridFilterType.Select, Options = SelectFromItems(Model.FromLocations) },
+            new() { Label = "To Structure", Name = "ToStructureId", Type = GridFilterType.Select, Options = SelectFromItems(Model.ToStructures) },
+            new() { Label = "To Location", Name = "ToLocationId", Type = GridFilterType.Select, Options = SelectFromItems(Model.ToLocations) },
+            new() { Label = "Lot", Name = "LotId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Lots) },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Performed From", Name = "PerformedFromUtc", Type = GridFilterType.Date, Value = Model.Query.PerformedFromUtc?.ToString("yyyy-MM-dd") },
+            new() { Label = "Performed To", Name = "PerformedToUtc", Type = GridFilterType.Date, Value = Model.Query.PerformedToUtc?.ToString("yyyy-MM-dd") },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "InventoryMovements")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "movementFilters",
+        Title = "Movement filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryMovements.InventoryMovementListItemViewModel>()
+        .WithTitle("Inventory Movements")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Movement", Url.Action("Create", "InventoryMovements") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Performed", item => new HtmlString(item.PerformedAtUtc.ToLocalTime().ToString("g")), "PerformedAtUtc")
+        .AddColumn("Product", item => new HtmlString($"{HtmlEncoder.Default.Encode(item.ProductCode)} - {HtmlEncoder.Default.Encode(item.ProductName)}"), "ProductCode")
+        .AddColumn("From", item => new HtmlString(HtmlEncoder.Default.Encode(item.FromLocationCode)), "FromLocationId")
+        .AddColumn("To", item => new HtmlString(HtmlEncoder.Default.Encode(item.ToLocationCode)), "ToLocationId")
+        .AddColumn("Lot", item => new HtmlString(HtmlEncoder.Default.Encode(item.LotCode ?? "-")), "LotId")
+        .AddColumn("Quantity", item => new HtmlString(item.Quantity.ToString("N3")), "Quantity")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{item.Status}</span>"), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "InventoryMovements", new { id = item.Id }))
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#inventoryMovementsHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_InventoryMovementsHelp" />

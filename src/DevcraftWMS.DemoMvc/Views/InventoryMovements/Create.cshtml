@@ -1,0 +1,168 @@
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryMovements.InventoryMovementFormViewModel
+@{
+    ViewData["Title"] = "New Inventory Movement";
+    ViewData["Subtitle"] = "Transfer stock between locations";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="InventoryMovements" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post" id="movement-form">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger small mb-2"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">From Structure</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-stack"></i></span>
+                        <select id="movement-from-structure" asp-for="FromStructureId" class="form-select" asp-items="Model.FromStructures"></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">From Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <select id="movement-from-location" asp-for="FromLocationId" class="form-select" asp-items="Model.FromLocations"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="FromLocationId"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">To Structure</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-stack"></i></span>
+                        <select id="movement-to-structure" asp-for="ToStructureId" class="form-select" asp-items="Model.ToStructures"></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">To Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <select id="movement-to-location" asp-for="ToLocationId" class="form-select" asp-items="Model.ToLocations"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ToLocationId"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Product</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <select id="movement-product" asp-for="ProductId" class="form-select" asp-items="Model.Products"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ProductId"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Lot (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-collection"></i></span>
+                        <select id="movement-lot" asp-for="LotId" class="form-select" asp-items="Model.Lots"></select>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Quantity</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-123"></i></span>
+                        <input asp-for="Quantity" class="form-control" type="number" step="0.001" min="0.001" inputmode="decimal" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="Quantity"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Performed At (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input asp-for="PerformedAtUtc" class="form-control" type="datetime-local" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Reference (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                        <input asp-for="Reference" class="form-control" maxlength="200" />
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Reason (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                        <input asp-for="Reason" class="form-control" maxlength="200" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Create Movement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const baseUrl = '/InventoryMovements/Create';
+            const fromStructure = document.getElementById('movement-from-structure');
+            const fromLocation = document.getElementById('movement-from-location');
+            const toStructure = document.getElementById('movement-to-structure');
+            const toLocation = document.getElementById('movement-to-location');
+            const product = document.getElementById('movement-product');
+            const lot = document.getElementById('movement-lot');
+            const form = document.getElementById('movement-form');
+
+            const buildUrl = () => {
+                const params = new URLSearchParams();
+                if (fromStructure?.value) params.set('selectFromStructureId', fromStructure.value);
+                if (fromLocation?.value) params.set('selectFromLocationId', fromLocation.value);
+                if (toStructure?.value) params.set('selectToStructureId', toStructure.value);
+                if (toLocation?.value) params.set('selectToLocationId', toLocation.value);
+                if (product?.value) params.set('selectProductId', product.value);
+                if (lot?.value) params.set('selectLotId', lot.value);
+
+                const qs = params.toString();
+                return qs ? `${baseUrl}?${qs}` : baseUrl;
+            };
+
+            const navigate = () => {
+                window.location.href = buildUrl();
+            };
+
+            if (fromStructure) {
+                fromStructure.addEventListener('change', () => {
+                    if (fromLocation) fromLocation.value = '';
+                    navigate();
+                });
+            }
+
+            if (toStructure) {
+                toStructure.addEventListener('change', () => {
+                    if (toLocation) toLocation.value = '';
+                    navigate();
+                });
+            }
+
+            if (product) {
+                product.addEventListener('change', () => {
+                    if (lot) lot.value = '';
+                    navigate();
+                });
+            }
+
+            form?.addEventListener('submit', () => {
+                const normalizeDecimal = (input) => {
+                    if (!input || !input.value) return;
+                    input.value = input.value.replace(',', '.');
+                };
+
+                normalizeDecimal(document.getElementById('Quantity'));
+            });
+        })();
+    </script>
+}

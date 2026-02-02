@@ -57,4 +57,4 @@ Nao existe interface para movimentacoes.
 - UX de selecao de origem/destino.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)

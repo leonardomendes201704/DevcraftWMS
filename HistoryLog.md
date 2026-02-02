@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0041 - Movimentacoes Internas (DemoMvc UI) completed.
+  - Key changes: added Inventory Movements UI (Index/Create/Details), filters, help modal, and navigation entry.
 - TASK-0040 - Movimentacoes Internas (API + Application) completed.
   - Key changes: added CQRS, service, repository, and API endpoints for inventory movements with balance updates.
 - TASK-0039 - Movimentacoes Internas (Modelo/DB) completed.

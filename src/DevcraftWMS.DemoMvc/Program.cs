@@ -69,6 +69,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ProductsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LotsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UomsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryBalancesApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryMovementsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ReceiptsApiClient>();
 
 var app = builder.Build();
