@@ -22,8 +22,8 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0049] Zonas do armazem (staging/picking/bulk/quarantine/cross-dock) | Prioridade: P0 | Dependencias: TASK-0044 | Estimativa: 5h
 - [DONE-TASK-0050] Enderecos: capacidade e restricoes/compatibilidade | Prioridade: P0 | Dependencias: TASK-0049 | Estimativa: 6h
 - [DONE-TASK-0051] RBAC: perfis e permissoes base por papel | Prioridade: P1 | Dependencias: TASK-0044 | Estimativa: 6h
-- [TASK-0052] ASN: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0047 | Estimativa: 5h
-- [TASK-0053] ASN: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 6h
+- [DONE-TASK-0052] ASN: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0047 | Estimativa: 5h
+- [DONE-TASK-0053] ASN: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 6h
 - [TASK-0054] Portal Cliente: UI criar ASN | Prioridade: P0 | Dependencias: TASK-0045,TASK-0053 | Estimativa: 6h
 - [TASK-0055] ASN: anexos (XML/PDF/imagem) | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 6h
 - [TASK-0056] ASN: validacoes por TrackingMode | Prioridade: P0 | Dependencias: TASK-0047,TASK-0053 | Estimativa: 4h

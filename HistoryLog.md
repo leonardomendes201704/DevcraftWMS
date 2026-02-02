@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0053 - ASN API CQRS completed.
+  - Key changes: added ASN CQRS/service/repository, API endpoints, and unit/integration tests for create/list/get.
+- TASK-0052 - ASN model and status completed.
+  - Key changes: added Asn/AsnItem entities, AsnStatus enum, EF configs, DbSets, and migration AddAsnModel.
 - Tasking - Added RBAC management tasks (API/UI).
   - Key changes: created TASK-0089/0090/0091 for roles, user management, and backoffice UI.
 - TASK-0051 - RBAC base roles and policies completed.

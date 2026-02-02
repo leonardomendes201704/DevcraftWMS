@@ -22,6 +22,7 @@ using DevcraftWMS.Application.Features.InventoryBalances;
 using DevcraftWMS.Application.Features.Receipts;
 using DevcraftWMS.Application.Features.InventoryMovements;
 using DevcraftWMS.Application.Features.Zones;
+using DevcraftWMS.Application.Features.Asns;
 
 namespace DevcraftWMS.Application;
 
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IInventoryMovementService, InventoryMovementService>();
         services.AddScoped<IReceiptService, ReceiptService>();
         services.AddScoped<IZoneService, ZoneService>();
+        services.AddScoped<IAsnService, AsnService>();
 
         return services;
     }

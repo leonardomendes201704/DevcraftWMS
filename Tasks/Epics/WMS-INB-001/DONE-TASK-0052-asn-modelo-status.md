@@ -1,21 +1,21 @@
-﻿# TASK-0053 - ASN: CQRS + endpoints (create/list/get)
+# TASK-0052 - ASN: modelo de dados e status
 
 ## Resumo
-Implementar CQRS e endpoints para ASN (create/list/get).
+Criar modelo de ASN com status e itens.
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Commands/Queries + Validators
-- Controllers MediatR-only
-- RequestResult padrao
+- Entidade ASN + ASNItem
+- Status ASN
+- Migrations
 
 ## Dependencias
-- TASK-0052
+- TASK-0047
 
 ## Estimativa
-- 6h
+- 5h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- POST/GET funcionam
-- Validacoes retornam ProblemDetails
-- Swagger atualizado
+- ASN persiste cabecalho/itens
+- Status inicial Registrado
+- Listagem paginada
 
 ## Status
 PENDENTE
