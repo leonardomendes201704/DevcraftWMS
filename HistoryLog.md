@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0040 - Movimentacoes Internas (API + Application) completed.
+  - Key changes: added CQRS, service, repository, and API endpoints for inventory movements with balance updates.
 - TASK-0039 - Movimentacoes Internas (Modelo/DB) completed.
   - Key changes: added InventoryMovement entity/status, EF config, DbSet, and migration AddInventoryMovements.
 - Tasking - Split TASK-0010 into smaller subtasks.

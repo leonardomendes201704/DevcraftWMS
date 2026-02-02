@@ -56,4 +56,4 @@ Nao existe fluxo de criacao/consulta de movimentacoes internas.
 - Definir regras de status (Draft/Completed/Cancelled).
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
