@@ -14,6 +14,7 @@
             new() { Label = "Level", Value = Model.Level.ToString() },
             new() { Label = "Row", Value = Model.Row.ToString() },
             new() { Label = "Column", Value = Model.Column.ToString() },
+            new() { Label = "Zone", Value = Model.ZoneName ?? "-" },
             new() { Label = "Structure", Value = Model.StructureId.ToString() },
             new() { Label = "Status", Value = Model.IsActive ? "Active" : "Inactive", BadgeText = Model.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.IsActive ? "text-bg-success" : "text-bg-secondary" },
             new() { Label = "Created", Value = Model.CreatedAtUtc.ToLocalTime().ToString("g") }

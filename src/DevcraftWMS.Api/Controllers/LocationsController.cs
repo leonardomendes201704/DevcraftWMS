@@ -25,7 +25,7 @@ public sealed class LocationsController : ControllerBase
     public async Task<IActionResult> CreateLocation(Guid structureId, [FromBody] CreateLocationRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new CreateLocationCommand(structureId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
+            new CreateLocationCommand(structureId, request.ZoneId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
             cancellationToken);
 
         if (result.IsSuccess && result.Value is not null)
@@ -43,6 +43,7 @@ public sealed class LocationsController : ControllerBase
         [FromQuery] int pageSize = 20,
         [FromQuery] string orderBy = "CreatedAtUtc",
         [FromQuery] string orderDir = "desc",
+        [FromQuery] Guid? zoneId = null,
         [FromQuery] string? code = null,
         [FromQuery] string? barcode = null,
         [FromQuery] bool? isActive = null,
@@ -50,7 +51,7 @@ public sealed class LocationsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListLocationsPagedQuery(structureId, pageNumber, pageSize, orderBy, orderDir, code, barcode, isActive, includeInactive),
+            new ListLocationsPagedQuery(structureId, zoneId, pageNumber, pageSize, orderBy, orderDir, code, barcode, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);
@@ -67,7 +68,7 @@ public sealed class LocationsController : ControllerBase
     public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new UpdateLocationCommand(id, request.StructureId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
+            new UpdateLocationCommand(id, request.StructureId, request.ZoneId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
             cancellationToken);
 
         return this.ToActionResult(result);

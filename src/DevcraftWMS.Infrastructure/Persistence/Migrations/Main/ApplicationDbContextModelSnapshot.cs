@@ -541,7 +541,12 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("ZoneId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ZoneId");
 
                     b.HasIndex("StructureId", "Code")
                         .IsUnique();
@@ -1746,6 +1751,106 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("WarehouseContacts", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Zone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ZoneType")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.HasIndex("WarehouseId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Zones", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ZoneCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ZoneId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ZoneId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("ZoneCustomers", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Infrastructure.Persistence.Logging.Entities.ErrorLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2239,7 +2344,14 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("DevcraftWMS.Domain.Entities.Zone", "Zone")
+                        .WithMany("Locations")
+                        .HasForeignKey("ZoneId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Structure");
+
+                    b.Navigation("Zone");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.LocationCustomer", b =>
@@ -2489,6 +2601,36 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Zone", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany("Zones")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ZoneCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Zone", "Zone")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("ZoneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Zone");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Aisle", b =>
                 {
                     b.Navigation("CustomerAccesses");
@@ -2555,6 +2697,15 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Contacts");
 
                     b.Navigation("Sectors");
+
+                    b.Navigation("Zones");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Zone", b =>
+                {
+                    b.Navigation("CustomerAccesses");
+
+                    b.Navigation("Locations");
                 });
 #pragma warning restore 612, 618
         }

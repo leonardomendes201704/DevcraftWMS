@@ -14,11 +14,13 @@ public sealed class LocationServiceTests
     {
         var locationRepository = new FakeLocationRepository();
         var structureRepository = new FakeStructureRepository(null);
+        var zoneRepository = new FakeZoneRepository(null);
         var customerContext = new FakeCustomerContext();
-        var service = new LocationService(locationRepository, structureRepository, customerContext);
+        var service = new LocationService(locationRepository, structureRepository, zoneRepository, customerContext);
 
         var result = await service.CreateLocationAsync(
             Guid.NewGuid(),
+            null,
             "L-01",
             "BC-01",
             1,
@@ -36,11 +38,13 @@ public sealed class LocationServiceTests
         var structure = new Structure { Id = Guid.NewGuid(), SectionId = Guid.NewGuid(), Code = "R-01", Name = "Rack", Levels = 4 };
         var locationRepository = new FakeLocationRepository(codeExists: true);
         var structureRepository = new FakeStructureRepository(structure);
+        var zoneRepository = new FakeZoneRepository(null);
         var customerContext = new FakeCustomerContext();
-        var service = new LocationService(locationRepository, structureRepository, customerContext);
+        var service = new LocationService(locationRepository, structureRepository, zoneRepository, customerContext);
 
         var result = await service.CreateLocationAsync(
             structure.Id,
+            null,
             "L-01",
             "BC-01",
             1,
@@ -68,12 +72,14 @@ public sealed class LocationServiceTests
 
         var locationRepository = new FakeLocationRepository(location: location);
         var structureRepository = new FakeStructureRepository(new Structure { Id = Guid.NewGuid(), SectionId = Guid.NewGuid(), Code = "R-01", Name = "Rack", Levels = 4 });
+        var zoneRepository = new FakeZoneRepository(null);
         var customerContext = new FakeCustomerContext();
-        var service = new LocationService(locationRepository, structureRepository, customerContext);
+        var service = new LocationService(locationRepository, structureRepository, zoneRepository, customerContext);
 
         var result = await service.UpdateLocationAsync(
             location.Id,
             Guid.NewGuid(),
+            null,
             "L-01",
             "BC-01",
             1,
@@ -110,6 +116,7 @@ public sealed class LocationServiceTests
 
         public Task<int> CountAsync(
             Guid structureId,
+            Guid? zoneId,
             string? code,
             string? barcode,
             bool? isActive,
@@ -118,6 +125,7 @@ public sealed class LocationServiceTests
 
         public Task<IReadOnlyList<Location>> ListAsync(
             Guid structureId,
+            Guid? zoneId,
             int pageNumber,
             int pageSize,
             string orderBy,
@@ -196,5 +204,25 @@ public sealed class LocationServiceTests
     private sealed class FakeCustomerContext : ICustomerContext
     {
         public Guid? CustomerId { get; } = Guid.NewGuid();
+    }
+
+    private sealed class FakeZoneRepository : IZoneRepository
+    {
+        private readonly Zone? _zone;
+
+        public FakeZoneRepository(Zone? zone)
+        {
+            _zone = zone;
+        }
+
+        public Task<bool> CodeExistsAsync(Guid warehouseId, string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> CodeExistsAsync(Guid warehouseId, string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task AddAsync(Zone zone, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(Zone zone, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<Zone?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_zone?.Id == id ? _zone : null);
+        public Task<Zone?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_zone?.Id == id ? _zone : null);
+        public Task<int> CountAsync(Guid warehouseId, string? code, string? name, ZoneType? zoneType, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<Zone>> ListAsync(Guid warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, string? name, ZoneType? zoneType, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Zone>>(Array.Empty<Zone>());
     }
 }

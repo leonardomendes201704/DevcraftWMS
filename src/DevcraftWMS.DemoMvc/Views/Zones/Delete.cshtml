@@ -1,0 +1,18 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Zones.ZoneDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate Zone";
+    ViewData["Subtitle"] = "Confirm zone deactivation";
+}
+
+<div class="card">
+    <div class="card-body">
+        <p class="mb-3">Are you sure you want to deactivate zone <strong>@Model.Code</strong>?</p>
+        <form method="post" asp-action="DeleteConfirmed" asp-route-id="@Model.Id">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                <button class="btn btn-danger" type="submit">Deactivate</button>
+                <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

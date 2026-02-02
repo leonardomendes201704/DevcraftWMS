@@ -18,6 +18,7 @@
             ["SectorId"] = Model.Query.SectorId == Guid.Empty ? null : Model.Query.SectorId.ToString(),
             ["SectionId"] = Model.Query.SectionId == Guid.Empty ? null : Model.Query.SectionId.ToString(),
             ["StructureId"] = Model.Query.StructureId == Guid.Empty ? null : Model.Query.StructureId.ToString(),
+            ["ZoneId"] = Model.Query.ZoneId?.ToString(),
             ["Code"] = Model.Query.Code,
             ["Barcode"] = Model.Query.Barcode,
             ["IsActive"] = Model.Query.IsActive?.ToString(),
@@ -70,6 +71,17 @@
 
     structureOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select structure", Selected = Model.Query.StructureId == Guid.Empty });
 
+    var zoneOptions = Model.Zones
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    zoneOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All zones", Selected = !Model.Query.ZoneId.HasValue || Model.Query.ZoneId == Guid.Empty });
+
     var statusOptions = new List<GridSelectOption>
     {
         new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
@@ -112,6 +124,13 @@
                 Name = "StructureId",
                 Type = GridFilterType.Select,
                 Options = structureOptions
+            },
+            new()
+            {
+                Label = "Zone",
+                Name = "ZoneId",
+                Type = GridFilterType.Select,
+                Options = zoneOptions
             },
             new()
             {
@@ -179,6 +198,7 @@
         .WithFilters(filters)
         .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
         .AddColumn("Barcode", item => new HtmlString(HtmlEncoder.Default.Encode(item.Barcode)), "Barcode")
+        .AddColumn("Zone", item => new HtmlString(HtmlEncoder.Default.Encode(item.ZoneName ?? "-")), "ZoneName")
         .AddColumn("Level", item => new HtmlString(item.Level.ToString()), "Level")
         .AddColumn("Row", item => new HtmlString(item.Row.ToString()), "Row")
         .AddColumn("Column", item => new HtmlString(item.Column.ToString()), "Column")

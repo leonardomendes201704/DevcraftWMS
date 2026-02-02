@@ -17,19 +17,22 @@ public sealed class LocationsController : Controller
     private readonly SectorsApiClient _sectorsClient;
     private readonly SectionsApiClient _sectionsClient;
     private readonly StructuresApiClient _structuresClient;
+    private readonly ZonesApiClient _zonesClient;
 
     public LocationsController(
         LocationsApiClient locationsClient,
         WarehousesApiClient warehousesClient,
         SectorsApiClient sectorsClient,
         SectionsApiClient sectionsClient,
-        StructuresApiClient structuresClient)
+        StructuresApiClient structuresClient,
+        ZonesApiClient zonesClient)
     {
         _locationsClient = locationsClient;
         _warehousesClient = warehousesClient;
         _sectorsClient = sectorsClient;
         _sectionsClient = sectionsClient;
         _structuresClient = structuresClient;
+        _zonesClient = zonesClient;
     }
 
     [HttpGet]
@@ -109,6 +112,8 @@ public sealed class LocationsController : Controller
             StructureId = selectedStructureId
         };
 
+        var zoneOptions = await LoadZoneOptionsAsync(selectedWarehouseId, normalizedQuery.ZoneId, cancellationToken);
+
         var result = await _locationsClient.ListAsync(normalizedQuery, cancellationToken);
         if (!result.IsSuccess || result.Data is null)
         {
@@ -119,6 +124,7 @@ public sealed class LocationsController : Controller
                 Sectors = sectorOptions,
                 Sections = sectionOptions,
                 Structures = structureOptions,
+                Zones = zoneOptions,
                 Query = normalizedQuery
             });
         }
@@ -136,6 +142,7 @@ public sealed class LocationsController : Controller
                 ["SectorId"] = normalizedQuery.SectorId.ToString(),
                 ["SectionId"] = normalizedQuery.SectionId.ToString(),
                 ["StructureId"] = normalizedQuery.StructureId.ToString(),
+                ["ZoneId"] = normalizedQuery.ZoneId?.ToString(),
                 ["OrderBy"] = normalizedQuery.OrderBy,
                 ["OrderDir"] = normalizedQuery.OrderDir,
                 ["Code"] = normalizedQuery.Code,
@@ -154,7 +161,8 @@ public sealed class LocationsController : Controller
             Warehouses = warehouseOptions,
             Sectors = sectorOptions,
             Sections = sectionOptions,
-            Structures = structureOptions
+            Structures = structureOptions,
+            Zones = zoneOptions
         };
 
         return View(model);
@@ -262,7 +270,8 @@ public sealed class LocationsController : Controller
             Warehouses = warehouses,
             Sectors = sectors,
             Sections = sections,
-            Structures = structures
+            Structures = structures,
+            Zones = await LoadZoneOptionsAsync(selectedWarehouseId, null, cancellationToken)
         };
 
         return View(model);
@@ -303,6 +312,7 @@ public sealed class LocationsController : Controller
         {
             Id = result.Data.Id,
             StructureId = result.Data.StructureId,
+            ZoneId = result.Data.ZoneId,
             Code = result.Data.Code,
             Barcode = result.Data.Barcode,
             Level = result.Data.Level,
@@ -418,6 +428,9 @@ public sealed class LocationsController : Controller
         model.Sectors = sectors;
         model.Sections = sections;
         model.Structures = structures;
+        model.Zones = warehouseId == Guid.Empty
+            ? Array.Empty<SelectListItem>()
+            : await LoadZoneOptionsAsync(warehouseId, model.ZoneId, cancellationToken);
     }
 
     private async Task<IReadOnlyList<SelectListItem>> LoadWarehouseOptionsAsync(Guid? selectedId, CancellationToken cancellationToken)
@@ -530,5 +543,34 @@ public sealed class LocationsController : Controller
         return result.Data.Items
             .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedStructureId.HasValue && item.Id == selectedStructureId.Value))
             .ToList();
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadZoneOptionsAsync(Guid warehouseId, Guid? selectedZoneId, CancellationToken cancellationToken)
+    {
+        var result = await _zonesClient.ListAsync(
+            new ViewModels.Zones.ZoneQuery(
+                warehouseId,
+                1,
+                100,
+                "Name",
+                "asc",
+                null,
+                null,
+                null,
+                null,
+                false),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
+        var items = result.Data.Items
+            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedZoneId.HasValue && item.Id == selectedZoneId.Value))
+            .ToList();
+
+        items.Insert(0, new SelectListItem("Select...", string.Empty, !selectedZoneId.HasValue || selectedZoneId == Guid.Empty));
+        return items;
     }
 }

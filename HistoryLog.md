@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0049 - Zones completed.
+  - Key changes: added Zone entity/type, customer access, and Location.ZoneId link; added Zones API/UI with filters; added zone seed data; added unit/integration tests; added migration AddZones.
 - TASK-0048 - Minimum shelf-life per SKU completed.
   - Key changes: added MinimumShelfLifeDays to products, enforced lot requirement and quarantine on receipt, blocked balances for quarantined lots, updated UI and tests, and added migration AddProductMinimumShelfLifeDays.
 - TASK-0047 - SKU Tracking Mode completed.

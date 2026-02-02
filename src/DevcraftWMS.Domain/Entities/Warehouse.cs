@@ -25,4 +25,5 @@ public sealed class Warehouse : AuditableEntity
     public ICollection<WarehouseContact> Contacts { get; set; } = new List<WarehouseContact>();
     public ICollection<WarehouseCapacity> Capacities { get; set; } = new List<WarehouseCapacity>();
     public ICollection<Sector> Sectors { get; set; } = new List<Sector>();
+    public ICollection<Zone> Zones { get; set; } = new List<Zone>();
 }

@@ -5,6 +5,7 @@ namespace DevcraftWMS.Application.Features.Locations.Queries.ListLocationsPaged;
 
 public sealed record ListLocationsPagedQuery(
     Guid StructureId,
+    Guid? ZoneId,
     int PageNumber,
     int PageSize,
     string OrderBy,

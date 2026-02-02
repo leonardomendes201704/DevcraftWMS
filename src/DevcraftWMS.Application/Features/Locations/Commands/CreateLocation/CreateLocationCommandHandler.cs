@@ -12,5 +12,13 @@ public sealed class CreateLocationCommandHandler : MediatR.IRequestHandler<Creat
     }
 
     public Task<RequestResult<LocationDto>> Handle(CreateLocationCommand request, CancellationToken cancellationToken)
-        => _locationService.CreateLocationAsync(request.StructureId, request.Code, request.Barcode, request.Level, request.Row, request.Column, cancellationToken);
+        => _locationService.CreateLocationAsync(
+            request.StructureId,
+            request.ZoneId,
+            request.Code,
+            request.Barcode,
+            request.Level,
+            request.Row,
+            request.Column,
+            cancellationToken);
 }

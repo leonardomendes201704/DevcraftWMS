@@ -667,6 +667,7 @@ public sealed class InventoryBalancesController : Controller
                 Guid.Empty,
                 Guid.Empty,
                 structureId,
+                null,
                 1,
                 200,
                 "Code",

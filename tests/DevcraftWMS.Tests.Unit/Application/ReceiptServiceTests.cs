@@ -344,8 +344,8 @@ public sealed class ReceiptServiceTests
         public Task UpdateAsync(Location location, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<Location?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_location?.Id == id ? _location : null);
         public Task<Location?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_location?.Id == id ? _location : null);
-        public Task<int> CountAsync(Guid structureId, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
-        public Task<IReadOnlyList<Location>> ListAsync(Guid structureId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
+        public Task<int> CountAsync(Guid structureId, Guid? zoneId, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<Location>> ListAsync(Guid structureId, Guid? zoneId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
     }
 
     private sealed class FakeUomRepository : IUomRepository

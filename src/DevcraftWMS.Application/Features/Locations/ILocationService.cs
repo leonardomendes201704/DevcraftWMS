@@ -6,6 +6,7 @@ public interface ILocationService
 {
     Task<RequestResult<LocationDto>> CreateLocationAsync(
         Guid structureId,
+        Guid? zoneId,
         string code,
         string barcode,
         int level,
@@ -16,6 +17,7 @@ public interface ILocationService
     Task<RequestResult<LocationDto>> UpdateLocationAsync(
         Guid id,
         Guid structureId,
+        Guid? zoneId,
         string code,
         string barcode,
         int level,

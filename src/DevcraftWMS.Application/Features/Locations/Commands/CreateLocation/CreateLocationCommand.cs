@@ -4,6 +4,7 @@ namespace DevcraftWMS.Application.Features.Locations.Commands.CreateLocation;
 
 public sealed record CreateLocationCommand(
     Guid StructureId,
+    Guid? ZoneId,
     string Code,
     string Barcode,
     int Level,

@@ -12,5 +12,14 @@ public sealed class UpdateLocationCommandHandler : MediatR.IRequestHandler<Updat
     }
 
     public Task<RequestResult<LocationDto>> Handle(UpdateLocationCommand request, CancellationToken cancellationToken)
-        => _locationService.UpdateLocationAsync(request.Id, request.StructureId, request.Code, request.Barcode, request.Level, request.Row, request.Column, cancellationToken);
+        => _locationService.UpdateLocationAsync(
+            request.Id,
+            request.StructureId,
+            request.ZoneId,
+            request.Code,
+            request.Barcode,
+            request.Level,
+            request.Row,
+            request.Column,
+            cancellationToken);
 }

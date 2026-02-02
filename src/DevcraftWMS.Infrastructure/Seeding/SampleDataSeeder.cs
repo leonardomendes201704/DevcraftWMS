@@ -39,12 +39,14 @@ public sealed class SampleDataSeeder
         var section = await EnsureSectionAsync(sector.Id, cancellationToken);
         var structure = await EnsureStructureAsync(section.Id, cancellationToken);
         var aisle = await EnsureAisleAsync(section.Id, cancellationToken);
-        var locations = await EnsureLocationsAsync(structure.Id, cancellationToken);
+        var zone = await EnsureZoneAsync(warehouse.Id, cancellationToken);
+        var locations = await EnsureLocationsAsync(structure.Id, zone.Id, cancellationToken);
 
         await EnsureSectorAccessAsync(sector, customer.Id, cancellationToken);
         await EnsureSectionAccessAsync(section, customer.Id, cancellationToken);
         await EnsureStructureAccessAsync(structure, customer.Id, cancellationToken);
         await EnsureAisleAccessAsync(aisle, customer.Id, cancellationToken);
+        await EnsureZoneAccessAsync(zone, customer.Id, cancellationToken);
         await EnsureLocationAccessAsync(locations, customer.Id, cancellationToken);
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
@@ -219,7 +221,7 @@ public sealed class SampleDataSeeder
             Name = "Main Aisle"
         };
 
-    private static List<Location> BuildLocations(Guid structureId)
+    private static List<Location> BuildLocations(Guid structureId, Guid zoneId)
     {
         var locations = new List<Location>();
 
@@ -234,6 +236,7 @@ public sealed class SampleDataSeeder
                     {
                         Id = Guid.NewGuid(),
                         StructureId = structureId,
+                        ZoneId = zoneId,
                         Code = code,
                         Barcode = $"BC-{code}",
                         Level = level,
@@ -246,6 +249,17 @@ public sealed class SampleDataSeeder
 
         return locations;
     }
+
+    private static Zone BuildZone(Guid warehouseId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            Code = "ZON-01",
+            Name = "General Storage",
+            Description = "Default zone for demo locations.",
+            ZoneType = ZoneType.Storage
+        };
 
     private static (List<Product> Products, List<ProductUom> ProductUoms) BuildProducts(
         Guid customerId,
@@ -392,9 +406,9 @@ public sealed class SampleDataSeeder
         return aisle;
     }
 
-    private async Task<List<Location>> EnsureLocationsAsync(Guid structureId, CancellationToken cancellationToken)
+    private async Task<List<Location>> EnsureLocationsAsync(Guid structureId, Guid zoneId, CancellationToken cancellationToken)
     {
-        var expected = BuildLocations(structureId);
+        var expected = BuildLocations(structureId, zoneId);
         var existing = await _dbContext.Locations
             .Include(l => l.CustomerAccesses)
             .Where(l => l.StructureId == structureId)
@@ -411,6 +425,20 @@ public sealed class SampleDataSeeder
         }
 
         return existing;
+    }
+
+    private async Task<Zone> EnsureZoneAsync(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var zone = await _dbContext.Zones.FirstOrDefaultAsync(z => z.WarehouseId == warehouseId, cancellationToken);
+        if (zone is not null)
+        {
+            return zone;
+        }
+
+        zone = BuildZone(warehouseId);
+        _dbContext.Zones.Add(zone);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return zone;
     }
 
     private async Task EnsureSectorAccessAsync(Sector sector, Guid customerId, CancellationToken cancellationToken)
@@ -473,6 +501,20 @@ public sealed class SampleDataSeeder
             location.CustomerAccesses.Add(new LocationCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
         }
 
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureZoneAccessAsync(Zone zone, Guid customerId, CancellationToken cancellationToken)
+    {
+        var exists = await _dbContext.ZoneCustomers
+            .AnyAsync(z => z.ZoneId == zone.Id && z.CustomerId == customerId, cancellationToken);
+
+        if (exists)
+        {
+            return;
+        }
+
+        zone.CustomerAccesses.Add(new ZoneCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

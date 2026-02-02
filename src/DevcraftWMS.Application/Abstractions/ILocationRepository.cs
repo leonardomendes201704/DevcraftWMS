@@ -12,6 +12,7 @@ public interface ILocationRepository
     Task<Location?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid structureId,
+        Guid? zoneId,
         string? code,
         string? barcode,
         bool? isActive,
@@ -19,6 +20,7 @@ public interface ILocationRepository
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Location>> ListAsync(
         Guid structureId,
+        Guid? zoneId,
         int pageNumber,
         int pageSize,
         string orderBy,

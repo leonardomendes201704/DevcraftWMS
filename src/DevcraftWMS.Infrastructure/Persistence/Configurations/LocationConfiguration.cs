@@ -22,6 +22,11 @@ public sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasForeignKey(l => l.StructureId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(l => l.Zone)
+            .WithMany(z => z.Locations)
+            .HasForeignKey(l => l.ZoneId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(l => new { l.StructureId, l.Code }).IsUnique();
     }
 }

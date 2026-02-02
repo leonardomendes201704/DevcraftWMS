@@ -47,6 +47,7 @@ public sealed class LocationRepository : ILocationRepository
         var customerId = GetCustomerId();
         return await _dbContext.Locations
             .AsNoTracking()
+            .Include(l => l.Zone)
             .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
@@ -54,23 +55,26 @@ public sealed class LocationRepository : ILocationRepository
     {
         var customerId = GetCustomerId();
         return await _dbContext.Locations
+            .Include(l => l.Zone)
             .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<int> CountAsync(
         Guid structureId,
+        Guid? zoneId,
         string? code,
         string? barcode,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(structureId, code, barcode, isActive, includeInactive);
+        var query = BuildQuery(structureId, zoneId, code, barcode, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Location>> ListAsync(
         Guid structureId,
+        Guid? zoneId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -81,7 +85,7 @@ public sealed class LocationRepository : ILocationRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(structureId, code, barcode, isActive, includeInactive);
+        var query = BuildQuery(structureId, zoneId, code, barcode, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -92,6 +96,7 @@ public sealed class LocationRepository : ILocationRepository
 
     private IQueryable<Location> BuildQuery(
         Guid structureId,
+        Guid? zoneId,
         string? code,
         string? barcode,
         bool? isActive,
@@ -99,7 +104,13 @@ public sealed class LocationRepository : ILocationRepository
     {
         var customerId = GetCustomerId();
         var query = _dbContext.Locations.AsNoTracking()
+            .Include(l => l.Zone)
             .Where(l => l.StructureId == structureId && l.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (zoneId.HasValue && zoneId.Value != Guid.Empty)
+        {
+            query = query.Where(l => l.ZoneId == zoneId.Value);
+        }
 
         if (isActive.HasValue)
         {

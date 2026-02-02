@@ -17,6 +17,7 @@ public sealed class ListLocationsPagedQueryHandler : MediatR.IRequestHandler<Lis
     {
         var totalCount = await _locationRepository.CountAsync(
             request.StructureId,
+            request.ZoneId,
             request.Code,
             request.Barcode,
             request.IsActive,
@@ -25,6 +26,7 @@ public sealed class ListLocationsPagedQueryHandler : MediatR.IRequestHandler<Lis
 
         var items = await _locationRepository.ListAsync(
             request.StructureId,
+            request.ZoneId,
             request.PageNumber,
             request.PageSize,
             request.OrderBy,

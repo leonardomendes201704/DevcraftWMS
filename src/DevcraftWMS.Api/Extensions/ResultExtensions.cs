@@ -169,6 +169,30 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status400BadRequest
             },
+            "zones.zone.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "zones.warehouse.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "zones.zone.code_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "zones.warehouse.mismatch" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
             "products.product.not_found" => new ProblemDetails
             {
                 Title = "Not Found",

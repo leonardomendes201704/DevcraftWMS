@@ -65,6 +65,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SectionsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.StructuresApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LocationsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.AislesApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ZonesApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ProductsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LotsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UomsApiClient>();

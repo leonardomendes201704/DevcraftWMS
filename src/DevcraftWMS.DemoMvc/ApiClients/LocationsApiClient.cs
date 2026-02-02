@@ -25,6 +25,7 @@ public sealed class LocationsApiClient : ApiClientBase
             ["pageSize"] = query.PageSize.ToString(),
             ["orderBy"] = query.OrderBy,
             ["orderDir"] = query.OrderDir,
+            ["zoneId"] = query.ZoneId?.ToString(),
             ["code"] = query.Code,
             ["barcode"] = query.Barcode,
             ["isActive"] = query.IsActive is null ? null : (query.IsActive.Value ? "true" : "false"),
@@ -45,7 +46,8 @@ public sealed class LocationsApiClient : ApiClientBase
             payload.Barcode,
             payload.Level,
             payload.Row,
-            payload.Column), cancellationToken);
+            payload.Column,
+            payload.ZoneId), cancellationToken);
 
     public Task<ApiResult<LocationDetailViewModel>> UpdateAsync(Guid id, LocationFormViewModel payload, CancellationToken cancellationToken)
         => PutAsync<LocationDetailViewModel>($"/api/locations/{id}", new LocationUpdateRequest(
@@ -54,12 +56,13 @@ public sealed class LocationsApiClient : ApiClientBase
             payload.Barcode,
             payload.Level,
             payload.Row,
-            payload.Column), cancellationToken);
+            payload.Column,
+            payload.ZoneId), cancellationToken);
 
     public Task<ApiResult<LocationDetailViewModel>> DeactivateAsync(Guid id, CancellationToken cancellationToken)
         => DeleteAsync<LocationDetailViewModel>($"/api/locations/{id}", cancellationToken);
 }
 
-public sealed record LocationCreateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column);
+public sealed record LocationCreateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column, Guid? ZoneId);
 
-public sealed record LocationUpdateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column);
+public sealed record LocationUpdateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column, Guid? ZoneId);

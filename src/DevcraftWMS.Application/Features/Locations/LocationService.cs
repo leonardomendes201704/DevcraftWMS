@@ -9,17 +9,20 @@ public sealed class LocationService : ILocationService
 {
     private readonly ILocationRepository _locationRepository;
     private readonly IStructureRepository _structureRepository;
+    private readonly IZoneRepository _zoneRepository;
     private readonly ICustomerContext _customerContext;
 
-    public LocationService(ILocationRepository locationRepository, IStructureRepository structureRepository, ICustomerContext customerContext)
+    public LocationService(ILocationRepository locationRepository, IStructureRepository structureRepository, IZoneRepository zoneRepository, ICustomerContext customerContext)
     {
         _locationRepository = locationRepository;
         _structureRepository = structureRepository;
+        _zoneRepository = zoneRepository;
         _customerContext = customerContext;
     }
 
     public async Task<RequestResult<LocationDto>> CreateLocationAsync(
         Guid structureId,
+        Guid? zoneId,
         string code,
         string barcode,
         int level,
@@ -39,6 +42,15 @@ public sealed class LocationService : ILocationService
             return RequestResult<LocationDto>.Failure("locations.structure.not_found", "Structure not found.");
         }
 
+        if (zoneId.HasValue && zoneId.Value != Guid.Empty)
+        {
+            var zone = await _zoneRepository.GetByIdAsync(zoneId.Value, cancellationToken);
+            if (zone is null)
+            {
+                return RequestResult<LocationDto>.Failure("locations.zone.not_found", "Zone not found.");
+            }
+        }
+
         var normalizedCode = code.Trim().ToUpperInvariant();
         var exists = await _locationRepository.CodeExistsAsync(structureId, normalizedCode, cancellationToken);
         if (exists)
@@ -50,6 +62,7 @@ public sealed class LocationService : ILocationService
         {
             Id = Guid.NewGuid(),
             StructureId = structureId,
+            ZoneId = zoneId is { } zoneValue && zoneValue != Guid.Empty ? zoneValue : null,
             Code = normalizedCode,
             Barcode = barcode.Trim(),
             Level = level,
@@ -70,6 +83,7 @@ public sealed class LocationService : ILocationService
     public async Task<RequestResult<LocationDto>> UpdateLocationAsync(
         Guid id,
         Guid structureId,
+        Guid? zoneId,
         string code,
         string barcode,
         int level,
@@ -88,6 +102,15 @@ public sealed class LocationService : ILocationService
             return RequestResult<LocationDto>.Failure("locations.structure.mismatch", "Location does not belong to the selected structure.");
         }
 
+        if (zoneId.HasValue && zoneId.Value != Guid.Empty)
+        {
+            var zone = await _zoneRepository.GetByIdAsync(zoneId.Value, cancellationToken);
+            if (zone is null)
+            {
+                return RequestResult<LocationDto>.Failure("locations.zone.not_found", "Zone not found.");
+            }
+        }
+
         var normalizedCode = code.Trim().ToUpperInvariant();
         if (!string.Equals(location.Code, normalizedCode, StringComparison.OrdinalIgnoreCase))
         {
@@ -99,6 +122,7 @@ public sealed class LocationService : ILocationService
         }
 
         location.Code = normalizedCode;
+        location.ZoneId = zoneId is { } zoneValue && zoneValue != Guid.Empty ? zoneValue : null;
         location.Barcode = barcode.Trim();
         location.Level = level;
         location.Row = row;
