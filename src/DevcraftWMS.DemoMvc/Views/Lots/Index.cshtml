@@ -1,0 +1,172 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.Lots.LotListPageViewModel
+@{
+    ViewData["Title"] = "Lots";
+    ViewData["Subtitle"] = "Manage lot tracking and expiration";
+
+    var productOptions = Model.Products
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    productOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select product", Selected = Model.Query.ProductId == Guid.Empty });
+
+    var statusOptions = Enum.GetValues<DevcraftWMS.DemoMvc.Enums.LotStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.ToString(),
+            Selected = Model.Query.Status == status
+        })
+        .ToList();
+
+    statusOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Any status", Selected = Model.Query.Status is null });
+
+    var activityOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Lots",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Product",
+                Name = "ProductId",
+                Type = GridFilterType.Select,
+                Options = productOptions,
+                IconClass = "bi-upc"
+            },
+            new()
+            {
+                Label = "Lot code",
+                Name = "Code",
+                Value = Model.Query.Code,
+                IconClass = "bi-hash"
+            },
+            new()
+            {
+                Label = "Status",
+                Name = "Status",
+                Type = GridFilterType.Select,
+                Options = statusOptions,
+                IconClass = "bi-flag"
+            },
+            new()
+            {
+                Label = "Expiration from",
+                Name = "ExpirationFrom",
+                Type = GridFilterType.Date,
+                Value = Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd"),
+                IconClass = "bi-calendar-event"
+            },
+            new()
+            {
+                Label = "Expiration to",
+                Name = "ExpirationTo",
+                Type = GridFilterType.Date,
+                Value = Model.Query.ExpirationTo?.ToString("yyyy-MM-dd"),
+                IconClass = "bi-calendar-check"
+            },
+            new()
+            {
+                Label = "Active",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = activityOptions,
+                IconClass = "bi-toggle-on"
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                },
+                IconClass = "bi-eye"
+            },
+            new()
+            {
+                Label = "Page size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                },
+                IconClass = "bi-list"
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Lots")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "lotsFilters",
+        Title = "Lot filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Lots",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["ProductId"] = Model.Query.ProductId == Guid.Empty ? null : Model.Query.ProductId.ToString(),
+            ["Code"] = Model.Query.Code,
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["ExpirationFrom"] = Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd"),
+            ["ExpirationTo"] = Model.Query.ExpirationTo?.ToString("yyyy-MM-dd"),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.Lots.LotListItemViewModel>()
+        .WithTitle("Lots")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Lot", Url.Action("Create", "Lots", new { productId = Model.Query.ProductId }) ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Manufactured", item => new HtmlString(item.ManufactureDate?.ToString("yyyy-MM-dd") ?? "-"), "ManufactureDate")
+        .AddColumn("Expiration", item => new HtmlString(item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"), "ExpirationDate")
+        .AddColumn("Status", item => new HtmlString(HtmlEncoder.Default.Encode(item.Status.ToString())), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Lots", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Lots", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Lots", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

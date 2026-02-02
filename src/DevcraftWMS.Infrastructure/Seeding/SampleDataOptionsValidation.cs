@@ -41,6 +41,16 @@ public sealed class SampleDataOptionsValidation : IValidateOptions<SampleDataOpt
             return ValidateOptionsResult.Fail("Seed:SampleData:ProductCount must be greater than zero.");
         }
 
+        if (options.LotsPerProduct <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:LotsPerProduct must be greater than zero.");
+        }
+
+        if (options.LotExpirationWindowDays <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:LotExpirationWindowDays must be greater than zero.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

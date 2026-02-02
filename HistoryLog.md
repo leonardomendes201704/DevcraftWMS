@@ -1,6 +1,16 @@
 # History Log
 
 ## 2026-02-02
+- UI - Adjusted Aisles menu icon to a visible Bootstrap icon.
+  - Key changes: replaced missing icon with bi-arrows-expand in sidebar.
+- TASK-0018 - Expiring lots KPI (90-day window) wired to dashboard.
+  - Key changes: added dashboard KPI endpoint, DemoMvc stat card, and appsettings window configuration.
+- TASK-0008 - Seed lots for demo data.
+  - Key changes: sample seeding now creates lots per product with expiration window configurable via appsettings.
+- TASK-0008 - E2E lot and expiration management completed.
+  - Key changes: added Lot entity + LotStatus enum, API CRUD endpoints, DemoMvc screens, repository/service layer, and migration AddLots.
+- TASK-0018 - KPI expiring lots task created.
+  - Key changes: added task file for dashboard KPI of products/lots near expiration.
 - Fix - Dependent dropdowns use valid page size.
   - Key changes: reduced page size to 100 for warehouse/sector/section/structure option loaders to avoid API validation errors.
 - Guideline - DemoMvc friendly error messages.

@@ -65,6 +65,10 @@ builder.Services.AddOptions<CustomerContextOptions>()
     .Bind(builder.Configuration.GetSection("CustomerContext"))
     .Validate(options => !string.IsNullOrWhiteSpace(options.HeaderName), "CustomerContext:HeaderName is required.")
     .ValidateOnStart();
+builder.Services.AddOptions<DashboardOptions>()
+    .Bind(builder.Configuration.GetSection("Dashboard"))
+    .Validate(options => options.ExpiringLotsDays > 0, "Dashboard:ExpiringLotsDays must be greater than zero.")
+    .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingOptions>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOptions>>().Value);
 builder.Services.AddSingleton<IAppSettingsReader, ApiSettingsReader>();

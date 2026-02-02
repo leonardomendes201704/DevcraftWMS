@@ -36,6 +36,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<LocationCustomer> LocationCustomers => Set<LocationCustomer>();
     public DbSet<AisleCustomer> AisleCustomers => Set<AisleCustomer>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Lot> Lots => Set<Lot>();
     public DbSet<Uom> Uoms => Set<Uom>();
     public DbSet<ProductUom> ProductUoms => Set<ProductUom>();
 

@@ -9,4 +9,6 @@ public sealed class SampleDataOptions
     public string WarehouseCode { get; set; } = string.Empty;
     public string WarehouseName { get; set; } = string.Empty;
     public int ProductCount { get; set; } = 10;
+    public int LotsPerProduct { get; set; } = 1;
+    public int LotExpirationWindowDays { get; set; } = 90;
 }

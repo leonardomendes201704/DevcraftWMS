@@ -1,0 +1,15 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Lots.LotDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate Lot";
+    ViewData["Subtitle"] = "Confirm lot deactivation";
+}
+
+<div class="card">
+    <div class="card-body">
+        <p class="mb-3">Are you sure you want to deactivate lot <strong>@Model.Code</strong>?</p>
+        <form method="post" asp-action="DeleteConfirmed" asp-route-id="@Model.Id">
+            <button class="btn btn-danger" type="submit">Deactivate</button>
+            <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </form>
+    </div>
+</div>

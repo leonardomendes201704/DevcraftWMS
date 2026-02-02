@@ -30,6 +30,23 @@
         IconCssClass = "text-bg-light border"
     };
 
+    var expiringLotsCount = Model.ExpiringLots?.TotalLots ?? 0;
+    var expiringDays = Model.ExpiringLots?.WindowDays ?? 90;
+    var expiringTo = DateTime.UtcNow.Date.AddDays(expiringDays).ToString("yyyy-MM-dd");
+    var expiringFrom = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+    var expiringLotsCard = new StatCardViewModel
+    {
+        Title = "Expiring Lots",
+        Value = expiringLotsCount.ToString("N0"),
+        Subtitle = $"Next {expiringDays} days",
+        BadgeText = expiringLotsCount > 0 ? "Attention" : "Stable",
+        BadgeCssClass = expiringLotsCount > 0 ? "text-bg-warning" : "text-bg-success",
+        ActionText = "View lots",
+        ActionUrl = Url.Action("Index", "Lots", new { ExpirationFrom = expiringFrom, ExpirationTo = expiringTo }),
+        IconClass = "bi bi-calendar2-week",
+        IconCssClass = expiringLotsCount > 0 ? "text-bg-warning-subtle text-warning" : "text-bg-success-subtle text-success"
+    };
+
     var quickLinks = new QuickLinksViewModel
     {
         Title = "Quick Links",
@@ -37,6 +54,7 @@
         {
             new() { Text = "Customers", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
             new() { Text = "Products", Url = Url.Action("Index", "Products") ?? "#", IconClass = "bi bi-upc" },
+            new() { Text = "Lots", Url = Url.Action("Index", "Lots") ?? "#", IconClass = "bi bi-collection" },
             new() { Text = "UoM", Url = Url.Action("Index", "Uoms") ?? "#", IconClass = "bi bi-rulers" },
             new() { Text = "Warehouses", Url = Url.Action("Index", "Warehouses") ?? "#", IconClass = "bi bi-box-seam" },
             new() { Text = "Sectors", Url = Url.Action("Index", "Sectors") ?? "#", IconClass = "bi bi-grid-3x3-gap" },
@@ -121,6 +139,9 @@
     </div>
     <div class="col-lg-3 col-md-6">
         <partial name="_StatCard" model="warehousesCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="expiringLotsCard" />
     </div>
     <div class="col-lg-3 col-md-6">
         <partial name="_QuickLinks" model="quickLinks" />

@@ -19,4 +19,5 @@ public sealed class Product : AuditableEntity
 
     public Uom? BaseUom { get; set; }
     public ICollection<ProductUom> ProductUoms { get; set; } = new List<ProductUom>();
+    public ICollection<Lot> Lots { get; set; } = new List<Lot>();
 }

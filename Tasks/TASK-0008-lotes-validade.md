@@ -63,4 +63,4 @@ Nao existe entidade de lote nem regras FIFO/FEFO.
 - - Definir status de lote e expiracao padrao.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)

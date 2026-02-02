@@ -48,6 +48,7 @@ public sealed class SampleDataSeeder
         await EnsureLocationAccessAsync(locations, customer.Id, cancellationToken);
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
+        await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(
@@ -549,5 +550,49 @@ public sealed class SampleDataSeeder
                 });
             }
         }
+    }
+
+    private async Task EnsureLotsAsync(
+        Guid customerId,
+        int lotsPerProduct,
+        int expirationWindowDays,
+        CancellationToken cancellationToken)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var products = await _dbContext.Products
+            .Where(p => p.CustomerId == customerId)
+            .ToListAsync(cancellationToken);
+
+        foreach (var product in products)
+        {
+            for (var i = 1; i <= lotsPerProduct; i++)
+            {
+                var code = $"LOT-{product.Code}-{i:00}";
+                var exists = await _dbContext.Lots.AnyAsync(
+                    l => l.ProductId == product.Id && l.Code == code,
+                    cancellationToken);
+
+                if (exists)
+                {
+                    continue;
+                }
+
+                var expirationDays = Math.Min(expirationWindowDays, 30 + (i * 5));
+                var expirationDate = today.AddDays(expirationDays);
+                var manufactureDate = today.AddDays(-15);
+
+                _dbContext.Lots.Add(new Lot
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product.Id,
+                    Code = code,
+                    ManufactureDate = manufactureDate,
+                    ExpirationDate = expirationDate,
+                    Status = LotStatus.Available
+                });
+            }
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

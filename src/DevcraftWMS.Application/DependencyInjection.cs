@@ -15,6 +15,7 @@ using DevcraftWMS.Application.Features.Structures;
 using DevcraftWMS.Application.Features.Locations;
 using DevcraftWMS.Application.Features.Aisles;
 using DevcraftWMS.Application.Features.Products;
+using DevcraftWMS.Application.Features.Lots;
 using DevcraftWMS.Application.Features.Uoms;
 using DevcraftWMS.Application.Features.ProductUoms;
 
@@ -38,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IAisleService, AisleService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ILotService, LotService>();
         services.AddScoped<IUomService, UomService>();
         services.AddScoped<IProductUomService, ProductUomService>();
 

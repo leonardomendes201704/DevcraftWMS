@@ -1,0 +1,22 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Lots.LotFormViewModel
+@{
+    ViewData["Title"] = "Edit Lot";
+    ViewData["Subtitle"] = "Update lot information";
+    var lotId = ViewBag.LotId as Guid?;
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-route-id="@lotId">
+            <partial name="_LotForm" model="Model" />
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <a class="btn btn-light border" asp-action="Details" asp-route-id="@lotId">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

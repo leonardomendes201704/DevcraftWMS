@@ -331,6 +331,9 @@ Seed:SampleData:CustomerEmail      -> Sample customer email
 Seed:SampleData:WarehouseCode      -> Sample warehouse code
 Seed:SampleData:WarehouseName      -> Sample warehouse name
 Seed:SampleData:ProductCount       -> Number of products to seed
+Seed:SampleData:LotsPerProduct     -> Lots per product in sample seed
+Seed:SampleData:LotExpirationWindowDays -> Expiration window (days) for seeded lots
+Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path
 Telemetry:BatchSize                 -> Demo MVC telemetry batch size

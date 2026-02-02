@@ -1,0 +1,21 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Lots.LotFormViewModel
+@{
+    ViewData["Title"] = "New Lot";
+    ViewData["Subtitle"] = "Register a new lot for a product";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <partial name="_LotForm" model="Model" />
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Create</button>
+                <a class="btn btn-light border" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

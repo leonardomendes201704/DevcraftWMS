@@ -454,6 +454,64 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("LocationCustomers", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Lot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ExpirationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly?>("ManufactureDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpirationDate");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("ProductId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Lots", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1855,6 +1913,17 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Location");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Lot", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Product", "Product")
+                        .WithMany("Lots")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.Uom", "BaseUom")
@@ -2036,6 +2105,8 @@ namespace DevcraftWMS.Infrastructure.Migrations
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
                 {
+                    b.Navigation("Lots");
+
                     b.Navigation("ProductUoms");
                 });
 

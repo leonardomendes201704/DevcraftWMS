@@ -9,12 +9,18 @@ public sealed class HomeController : Controller
     private readonly HealthApiClient _healthClient;
     private readonly LogsApiClient _logsClient;
     private readonly WarehousesApiClient _warehousesClient;
+    private readonly DashboardApiClient _dashboardClient;
 
-    public HomeController(HealthApiClient healthClient, LogsApiClient logsClient, WarehousesApiClient warehousesClient)
+    public HomeController(
+        HealthApiClient healthClient,
+        LogsApiClient logsClient,
+        WarehousesApiClient warehousesClient,
+        DashboardApiClient dashboardClient)
     {
         _healthClient = healthClient;
         _logsClient = logsClient;
         _warehousesClient = warehousesClient;
+        _dashboardClient = dashboardClient;
     }
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -34,12 +40,15 @@ public sealed class HomeController : Controller
                 1, 1, "CreatedAtUtc", "desc", null, null, null, null, null, null, null, null, null, null, null, false),
             cancellationToken);
 
+        var expiringLots = await _dashboardClient.GetExpiringLotsAsync(null, cancellationToken);
+
         var model = new DashboardViewModel
         {
             ApiHealthy = apiHealthy,
             RecentRequests = recentRequests.Data?.Items ?? Array.Empty<RequestLogDto>(),
             RecentErrors = recentErrors.Data?.Items ?? Array.Empty<ErrorLogDto>(),
-            ActiveWarehouses = warehouses.Data?.TotalCount ?? 0
+            ActiveWarehouses = warehouses.Data?.TotalCount ?? 0,
+            ExpiringLots = expiringLots.Data
         };
 
         return View(model);

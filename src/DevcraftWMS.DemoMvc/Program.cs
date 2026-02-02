@@ -55,6 +55,7 @@ builder.Services.AddHttpClient<IViaCepClient, ViaCepClient>((sp, client) =>
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.HealthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.AuthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.CustomersApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.DashboardApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.EmailApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LogsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.SettingsApiClient>();
@@ -65,6 +66,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.StructuresApiClient>()
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LocationsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.AislesApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ProductsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LotsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UomsApiClient>();
 
 var app = builder.Build();

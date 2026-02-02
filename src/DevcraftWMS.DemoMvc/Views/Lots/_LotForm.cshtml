@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model DevcraftWMS.DemoMvc.ViewModels.Lots.LotFormViewModel
+@{
+    var productOptions = ViewBag.Products as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="mb-3">
+    <label class="form-label">Product</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+        <select asp-for="ProductId" class="form-select" asp-items="productOptions"></select>
+    </div>
+    <span class="text-danger small" asp-validation-for="ProductId"></span>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Lot code</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+        <input asp-for="Code" class="form-control" />
+    </div>
+    <span class="text-danger small" asp-validation-for="Code"></span>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Manufacture date</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+        <input asp-for="ManufactureDate" type="date" class="form-control" />
+    </div>
+    <span class="text-danger small" asp-validation-for="ManufactureDate"></span>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Expiration date</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+        <input asp-for="ExpirationDate" type="date" class="form-control" />
+    </div>
+    <span class="text-danger small" asp-validation-for="ExpirationDate"></span>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Status</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-flag"></i></span>
+        <select asp-for="Status" class="form-select">
+            @foreach (var status in Enum.GetValues<DevcraftWMS.DemoMvc.Enums.LotStatus>())
+            {
+                <option value="@status" selected="@(status == Model.Status)">@status</option>
+            }
+        </select>
+    </div>
+    <span class="text-danger small" asp-validation-for="Status"></span>
+</div>
