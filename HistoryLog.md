@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0020 - Login Help manual added.
+  - Key changes: added Help button and modal manual for the Login screen.
 - TASK-0019 - Dashboard Help manual added.
   - Key changes: added Help button and modal manual for the Dashboard screen.
 - TASK-0038 - UI Showcase Help manual added.

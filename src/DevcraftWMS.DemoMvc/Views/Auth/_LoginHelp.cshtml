@@ -1,0 +1,43 @@
+﻿<div class="modal fade" id="loginHelp" tabindex="-1" aria-labelledby="loginHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginHelpLabel">Login Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>Authenticate into the Demo MVC portal to access protected screens and API features.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Login with Email/Password</h6>
+                    <ul class="mb-0">
+                        <li>Use a valid API user (e.g., admin user) to get a JWT.</li>
+                        <li>Submit to authenticate and store the token in server-side session.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Paste a JWT Token</h6>
+                    <ul class="mb-0">
+                        <li>If you already have a JWT, paste it into the Token box.</li>
+                        <li>Click <strong>Store Token</strong> to save it in session.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>Invalid credentials:</strong> verify email/password or request a fresh token.</li>
+                        <li><strong>Unauthorized requests:</strong> ensure you are logged in and the token is valid.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

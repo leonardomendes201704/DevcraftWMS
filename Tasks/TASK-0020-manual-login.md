@@ -1,7 +1,7 @@
 ﻿# TASK-0020 - Manual da tela Login
 
 ## Resumo
-Criar o manual HTML (Help) para a tela **Login / Autenticacao** no DemoMvc, com botao "Help" no Index e conteudo que explique a tela e seus fluxos relacionados (CRUDs e telas filhas).
+Criar o manual HTML (Help) para a tela **Login** no DemoMvc, com botao "Help" no Index e conteudo que explique a tela e seus fluxos relacionados (CRUDs e telas filhas).
 
 ## Contexto
 Precisamos de um manual por tela para orientar usuarios finais. O Help deve estar disponivel no Index e cobrir tambem as telas filhas (Create/Edit/Details/Delete) dentro do contexto do modulo.
@@ -10,7 +10,7 @@ Precisamos de um manual por tela para orientar usuarios finais. O Help deve esta
 Hoje as telas nao possuem documentacao contextual embutida.
 
 ## Objetivos
-- Adicionar botao **Help** no Index da tela Login / Autenticacao.
+- Adicionar botao **Help** no Index da tela Login.
 - Renderizar um HTML de manual (parcial/arquivo dedicado) com instrucoes claras.
 - Incluir instrucoes para telas filhas (Create/Edit/Details/Delete) quando existirem.
 - Garantir consistencia visual com Bootstrap e componentes existentes.
@@ -33,7 +33,7 @@ Hoje as telas nao possuem documentacao contextual embutida.
 - Como suporte, quero apontar um Help padronizado para cada modulo.
 
 ## Requisitos Funcionais
-- Botao **Help** no Index da tela Login / Autenticacao.
+- Botao **Help** no Index da tela Login.
 - Help deve abrir/mostrar um HTML com:
   - Objetivo da tela.
   - Como filtrar/paginar/ordenar.
@@ -68,4 +68,4 @@ Hoje as telas nao possuem documentacao contextual embutida.
 - Padronizar estrutura do HTML de manual para todas as telas.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
