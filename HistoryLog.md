@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0039 - Movimentacoes Internas (Modelo/DB) completed.
+  - Key changes: added InventoryMovement entity/status, EF config, DbSet, and migration AddInventoryMovements.
+- Tasking - Split TASK-0010 into smaller subtasks.
+  - Key changes: created TASK-0039..TASK-0043 and updated TASK-0010 with split references and new guideline.
 - Fix - Receipt AddItem model binding.
   - Key changes: bind AddItem to NewItem prefix to avoid required Receipt validation.
 - Fix - Receipt AddItem numeric input handling.

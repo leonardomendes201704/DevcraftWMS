@@ -129,6 +129,7 @@ Every code change must append an entry to `HistoryLog.md` at solution root with:
 - When a task is completed, rename the file with the prefix `DONE-` (example: `Tasks/DONE-TASK-0001-sample-task.md`).
 - Task code must be referenced in commit messages and PR titles when possible.
 - Update the task file with progress notes and final acceptance checklist status.
+- Large features must be split into smaller tasks (model/db, API/application, UI, tests, seed/docs) to keep commits small and traceable.
 
 ## Appsettings/ENV documentation rule (MANDATORY)
 Whenever any appsettings key is added or modified, update the README `ENVs` section to reflect it.
