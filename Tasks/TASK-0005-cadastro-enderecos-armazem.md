@@ -60,3 +60,18 @@ Nao existe cadastro de enderecos e regras de enderecamento.
 
 ## Riscos / Questões em Aberto
 - Definir regra de codigo de endereco (padrao).
+
+## Status
+Concluida (DONE)
+
+## Progresso / Notas
+- Entidade Location criada com relacionamento 1:N com Structure.
+- CRUD API implementado com CQRS + MediatR e RequestResult.
+- Telas DemoMvc (Index/Details/Create/Edit/Delete) com Grid, filtros e input groups.
+- Migrations criadas e aplicadas (AddLocations).
+- Testes unitarios e de integracao adicionados.
+
+## Checklist de Aceitacao
+- [x] API + DemoMvc completos.
+- [x] Migrations criadas/aplicadas.
+- [x] Testes unitarios e integracao.

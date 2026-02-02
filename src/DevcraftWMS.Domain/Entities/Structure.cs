@@ -11,4 +11,5 @@ public sealed class Structure : AuditableEntity
     public int Levels { get; set; }
 
     public Section? Section { get; set; }
+    public ICollection<Location> Locations { get; set; } = new List<Location>();
 }

@@ -1,0 +1,194 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.Locations.LocationListPageViewModel
+@{
+    ViewData["Title"] = "Locations";
+    ViewData["Subtitle"] = "Manage bins/locations with filters and pagination";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Locations",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
+            ["SectorId"] = Model.Query.SectorId == Guid.Empty ? null : Model.Query.SectorId.ToString(),
+            ["SectionId"] = Model.Query.SectionId == Guid.Empty ? null : Model.Query.SectionId.ToString(),
+            ["StructureId"] = Model.Query.StructureId == Guid.Empty ? null : Model.Query.StructureId.ToString(),
+            ["Code"] = Model.Query.Code,
+            ["Barcode"] = Model.Query.Barcode,
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var warehouseOptions = Model.Warehouses
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+
+    var sectorOptions = Model.Sectors
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select sector", Selected = Model.Query.SectorId == Guid.Empty });
+
+    var sectionOptions = Model.Sections
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    sectionOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select section", Selected = Model.Query.SectionId == Guid.Empty });
+
+    var structureOptions = Model.Structures
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = option.Selected
+        })
+        .ToList();
+
+    structureOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select structure", Selected = Model.Query.StructureId == Guid.Empty });
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Locations",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Warehouse",
+                Name = "WarehouseId",
+                Type = GridFilterType.Select,
+                Options = warehouseOptions
+            },
+            new()
+            {
+                Label = "Sector",
+                Name = "SectorId",
+                Type = GridFilterType.Select,
+                Options = sectorOptions
+            },
+            new()
+            {
+                Label = "Section",
+                Name = "SectionId",
+                Type = GridFilterType.Select,
+                Options = sectionOptions
+            },
+            new()
+            {
+                Label = "Structure",
+                Name = "StructureId",
+                Type = GridFilterType.Select,
+                Options = structureOptions
+            },
+            new()
+            {
+                Label = "Code",
+                Name = "Code",
+                Value = Model.Query.Code
+            },
+            new()
+            {
+                Label = "Barcode",
+                Name = "Barcode",
+                Value = Model.Query.Barcode
+            },
+            new()
+            {
+                Label = "Status",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Locations")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "locationsFilters",
+        Title = "Location filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<LocationListItemViewModel>()
+        .WithTitle("Locations")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Location", Url.Action("Create", "Locations", new { warehouseId = Model.Query.WarehouseId, sectorId = Model.Query.SectorId, sectionId = Model.Query.SectionId, structureId = Model.Query.StructureId }) ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Barcode", item => new HtmlString(HtmlEncoder.Default.Encode(item.Barcode)), "Barcode")
+        .AddColumn("Level", item => new HtmlString(item.Level.ToString()), "Level")
+        .AddColumn("Row", item => new HtmlString(item.Row.ToString()), "Row")
+        .AddColumn("Column", item => new HtmlString(item.Column.ToString()), "Column")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Locations", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Locations", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Locations", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

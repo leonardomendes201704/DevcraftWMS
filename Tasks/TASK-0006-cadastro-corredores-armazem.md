@@ -60,3 +60,18 @@ Nao existe representacao de corredores no modelo atual.
 
 ## Riscos / Questões em Aberto
 - Definir nomenclatura padrao dos corredores.
+
+## Status
+Concluida (DONE)
+
+## Progresso / Notas
+- Entidade Aisle criada com relacionamento 1:N com Section.
+- CRUD API implementado com CQRS + MediatR e RequestResult.
+- Telas DemoMvc (Index/Details/Create/Edit/Delete) implementadas com Grid, filtros e input groups.
+- Migrations criadas e aplicadas (AddAisles).
+- Testes unitarios e de integracao adicionados.
+
+## Checklist de Aceitacao
+- [x] API + DemoMvc completos.
+- [x] Migrations criadas/aplicadas.
+- [x] Testes unitarios e integracao.

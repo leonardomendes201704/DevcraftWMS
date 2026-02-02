@@ -1,5 +1,9 @@
 # History Log
 
+## 2026-02-02
+- TASK-0006 - E2E aisle management (Aisles) completed.
+  - Key changes: added aisle entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddAisles.
+
 ## 2026-02-01
 - Initialized DevcraftWMS repository from PerfectApiTemplate.
 - Renamed solution/projects/namespaces to DevcraftWMS.
@@ -20,3 +24,5 @@
   - Key changes: added section entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddSections.
 - TASK-0004 - E2E structure management (Structures) completed.
   - Key changes: added structure entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddStructures.
+- TASK-0005 - E2E location management (Locations) completed.
+  - Key changes: added location entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddLocations.

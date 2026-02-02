@@ -12,6 +12,8 @@ using DevcraftWMS.Application.Features.Warehouses;
 using DevcraftWMS.Application.Features.Sectors;
 using DevcraftWMS.Application.Features.Sections;
 using DevcraftWMS.Application.Features.Structures;
+using DevcraftWMS.Application.Features.Locations;
+using DevcraftWMS.Application.Features.Aisles;
 
 namespace DevcraftWMS.Application;
 
@@ -30,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<ISectorService, SectorService>();
         services.AddScoped<ISectionService, SectionService>();
         services.AddScoped<IStructureService, StructureService>();
+        services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IAisleService, AisleService>();
 
         return services;
     }

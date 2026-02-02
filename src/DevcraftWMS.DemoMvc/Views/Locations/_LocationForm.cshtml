@@ -1,0 +1,54 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Locations.LocationFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Structure</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-stack"></i></span>
+            <select class="form-select" asp-for="StructureId" asp-items="Model.Structures">
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="StructureId"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+            <input class="form-control" asp-for="Code" />
+        </div>
+        <span class="text-danger" asp-validation-for="Code"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Barcode</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+            <input class="form-control" asp-for="Barcode" />
+        </div>
+        <span class="text-danger" asp-validation-for="Barcode"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Level</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-layers"></i></span>
+            <input class="form-control" asp-for="Level" type="number" min="1" max="200" />
+        </div>
+        <span class="text-danger" asp-validation-for="Level"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Row</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
+            <input class="form-control" asp-for="Row" type="number" min="1" max="200" />
+        </div>
+        <span class="text-danger" asp-validation-for="Row"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Column</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-columns-gap"></i></span>
+            <input class="form-control" asp-for="Column" type="number" min="1" max="200" />
+        </div>
+        <span class="text-danger" asp-validation-for="Column"></span>
+    </div>
+</div>

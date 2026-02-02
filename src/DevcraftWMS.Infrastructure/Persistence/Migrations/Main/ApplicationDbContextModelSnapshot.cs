@@ -17,6 +17,54 @@ namespace DevcraftWMS.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.1");
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Aisle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectionId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Aisles", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -261,6 +309,63 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("EmailMessages", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Location", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Column")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Row")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("StructureId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StructureId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboxMessage", b =>
@@ -1258,6 +1363,17 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("TransactionLogs", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Aisle", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Section", "Section")
+                        .WithMany("Aisles")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Section");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.EmailDeliveryAttempt", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.EmailMessage", "EmailMessage")
@@ -1267,6 +1383,17 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("EmailMessage");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Location", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Structure", "Structure")
+                        .WithMany("Locations")
+                        .HasForeignKey("StructureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Structure");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Section", b =>
@@ -1353,12 +1480,19 @@ namespace DevcraftWMS.Infrastructure.Migrations
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Section", b =>
                 {
+                    b.Navigation("Aisles");
+
                     b.Navigation("Structures");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Sector", b =>
                 {
                     b.Navigation("Sections");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Structure", b =>
+                {
+                    b.Navigation("Locations");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Warehouse", b =>

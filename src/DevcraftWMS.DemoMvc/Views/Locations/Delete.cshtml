@@ -1,0 +1,21 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Locations.LocationDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate Location";
+    ViewData["Subtitle"] = $"{Model.Code} - {Model.Barcode}";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-warning">
+            This will deactivate the location. You can re-enable it by editing the record.
+        </div>
+        <p><strong>Code:</strong> @Model.Code</p>
+        <p><strong>Barcode:</strong> @Model.Barcode</p>
+        <p><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</p>
+        <form asp-action="DeleteConfirmed" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">Deactivate</button>
+            <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </form>
+    </div>
+</div>

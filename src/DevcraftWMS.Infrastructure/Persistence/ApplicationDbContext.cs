@@ -28,6 +28,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<Sector> Sectors => Set<Sector>();
     public DbSet<Section> Sections => Set<Section>();
     public DbSet<Structure> Structures => Set<Structure>();
+    public DbSet<Location> Locations => Set<Location>();
+    public DbSet<Aisle> Aisles => Set<Aisle>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

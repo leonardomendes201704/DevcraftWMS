@@ -1,0 +1,498 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using DevcraftWMS.DemoMvc.ApiClients;
+using DevcraftWMS.DemoMvc.ViewModels.Locations;
+using DevcraftWMS.DemoMvc.ViewModels.Shared;
+using DevcraftWMS.DemoMvc.ViewModels.Warehouses;
+using DevcraftWMS.DemoMvc.ViewModels.Sectors;
+using DevcraftWMS.DemoMvc.ViewModels.Sections;
+using DevcraftWMS.DemoMvc.ViewModels.Structures;
+
+namespace DevcraftWMS.DemoMvc.Controllers;
+
+public sealed class LocationsController : Controller
+{
+    private readonly LocationsApiClient _locationsClient;
+    private readonly WarehousesApiClient _warehousesClient;
+    private readonly SectorsApiClient _sectorsClient;
+    private readonly SectionsApiClient _sectionsClient;
+    private readonly StructuresApiClient _structuresClient;
+
+    public LocationsController(
+        LocationsApiClient locationsClient,
+        WarehousesApiClient warehousesClient,
+        SectorsApiClient sectorsClient,
+        SectionsApiClient sectionsClient,
+        StructuresApiClient structuresClient)
+    {
+        _locationsClient = locationsClient;
+        _warehousesClient = warehousesClient;
+        _sectorsClient = sectorsClient;
+        _sectionsClient = sectionsClient;
+        _structuresClient = structuresClient;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index([FromQuery] LocationQuery query, CancellationToken cancellationToken)
+    {
+        var warehouseOptions = await LoadWarehouseOptionsAsync(query.WarehouseId, cancellationToken);
+        if (warehouseOptions.Count == 0)
+        {
+            TempData["Warning"] = "Create a warehouse before managing locations.";
+            return View(new LocationListPageViewModel
+            {
+                Warehouses = warehouseOptions,
+                Query = query
+            });
+        }
+
+        var selectedWarehouseId = query.WarehouseId == Guid.Empty
+            ? Guid.Parse(warehouseOptions[0].Value!)
+            : query.WarehouseId;
+
+        var sectorOptions = await LoadSectorOptionsAsync(selectedWarehouseId, query.SectorId, cancellationToken);
+        if (sectorOptions.Count == 0)
+        {
+            TempData["Warning"] = "Create a sector before managing locations.";
+            return View(new LocationListPageViewModel
+            {
+                Warehouses = warehouseOptions,
+                Sectors = sectorOptions,
+                Query = query with { WarehouseId = selectedWarehouseId }
+            });
+        }
+
+        var selectedSectorId = query.SectorId == Guid.Empty
+            ? Guid.Parse(sectorOptions[0].Value!)
+            : query.SectorId;
+
+        var sectionOptions = await LoadSectionOptionsAsync(selectedSectorId, query.SectionId, cancellationToken);
+        if (sectionOptions.Count == 0)
+        {
+            TempData["Warning"] = "Create a section before managing locations.";
+            return View(new LocationListPageViewModel
+            {
+                Warehouses = warehouseOptions,
+                Sectors = sectorOptions,
+                Sections = sectionOptions,
+                Query = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId }
+            });
+        }
+
+        var selectedSectionId = query.SectionId == Guid.Empty
+            ? Guid.Parse(sectionOptions[0].Value!)
+            : query.SectionId;
+
+        var structureOptions = await LoadStructureOptionsAsync(selectedSectionId, query.StructureId, cancellationToken);
+        if (structureOptions.Count == 0)
+        {
+            TempData["Warning"] = "Create a structure before managing locations.";
+            return View(new LocationListPageViewModel
+            {
+                Warehouses = warehouseOptions,
+                Sectors = sectorOptions,
+                Sections = sectionOptions,
+                Structures = structureOptions,
+                Query = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId, SectionId = selectedSectionId }
+            });
+        }
+
+        var selectedStructureId = query.StructureId == Guid.Empty
+            ? Guid.Parse(structureOptions[0].Value!)
+            : query.StructureId;
+
+        var normalizedQuery = query with
+        {
+            WarehouseId = selectedWarehouseId,
+            SectorId = selectedSectorId,
+            SectionId = selectedSectionId,
+            StructureId = selectedStructureId
+        };
+
+        var result = await _locationsClient.ListAsync(normalizedQuery, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Failed to load locations.";
+            return View(new LocationListPageViewModel
+            {
+                Warehouses = warehouseOptions,
+                Sectors = sectorOptions,
+                Sections = sectionOptions,
+                Structures = structureOptions,
+                Query = normalizedQuery
+            });
+        }
+
+        var pagination = new PaginationViewModel
+        {
+            PageNumber = result.Data.PageNumber,
+            PageSize = result.Data.PageSize,
+            TotalCount = result.Data.TotalCount,
+            Action = nameof(Index),
+            Controller = "Locations",
+            Query = new Dictionary<string, string?>
+            {
+                ["WarehouseId"] = normalizedQuery.WarehouseId.ToString(),
+                ["SectorId"] = normalizedQuery.SectorId.ToString(),
+                ["SectionId"] = normalizedQuery.SectionId.ToString(),
+                ["StructureId"] = normalizedQuery.StructureId.ToString(),
+                ["OrderBy"] = normalizedQuery.OrderBy,
+                ["OrderDir"] = normalizedQuery.OrderDir,
+                ["Code"] = normalizedQuery.Code,
+                ["Barcode"] = normalizedQuery.Barcode,
+                ["IsActive"] = normalizedQuery.IsActive?.ToString(),
+                ["IncludeInactive"] = normalizedQuery.IncludeInactive.ToString(),
+                ["PageSize"] = normalizedQuery.PageSize.ToString()
+            }
+        };
+
+        var model = new LocationListPageViewModel
+        {
+            Items = result.Data.Items,
+            Query = normalizedQuery,
+            Pagination = pagination,
+            Warehouses = warehouseOptions,
+            Sectors = sectorOptions,
+            Sections = sectionOptions,
+            Structures = structureOptions
+        };
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _locationsClient.GetByIdAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Location not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(result.Data);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Create(Guid? warehouseId, Guid? sectorId, Guid? sectionId, Guid? structureId, CancellationToken cancellationToken)
+    {
+        var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
+        if (warehouses.Count == 0)
+        {
+            TempData["Warning"] = "Create a warehouse before adding locations.";
+            return RedirectToAction("Create", "Warehouses");
+        }
+
+        var selectedWarehouseId = warehouseId.HasValue && warehouses.Any(w => w.Value == warehouseId.Value.ToString())
+            ? warehouseId.Value
+            : Guid.Parse(warehouses[0].Value!);
+
+        var sectors = await LoadSectorOptionsAsync(selectedWarehouseId, sectorId, cancellationToken);
+        if (sectors.Count == 0)
+        {
+            TempData["Warning"] = "Create a sector before adding locations.";
+            return RedirectToAction("Create", "Sectors");
+        }
+
+        var selectedSectorId = sectorId.HasValue && sectors.Any(s => s.Value == sectorId.Value.ToString())
+            ? sectorId.Value
+            : Guid.Parse(sectors[0].Value!);
+
+        var sections = await LoadSectionOptionsAsync(selectedSectorId, sectionId, cancellationToken);
+        if (sections.Count == 0)
+        {
+            TempData["Warning"] = "Create a section before adding locations.";
+            return RedirectToAction("Create", "Sections");
+        }
+
+        var selectedSectionId = sectionId.HasValue && sections.Any(s => s.Value == sectionId.Value.ToString())
+            ? sectionId.Value
+            : Guid.Parse(sections[0].Value!);
+
+        var structures = await LoadStructureOptionsAsync(selectedSectionId, structureId, cancellationToken);
+        if (structures.Count == 0)
+        {
+            TempData["Warning"] = "Create a structure before adding locations.";
+            return RedirectToAction("Create", "Structures");
+        }
+
+        var selectedStructureId = structureId.HasValue && structures.Any(s => s.Value == structureId.Value.ToString())
+            ? structureId.Value
+            : Guid.Parse(structures[0].Value!);
+
+        var model = new LocationFormViewModel
+        {
+            StructureId = selectedStructureId,
+            Warehouses = warehouses,
+            Sectors = sectors,
+            Sections = sections,
+            Structures = structures
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(LocationFormViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            await PopulateLocationFormOptionsAsync(model, cancellationToken);
+            return View(model);
+        }
+
+        var result = await _locationsClient.CreateAsync(model.StructureId, model, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            ModelState.AddModelError(string.Empty, result.Error ?? "Failed to create location.");
+            await PopulateLocationFormOptionsAsync(model, cancellationToken);
+            return View(model);
+        }
+
+        TempData["Success"] = "Location created successfully.";
+        return RedirectToAction(nameof(Details), new { id = result.Data.Id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _locationsClient.GetByIdAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Location not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var model = new LocationFormViewModel
+        {
+            Id = result.Data.Id,
+            StructureId = result.Data.StructureId,
+            Code = result.Data.Code,
+            Barcode = result.Data.Barcode,
+            Level = result.Data.Level,
+            Row = result.Data.Row,
+            Column = result.Data.Column
+        };
+
+        await PopulateLocationFormOptionsAsync(model, cancellationToken);
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(LocationFormViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid || model.Id is null)
+        {
+            await PopulateLocationFormOptionsAsync(model, cancellationToken);
+            return View(model);
+        }
+
+        var result = await _locationsClient.UpdateAsync(model.Id.Value, model, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            ModelState.AddModelError(string.Empty, result.Error ?? "Failed to update location.");
+            await PopulateLocationFormOptionsAsync(model, cancellationToken);
+            return View(model);
+        }
+
+        TempData["Success"] = "Location updated successfully.";
+        return RedirectToAction(nameof(Details), new { id = result.Data.Id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _locationsClient.GetByIdAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Location not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(result.Data);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteConfirmed(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _locationsClient.DeactivateAsync(id, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Failed to deactivate location.";
+            return RedirectToAction(nameof(Delete), new { id });
+        }
+
+        TempData["Success"] = "Location deactivated successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    private async Task PopulateLocationFormOptionsAsync(LocationFormViewModel model, CancellationToken cancellationToken)
+    {
+        var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
+        var structureId = model.StructureId;
+
+        var sectionId = Guid.Empty;
+        if (structureId != Guid.Empty)
+        {
+            var structureResult = await _structuresClient.GetByIdAsync(structureId, cancellationToken);
+            if (structureResult.IsSuccess && structureResult.Data is not null)
+            {
+                sectionId = structureResult.Data.SectionId;
+            }
+        }
+
+        var sectorId = Guid.Empty;
+        if (sectionId != Guid.Empty)
+        {
+            var sectionResult = await _sectionsClient.GetByIdAsync(sectionId, cancellationToken);
+            if (sectionResult.IsSuccess && sectionResult.Data is not null)
+            {
+                sectorId = sectionResult.Data.SectorId;
+            }
+        }
+
+        var warehouseId = Guid.Empty;
+        if (sectorId != Guid.Empty)
+        {
+            var sectorResult = await _sectorsClient.GetByIdAsync(sectorId, cancellationToken);
+            if (sectorResult.IsSuccess && sectorResult.Data is not null)
+            {
+                warehouseId = sectorResult.Data.WarehouseId;
+            }
+        }
+
+        if (warehouseId == Guid.Empty && warehouses.Count > 0)
+        {
+            warehouseId = Guid.Parse(warehouses[0].Value!);
+        }
+
+        var sectors = warehouseId == Guid.Empty
+            ? Array.Empty<SelectListItem>()
+            : await LoadSectorOptionsAsync(warehouseId, sectorId, cancellationToken);
+
+        var sections = sectorId == Guid.Empty
+            ? Array.Empty<SelectListItem>()
+            : await LoadSectionOptionsAsync(sectorId, sectionId, cancellationToken);
+
+        var structures = sectionId == Guid.Empty
+            ? Array.Empty<SelectListItem>()
+            : await LoadStructureOptionsAsync(sectionId, structureId, cancellationToken);
+
+        model.Warehouses = warehouses;
+        model.Sectors = sectors;
+        model.Sections = sections;
+        model.Structures = structures;
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadWarehouseOptionsAsync(Guid? selectedId, CancellationToken cancellationToken)
+    {
+        var result = await _warehousesClient.ListAsync(
+            new WarehouseQuery(
+                1,
+                200,
+                "Name",
+                "asc",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
+        return result.Data.Items
+            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedId.HasValue && item.Id == selectedId.Value))
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadSectorOptionsAsync(Guid warehouseId, Guid? selectedSectorId, CancellationToken cancellationToken)
+    {
+        var result = await _sectorsClient.ListAsync(
+            new SectorQuery(
+                warehouseId,
+                1,
+                200,
+                "Name",
+                "asc",
+                null,
+                null,
+                null,
+                null,
+                false),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
+        return result.Data.Items
+            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedSectorId.HasValue && item.Id == selectedSectorId.Value))
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadSectionOptionsAsync(Guid sectorId, Guid? selectedSectionId, CancellationToken cancellationToken)
+    {
+        var result = await _sectionsClient.ListAsync(
+            new SectionQuery(
+                Guid.Empty,
+                sectorId,
+                1,
+                200,
+                "Name",
+                "asc",
+                null,
+                null,
+                null,
+                false),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
+        return result.Data.Items
+            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedSectionId.HasValue && item.Id == selectedSectionId.Value))
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadStructureOptionsAsync(Guid sectionId, Guid? selectedStructureId, CancellationToken cancellationToken)
+    {
+        var result = await _structuresClient.ListAsync(
+            new StructureQuery(
+                Guid.Empty,
+                Guid.Empty,
+                sectionId,
+                1,
+                200,
+                "Name",
+                "asc",
+                null,
+                null,
+                null,
+                null,
+                false),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
+        return result.Data.Items
+            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedStructureId.HasValue && item.Id == selectedStructureId.Value))
+            .ToList();
+    }
+}
