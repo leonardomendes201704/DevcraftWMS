@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0042 - Movimentacoes Internas (Testes) completed.
+  - Key changes: added unit tests for movement service and integration tests for movement creation and insufficient balance scenarios.
 - TASK-0041 - Movimentacoes Internas (DemoMvc UI) completed.
   - Key changes: added Inventory Movements UI (Index/Create/Details), filters, help modal, and navigation entry.
 - TASK-0040 - Movimentacoes Internas (API + Application) completed.

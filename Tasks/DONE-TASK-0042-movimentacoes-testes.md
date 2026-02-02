@@ -52,4 +52,4 @@ Nenhum teste cobre movimentacoes internas.
 - Dependencias de seed para dados base.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
