@@ -92,6 +92,9 @@ public sealed class InventoryBalanceServiceTests
         public Task<InventoryBalance?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<InventoryBalance?>(null);
 
+        public Task<InventoryBalance?> GetTrackedByKeyAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+            => Task.FromResult<InventoryBalance?>(null);
+
         public Task<int> CountAsync(Guid? locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult(0);
 

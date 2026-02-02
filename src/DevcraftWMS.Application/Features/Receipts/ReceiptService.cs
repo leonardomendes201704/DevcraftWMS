@@ -1,0 +1,268 @@
+﻿using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
+using DevcraftWMS.Application.Common.Models;
+using DevcraftWMS.Domain.Entities;
+using DevcraftWMS.Domain.Enums;
+
+namespace DevcraftWMS.Application.Features.Receipts;
+
+public sealed class ReceiptService : IReceiptService
+{
+    private readonly IReceiptRepository _receiptRepository;
+    private readonly IWarehouseRepository _warehouseRepository;
+    private readonly IProductRepository _productRepository;
+    private readonly ILotRepository _lotRepository;
+    private readonly ILocationRepository _locationRepository;
+    private readonly IUomRepository _uomRepository;
+    private readonly IInventoryBalanceRepository _balanceRepository;
+    private readonly ICustomerContext _customerContext;
+    private readonly IDateTimeProvider _dateTimeProvider;
+
+    public ReceiptService(
+        IReceiptRepository receiptRepository,
+        IWarehouseRepository warehouseRepository,
+        IProductRepository productRepository,
+        ILotRepository lotRepository,
+        ILocationRepository locationRepository,
+        IUomRepository uomRepository,
+        IInventoryBalanceRepository balanceRepository,
+        ICustomerContext customerContext,
+        IDateTimeProvider dateTimeProvider)
+    {
+        _receiptRepository = receiptRepository;
+        _warehouseRepository = warehouseRepository;
+        _productRepository = productRepository;
+        _lotRepository = lotRepository;
+        _locationRepository = locationRepository;
+        _uomRepository = uomRepository;
+        _balanceRepository = balanceRepository;
+        _customerContext = customerContext;
+        _dateTimeProvider = dateTimeProvider;
+    }
+
+    public async Task<RequestResult<ReceiptDetailDto>> CreateReceiptAsync(
+        Guid warehouseId,
+        string receiptNumber,
+        string? documentNumber,
+        string? supplierName,
+        string? notes,
+        CancellationToken cancellationToken)
+    {
+        if (!_customerContext.CustomerId.HasValue)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
+        var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, cancellationToken);
+        if (warehouse is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.warehouse.not_found", "Warehouse not found.");
+        }
+
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = _customerContext.CustomerId.Value,
+            WarehouseId = warehouseId,
+            ReceiptNumber = receiptNumber,
+            DocumentNumber = documentNumber,
+            SupplierName = supplierName,
+            Notes = notes,
+            Status = ReceiptStatus.Draft
+        };
+
+        await _receiptRepository.AddAsync(receipt, cancellationToken);
+
+        receipt.Warehouse = warehouse;
+        return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
+    public async Task<RequestResult<ReceiptDetailDto>> UpdateReceiptAsync(
+        Guid id,
+        Guid warehouseId,
+        string receiptNumber,
+        string? documentNumber,
+        string? supplierName,
+        string? notes,
+        CancellationToken cancellationToken)
+    {
+        var receipt = await _receiptRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (receipt is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.not_found", "Receipt not found.");
+        }
+
+        if (receipt.Status is ReceiptStatus.Completed or ReceiptStatus.Canceled)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.status_locked", "Receipt status does not allow updates.");
+        }
+
+        var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, cancellationToken);
+        if (warehouse is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.warehouse.not_found", "Warehouse not found.");
+        }
+
+        receipt.WarehouseId = warehouseId;
+        receipt.ReceiptNumber = receiptNumber;
+        receipt.DocumentNumber = documentNumber;
+        receipt.SupplierName = supplierName;
+        receipt.Notes = notes;
+
+        await _receiptRepository.UpdateAsync(receipt, cancellationToken);
+        receipt.Warehouse = warehouse;
+        return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
+    public async Task<RequestResult<ReceiptDetailDto>> DeactivateReceiptAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var receipt = await _receiptRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (receipt is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.not_found", "Receipt not found.");
+        }
+
+        if (!receipt.IsActive)
+        {
+            return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+        }
+
+        receipt.IsActive = false;
+        await _receiptRepository.UpdateAsync(receipt, cancellationToken);
+        return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
+    public async Task<RequestResult<ReceiptItemDto>> AddItemAsync(
+        Guid receiptId,
+        Guid productId,
+        Guid? lotId,
+        Guid locationId,
+        Guid uomId,
+        decimal quantity,
+        decimal? unitCost,
+        CancellationToken cancellationToken)
+    {
+        if (quantity <= 0)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.item.invalid_quantity", "Quantity must be greater than zero.");
+        }
+
+        var receipt = await _receiptRepository.GetTrackedByIdAsync(receiptId, cancellationToken);
+        if (receipt is null)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.receipt.not_found", "Receipt not found.");
+        }
+
+        if (receipt.Status is ReceiptStatus.Completed or ReceiptStatus.Canceled)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.receipt.status_locked", "Receipt status does not allow new items.");
+        }
+
+        var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+        if (product is null)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.product.not_found", "Product not found.");
+        }
+
+        if (lotId.HasValue)
+        {
+            var lot = await _lotRepository.GetByIdAsync(lotId.Value, cancellationToken);
+            if (lot is null)
+            {
+                return RequestResult<ReceiptItemDto>.Failure("receipts.lot.not_found", "Lot not found.");
+            }
+
+            if (lot.ProductId != productId)
+            {
+                return RequestResult<ReceiptItemDto>.Failure("receipts.lot.mismatch", "Lot does not belong to the selected product.");
+            }
+        }
+
+        var location = await _locationRepository.GetByIdAsync(locationId, cancellationToken);
+        if (location is null)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.location.not_found", "Location not found.");
+        }
+
+        var uom = await _uomRepository.GetByIdAsync(uomId, cancellationToken);
+        if (uom is null)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.uom.not_found", "UoM not found.");
+        }
+
+        var item = new ReceiptItem
+        {
+            Id = Guid.NewGuid(),
+            ReceiptId = receiptId,
+            ProductId = productId,
+            LotId = lotId,
+            LocationId = locationId,
+            UomId = uomId,
+            Quantity = quantity,
+            UnitCost = unitCost
+        };
+
+        if (receipt.Status == ReceiptStatus.Draft)
+        {
+            receipt.Status = ReceiptStatus.InProgress;
+        }
+
+        await _receiptRepository.AddItemAsync(item, cancellationToken);
+        item.Product = product;
+        item.Lot = lotId.HasValue ? await _lotRepository.GetByIdAsync(lotId.Value, cancellationToken) : null;
+        item.Location = location;
+        item.Uom = uom;
+
+        return RequestResult<ReceiptItemDto>.Success(ReceiptMapping.MapItem(item));
+    }
+
+    public async Task<RequestResult<ReceiptDetailDto>> CompleteAsync(Guid receiptId, CancellationToken cancellationToken)
+    {
+        var receipt = await _receiptRepository.GetTrackedByIdAsync(receiptId, cancellationToken);
+        if (receipt is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.not_found", "Receipt not found.");
+        }
+
+        if (receipt.Status is ReceiptStatus.Completed or ReceiptStatus.Canceled)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.status_locked", "Receipt status does not allow completion.");
+        }
+
+        if (receipt.Items.Count == 0)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.no_items", "Receipt must have at least one item.");
+        }
+
+        foreach (var item in receipt.Items)
+        {
+            var balance = await _balanceRepository.GetTrackedByKeyAsync(item.LocationId, item.ProductId, item.LotId, cancellationToken);
+            if (balance is null)
+            {
+                var newBalance = new InventoryBalance
+                {
+                    Id = Guid.NewGuid(),
+                    LocationId = item.LocationId,
+                    ProductId = item.ProductId,
+                    LotId = item.LotId,
+                    QuantityOnHand = item.Quantity,
+                    QuantityReserved = 0,
+                    Status = InventoryBalanceStatus.Available
+                };
+
+                await _balanceRepository.AddAsync(newBalance, cancellationToken);
+            }
+            else
+            {
+                balance.QuantityOnHand += item.Quantity;
+                await _balanceRepository.UpdateAsync(balance, cancellationToken);
+            }
+        }
+
+        receipt.Status = ReceiptStatus.Completed;
+        receipt.ReceivedAtUtc = _dateTimeProvider.UtcNow;
+        await _receiptRepository.UpdateAsync(receipt, cancellationToken);
+
+        return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+}

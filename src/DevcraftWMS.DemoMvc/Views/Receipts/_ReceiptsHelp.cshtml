@@ -1,0 +1,53 @@
+﻿<div class="modal fade" id="receiptsHelp" tabindex="-1" aria-labelledby="receiptsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiptsHelpLabel">Receipts Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>This screen manages inbound receipts and initial allocation into locations.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Index (List)</h6>
+                    <ul class="mb-0">
+                        <li>Filter by warehouse, supplier, status, and received dates.</li>
+                        <li>Use sorting and pagination to review large volumes.</li>
+                        <li>Inactive receipts stay hidden unless explicitly included.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Create</h6>
+                    <ul class="mb-0">
+                        <li>Create a receipt header with warehouse, receipt number, and supplier info.</li>
+                        <li>Save to open the details screen for item allocation.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Details & Items</h6>
+                    <ul class="mb-0">
+                        <li>Add items by selecting product, lot (optional), location, UoM, and quantity.</li>
+                        <li>Locations must exist under the selected warehouse structure.</li>
+                        <li>Click <strong>Complete Receipt</strong> to generate inventory balances.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>No locations:</strong> create sectors/sections/structures/locations first.</li>
+                        <li><strong>Status locked:</strong> completed/canceled receipts cannot be edited.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

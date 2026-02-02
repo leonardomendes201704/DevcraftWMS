@@ -1,0 +1,266 @@
+﻿@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.Receipts.ReceiptDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Receipt {Model.Receipt.ReceiptNumber}";
+    ViewData["Subtitle"] = "Receipt details and allocation";
+
+    var statusBadge = Model.Receipt.Status switch
+    {
+        DevcraftWMS.DemoMvc.Enums.ReceiptStatus.Completed => "text-bg-success",
+        DevcraftWMS.DemoMvc.Enums.ReceiptStatus.InProgress => "text-bg-warning",
+        DevcraftWMS.DemoMvc.Enums.ReceiptStatus.Canceled => "text-bg-secondary",
+        _ => "text-bg-light"
+    };
+
+    var itemsGrid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.Receipts.ReceiptItemListItemViewModel>()
+        .WithTitle("Receipt Items")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(new GridQueryOptions
+        {
+            Action = "Details",
+            Controller = "Receipts",
+            Query = new Dictionary<string, string?>
+            {
+                ["id"] = Model.Receipt.Id.ToString(),
+                ["OrderBy"] = Model.Query.OrderBy,
+                ["OrderDir"] = Model.Query.OrderDir,
+                ["PageSize"] = Model.Query.PageSize.ToString()
+            }
+        })
+        .AddColumn("Product", item => new HtmlString($"{HtmlEncoder.Default.Encode(item.ProductCode)} - {HtmlEncoder.Default.Encode(item.ProductName)}"), "ProductCode")
+        .AddColumn("Lot", item => new HtmlString(HtmlEncoder.Default.Encode(item.LotCode ?? "-")), "LotId")
+        .AddColumn("Location", item => new HtmlString(HtmlEncoder.Default.Encode(item.LocationCode)), "LocationId")
+        .AddColumn("UoM", item => new HtmlString(HtmlEncoder.Default.Encode(item.UomCode)), "UomId")
+        .AddColumn("Quantity", item => new HtmlString(item.Quantity.ToString("N3")), "Quantity")
+        .AddColumn("Unit Cost", item => new HtmlString(item.UnitCost?.ToString("N4") ?? "-"), "UnitCost")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .Build();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="Receipts" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.Receipt.Status is not DevcraftWMS.DemoMvc.Enums.ReceiptStatus.Completed and not DevcraftWMS.DemoMvc.Enums.ReceiptStatus.Canceled)
+        {
+            <form asp-controller="Receipts" asp-action="Complete" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Receipt.Id" />
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-check2-circle me-1"></i>Complete Receipt
+                </button>
+            </form>
+        }
+        <a class="btn btn-outline-primary btn-sm" asp-controller="Receipts" asp-action="Edit" asp-route-id="@Model.Receipt.Id">Edit</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-muted small">Status</div>
+                <span class="badge @statusBadge">@Model.Receipt.Status</span>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Warehouse</div>
+                <div class="fw-semibold">@Model.Receipt.WarehouseName</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Document</div>
+                <div class="fw-semibold">@(Model.Receipt.DocumentNumber ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Supplier</div>
+                <div class="fw-semibold">@(Model.Receipt.SupplierName ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Received At</div>
+                <div class="fw-semibold">@(Model.Receipt.ReceivedAtUtc?.ToLocalTime().ToString("g") ?? "-")</div>
+            </div>
+            <div class="col-md-9">
+                <div class="text-muted small">Notes</div>
+                <div class="fw-semibold">@(Model.Receipt.Notes ?? "-")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Add Item</h5>
+        @if (!Model.NewItem.Sectors.Any())
+        {
+            <div class="alert alert-warning">Create sectors, sections, structures, and locations before adding receipt items.</div>
+        }
+        <form asp-controller="Receipts" asp-action="AddItem" method="post" data-receipt-id="@Model.Receipt.Id">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="NewItem.ReceiptId" />
+            <div asp-validation-summary="All" class="text-danger small mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Sector</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
+                        <select id="receipt-sector" asp-for="NewItem.SectorId" class="form-select" asp-items="Model.NewItem.Sectors"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Section</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-layout-text-sidebar"></i></span>
+                        <select id="receipt-section" asp-for="NewItem.SectionId" class="form-select" asp-items="Model.NewItem.Sections"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Structure</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-stack"></i></span>
+                        <select id="receipt-structure" asp-for="NewItem.StructureId" class="form-select" asp-items="Model.NewItem.Structures"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <select id="receipt-location" asp-for="NewItem.LocationId" class="form-select" asp-items="Model.NewItem.Locations"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.LocationId"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Product</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <select id="receipt-product" asp-for="NewItem.ProductId" class="form-select" asp-items="Model.NewItem.Products"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.ProductId"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lot (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-collection"></i></span>
+                        <select id="receipt-lot" asp-for="NewItem.LotId" class="form-select" asp-items="Model.NewItem.Lots"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">UoM</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                        <select id="receipt-uom" asp-for="NewItem.UomId" class="form-select" asp-items="Model.NewItem.Uoms"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.UomId"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quantity</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-123"></i></span>
+                        <input asp-for="NewItem.Quantity" class="form-control" type="number" step="0.001" min="0.001" inputmode="decimal" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.Quantity"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Unit Cost</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                        <input asp-for="NewItem.UnitCost" class="form-control" type="number" step="0.0001" min="0" inputmode="decimal" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.UnitCost"></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Add Item</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<partial name="_Grid" model="itemsGrid" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const form = document.querySelector('form[data-receipt-id]');
+            if (!form) {
+                return;
+            }
+
+            const receiptId = form.getAttribute('data-receipt-id');
+            const baseUrl = `/Receipts/Details/${receiptId}`;
+
+            const sector = document.getElementById('receipt-sector');
+            const section = document.getElementById('receipt-section');
+            const structure = document.getElementById('receipt-structure');
+            const location = document.getElementById('receipt-location');
+            const product = document.getElementById('receipt-product');
+            const lot = document.getElementById('receipt-lot');
+            const uom = document.getElementById('receipt-uom');
+
+            const buildUrl = () => {
+                const params = new URLSearchParams();
+
+                if (sector?.value) params.set('selectSectorId', sector.value);
+                if (section?.value) params.set('selectSectionId', section.value);
+                if (structure?.value) params.set('selectStructureId', structure.value);
+                if (location?.value) params.set('selectLocationId', location.value);
+                if (product?.value) params.set('selectProductId', product.value);
+                if (lot?.value) params.set('selectLotId', lot.value);
+                if (uom?.value) params.set('selectUomId', uom.value);
+
+                const qs = params.toString();
+                return qs ? `${baseUrl}?${qs}` : baseUrl;
+            };
+
+            const navigate = () => {
+                window.location.href = buildUrl();
+            };
+
+            if (sector) {
+                sector.addEventListener('change', () => {
+                    if (section) section.value = '';
+                    if (structure) structure.value = '';
+                    if (location) location.value = '';
+                    navigate();
+                });
+            }
+
+            if (section) {
+                section.addEventListener('change', () => {
+                    if (structure) structure.value = '';
+                    if (location) location.value = '';
+                    navigate();
+                });
+            }
+
+            if (structure) {
+                structure.addEventListener('change', () => {
+                    if (location) location.value = '';
+                    navigate();
+                });
+            }
+
+            if (product) {
+                product.addEventListener('change', () => {
+                    if (lot) lot.value = '';
+                    navigate();
+                });
+            }
+
+            form.addEventListener('submit', () => {
+                const normalizeDecimal = (input) => {
+                    if (!input || !input.value) return;
+                    input.value = input.value.replace(',', '.');
+                };
+
+                normalizeDecimal(document.getElementById('NewItem_Quantity'));
+                normalizeDecimal(document.getElementById('NewItem_UnitCost'));
+            });
+        })();
+    </script>
+}

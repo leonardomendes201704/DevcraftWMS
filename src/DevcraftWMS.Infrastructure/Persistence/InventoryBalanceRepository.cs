@@ -58,6 +58,29 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
             .SingleOrDefaultAsync(b => b.Id == id && b.Product != null && b.Product.CustomerId == customerId && b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
+    public async Task<InventoryBalance?> GetTrackedByKeyAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        var query = _dbContext.InventoryBalances
+            .Include(b => b.Product)
+            .Include(b => b.Location)
+            .ThenInclude(l => l.CustomerAccesses)
+            .Where(b => b.LocationId == locationId && b.ProductId == productId)
+            .Where(b => b.Product != null && b.Product.CustomerId == customerId)
+            .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (lotId.HasValue)
+        {
+            query = query.Where(b => b.LotId == lotId.Value);
+        }
+        else
+        {
+            query = query.Where(b => b.LotId == null);
+        }
+
+        return await query.SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(
         Guid? locationId,
         Guid? productId,

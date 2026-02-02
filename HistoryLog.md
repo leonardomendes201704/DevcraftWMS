@@ -1,6 +1,22 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Fix - Receipt AddItem model binding.
+  - Key changes: bind AddItem to NewItem prefix to avoid required Receipt validation.
+- Fix - Receipt AddItem numeric input handling.
+  - Key changes: added validation summary, numeric input configuration, and decimal normalization on submit.
+- Fix - Receipts AddItem binding.
+  - Key changes: post model now binds NewItem fields to avoid Guid.Empty receipt id.
+- Fix - Receipt dropdown cascade and default selection.
+  - Key changes: added "Selecione..." prompts, cascading selection refresh, and guideline for dropdown defaults.
+- Guideline - Respect API PageSize limits in DemoMvc lookups.
+  - Key changes: added frontend rule to cap lookup PageSize to API max (100).
+- Fix - Receipts page size validation.
+  - Key changes: reduced lookup pageSize to 100 to satisfy API validation.
+- UX - Surface API validation errors in DemoMvc.
+  - Key changes: parse ValidationProblemDetails errors for friendlier messages in API client.
+- TASK-0011 - Recebimento (Inbound) completed.
+  - Key changes: added Receipt/ReceiptItem entities, API endpoints, DemoMvc screens, and inventory balance integration with tests and migration.
 - Guideline - Prefix DONE for completed tasks.
   - Key changes: added rule to AGENTS and renamed completed task files with DONE- prefix.
 - TASK-0020 - Login Help manual added.

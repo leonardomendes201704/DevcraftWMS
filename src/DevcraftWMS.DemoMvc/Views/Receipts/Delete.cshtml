@@ -1,0 +1,22 @@
+﻿@model DevcraftWMS.DemoMvc.ViewModels.Receipts.ReceiptDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate Receipt";
+    ViewData["Subtitle"] = "Disable receipt without removing history";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Confirm deactivation</h5>
+        <p>Receipt <strong>@Model.ReceiptNumber</strong> will be marked as inactive.</p>
+        <ul class="list-unstyled">
+            <li><strong>Warehouse:</strong> @Model.WarehouseName</li>
+            <li><strong>Status:</strong> @Model.Status</li>
+            <li><strong>Supplier:</strong> @(Model.SupplierName ?? "-")</li>
+        </ul>
+        <form asp-action="DeleteConfirmed" method="post">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn btn-danger">Deactivate</button>
+            <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </form>
+    </div>
+</div>

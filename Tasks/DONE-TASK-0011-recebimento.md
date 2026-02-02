@@ -58,4 +58,4 @@ Nao existe fluxo de recebimento.
 - - Definir alocacao inicial (location target).
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)

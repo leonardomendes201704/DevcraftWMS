@@ -300,6 +300,11 @@ public abstract class ApiClientBase
 
         try
         {
+            if (TryExtractValidationErrors(content, out var validationMessage))
+            {
+                return validationMessage;
+            }
+
             var problem = JsonSerializer.Deserialize<ProblemDetails>(content, JsonOptions);
             if (problem is not null)
             {
@@ -311,6 +316,48 @@ public abstract class ApiClientBase
         }
 
         return content;
+    }
+
+    private static bool TryExtractValidationErrors(string content, out string? message)
+    {
+        message = null;
+
+        try
+        {
+            using var document = JsonDocument.Parse(content);
+            if (!document.RootElement.TryGetProperty("errors", out var errorsElement) ||
+                errorsElement.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            var errors = new List<string>();
+            foreach (var property in errorsElement.EnumerateObject())
+            {
+                if (property.Value.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var firstError = property.Value.EnumerateArray().FirstOrDefault();
+                if (firstError.ValueKind == JsonValueKind.String)
+                {
+                    errors.Add($"{property.Name}: {firstError.GetString()}");
+                }
+            }
+
+            if (errors.Count == 0)
+            {
+                return false;
+            }
+
+            message = string.Join(" ", errors);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

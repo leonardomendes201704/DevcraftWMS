@@ -11,6 +11,7 @@ public interface IInventoryBalanceRepository
     Task UpdateAsync(InventoryBalance balance, CancellationToken cancellationToken = default);
     Task<InventoryBalance?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<InventoryBalance?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<InventoryBalance?> GetTrackedByKeyAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? locationId,
         Guid? productId,

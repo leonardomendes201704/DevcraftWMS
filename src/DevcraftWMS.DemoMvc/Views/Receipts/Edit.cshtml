@@ -1,0 +1,64 @@
+﻿@model DevcraftWMS.DemoMvc.ViewModels.Receipts.ReceiptFormViewModel
+@{
+    ViewData["Title"] = "Edit Receipt";
+    ViewData["Subtitle"] = "Update receipt header information";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Warehouse</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+                        <select asp-for="WarehouseId" class="form-select" asp-items="Model.Warehouses"></select>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="WarehouseId"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Receipt Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-receipt"></i></span>
+                        <input asp-for="ReceiptNumber" class="form-control" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ReceiptNumber"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Document Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-file-text"></i></span>
+                        <input asp-for="DocumentNumber" class="form-control" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="DocumentNumber"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Supplier Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-truck"></i></span>
+                        <input asp-for="SupplierName" class="form-control" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="SupplierName"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="Notes"></span>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
