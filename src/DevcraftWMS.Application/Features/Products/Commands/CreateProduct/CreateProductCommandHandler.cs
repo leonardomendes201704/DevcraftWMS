@@ -22,6 +22,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
             request.Category,
             request.Brand,
             request.BaseUomId,
+            request.TrackingMode,
             request.WeightKg,
             request.LengthCm,
             request.WidthCm,

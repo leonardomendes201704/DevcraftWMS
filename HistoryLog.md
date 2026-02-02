@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0047 - SKU Tracking Mode completed.
+  - Key changes: added TrackingMode enum to products, API/UI support, lot validation rules, and migration AddProductTrackingMode.
 - TASK-0046 - Portaria (projeto web) completed.
   - Key changes: created DevcraftWMS.Portaria MVC project with shared layout, login/session flow, customer context selector, and API client base.
 - TASK-0045 - Portal do Cliente (projeto web) completed.

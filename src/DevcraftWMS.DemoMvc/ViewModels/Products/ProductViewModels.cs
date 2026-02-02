@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using DevcraftWMS.DemoMvc.Enums;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
 
 namespace DevcraftWMS.DemoMvc.ViewModels.Products;
@@ -24,6 +25,7 @@ public sealed record ProductListItemViewModel(
     string? Category,
     string? Brand,
     string? Ean,
+    TrackingMode TrackingMode,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -37,6 +39,7 @@ public sealed record ProductDetailViewModel(
     string? Category,
     string? Brand,
     Guid BaseUomId,
+    TrackingMode TrackingMode,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,
@@ -75,6 +78,9 @@ public sealed class ProductFormViewModel
     [Required]
     public Guid BaseUomId { get; set; }
 
+    [Required]
+    public TrackingMode? TrackingMode { get; set; }
+
     [Range(0, double.MaxValue)]
     public decimal? WeightKg { get; set; }
 
@@ -91,6 +97,7 @@ public sealed class ProductFormViewModel
     public decimal? VolumeCm3 { get; set; }
 
     public IReadOnlyList<SelectListItem> BaseUoms { get; set; } = Array.Empty<SelectListItem>();
+    public IReadOnlyList<SelectListItem> TrackingModeOptions { get; set; } = Array.Empty<SelectListItem>();
 }
 
 public sealed record ProductUomListItemViewModel(

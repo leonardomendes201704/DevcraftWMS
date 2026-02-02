@@ -1,3 +1,5 @@
+using DevcraftWMS.Domain.Enums;
+
 namespace DevcraftWMS.Application.Features.Products;
 
 public sealed record ProductDto(
@@ -10,6 +12,7 @@ public sealed record ProductDto(
     string? Category,
     string? Brand,
     Guid BaseUomId,
+    TrackingMode TrackingMode,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,
@@ -25,5 +28,6 @@ public sealed record ProductListItemDto(
     string? Category,
     string? Brand,
     string? Ean,
+    TrackingMode TrackingMode,
     bool IsActive,
     DateTime CreatedAtUtc);

@@ -38,6 +38,16 @@ public sealed class LotService : ILotService
             return RequestResult<LotDto>.Failure("lots.product.not_found", "Product not found.");
         }
 
+        if (product.TrackingMode == TrackingMode.None)
+        {
+            return RequestResult<LotDto>.Failure("lots.tracking.not_allowed", "Lots are not allowed for this product tracking mode.");
+        }
+
+        if (product.TrackingMode == TrackingMode.LotAndExpiry && !expirationDate.HasValue)
+        {
+            return RequestResult<LotDto>.Failure("lots.tracking.expiration_required", "Expiration date is required for this tracking mode.");
+        }
+
         if (manufactureDate.HasValue && expirationDate.HasValue && expirationDate.Value < manufactureDate.Value)
         {
             return RequestResult<LotDto>.Failure("lots.lot.invalid_dates", "Expiration date cannot be earlier than manufacture date.");
@@ -82,6 +92,22 @@ public sealed class LotService : ILotService
         if (lot.ProductId != productId)
         {
             return RequestResult<LotDto>.Failure("lots.product.mismatch", "Lot does not belong to the selected product.");
+        }
+
+        var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+        if (product is null)
+        {
+            return RequestResult<LotDto>.Failure("lots.product.not_found", "Product not found.");
+        }
+
+        if (product.TrackingMode == TrackingMode.None)
+        {
+            return RequestResult<LotDto>.Failure("lots.tracking.not_allowed", "Lots are not allowed for this product tracking mode.");
+        }
+
+        if (product.TrackingMode == TrackingMode.LotAndExpiry && !expirationDate.HasValue)
+        {
+            return RequestResult<LotDto>.Failure("lots.tracking.expiration_required", "Expiration date is required for this tracking mode.");
         }
 
         if (manufactureDate.HasValue && expirationDate.HasValue && expirationDate.Value < manufactureDate.Value)

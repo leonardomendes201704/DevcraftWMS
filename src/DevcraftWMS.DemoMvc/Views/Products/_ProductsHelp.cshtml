@@ -25,7 +25,8 @@
                     <h6>Create</h6>
                     <ul class="mb-0">
                         <li>Click <strong>New Product</strong> to create a SKU.</li>
-                        <li>Required fields: Code, Name, Base UoM.</li>
+                        <li>Required fields: Code, Name, Base UoM, Tracking Mode.</li>
+                        <li>Tracking Mode defines whether lots and expiry are enforced.</li>
                         <li>Optional fields: Description, EAN, ERP code, category, brand, dimensions, weight.</li>
                     </ul>
                 </section>
@@ -34,6 +35,7 @@
                     <h6>Details</h6>
                     <ul class="mb-0">
                         <li>Review SKU master data and dimension/weight details.</li>
+                        <li>Tracking Mode is displayed in the core details section.</li>
                         <li>Manage UoM conversions (add conversion factors for packaging).</li>
                         <li>Navigate to Lots for the selected product if needed.</li>
                     </ul>
@@ -59,6 +61,7 @@
                     <h6>Common Issues</h6>
                     <ul class="mb-0">
                         <li><strong>Code/EAN/ERP already used:</strong> each must be unique per customer.</li>
+                        <li><strong>Tracking mismatch:</strong> lots require Tracking Mode Lot or Lot and expiry.</li>
                         <li><strong>Invalid dimensions:</strong> values must be positive when provided.</li>
                         <li><strong>Missing Base UoM:</strong> create the unit first in UoM.</li>
                     </ul>

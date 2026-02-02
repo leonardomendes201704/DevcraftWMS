@@ -2,6 +2,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using DevcraftWMS.DemoMvc.ApiClients;
+using DevcraftWMS.DemoMvc.Enums;
+using DevcraftWMS.DemoMvc.Infrastructure;
 using DevcraftWMS.DemoMvc.ViewModels.Products;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
 using DevcraftWMS.DemoMvc.ViewModels.Uoms;
@@ -130,7 +132,8 @@ public sealed class ProductsController : Controller
 
         var model = new ProductFormViewModel
         {
-            BaseUoms = baseUoms
+            BaseUoms = baseUoms,
+            TrackingModeOptions = BuildTrackingModeOptions(null)
         };
 
         return View(model);
@@ -142,6 +145,7 @@ public sealed class ProductsController : Controller
         if (!ModelState.IsValid)
         {
             model.BaseUoms = await LoadAllUomOptionsAsync(model.BaseUomId, cancellationToken);
+            model.TrackingModeOptions = BuildTrackingModeOptions(model.TrackingMode);
             return View(model);
         }
 
@@ -150,6 +154,7 @@ public sealed class ProductsController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "Failed to create product.");
             model.BaseUoms = await LoadAllUomOptionsAsync(model.BaseUomId, cancellationToken);
+            model.TrackingModeOptions = BuildTrackingModeOptions(model.TrackingMode);
             return View(model);
         }
 
@@ -178,12 +183,14 @@ public sealed class ProductsController : Controller
             Category = result.Data.Category,
             Brand = result.Data.Brand,
             BaseUomId = result.Data.BaseUomId,
+            TrackingMode = result.Data.TrackingMode,
             WeightKg = result.Data.WeightKg,
             LengthCm = result.Data.LengthCm,
             WidthCm = result.Data.WidthCm,
             HeightCm = result.Data.HeightCm,
             VolumeCm3 = result.Data.VolumeCm3,
-            BaseUoms = await LoadAllUomOptionsAsync(result.Data.BaseUomId, cancellationToken)
+            BaseUoms = await LoadAllUomOptionsAsync(result.Data.BaseUomId, cancellationToken),
+            TrackingModeOptions = BuildTrackingModeOptions(result.Data.TrackingMode)
         };
 
         return View(model);
@@ -195,6 +202,7 @@ public sealed class ProductsController : Controller
         if (!ModelState.IsValid || model.Id is null)
         {
             model.BaseUoms = await LoadAllUomOptionsAsync(model.BaseUomId, cancellationToken);
+            model.TrackingModeOptions = BuildTrackingModeOptions(model.TrackingMode);
             return View(model);
         }
 
@@ -203,6 +211,7 @@ public sealed class ProductsController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "Failed to update product.");
             model.BaseUoms = await LoadAllUomOptionsAsync(model.BaseUomId, cancellationToken);
+            model.TrackingModeOptions = BuildTrackingModeOptions(model.TrackingMode);
             return View(model);
         }
 
@@ -271,5 +280,15 @@ public sealed class ProductsController : Controller
         var all = await LoadAllUomOptionsAsync(null, cancellationToken);
 
         return all.Where(uom => Guid.TryParse(uom.Value, out var id) && !assignedUoms.Contains(id)).ToList();
+    }
+
+    private static IReadOnlyList<SelectListItem> BuildTrackingModeOptions(TrackingMode? selected)
+    {
+        var options = Enum.GetValues<TrackingMode>()
+            .Select(mode => new SelectListItem(mode.GetDisplayName(), mode.ToString(), selected.HasValue && selected.Value == mode))
+            .ToList();
+
+        options.Insert(0, new SelectListItem("Select...", string.Empty, !selected.HasValue));
+        return options;
     }
 }

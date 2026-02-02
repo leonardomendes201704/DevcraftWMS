@@ -33,6 +33,7 @@ public sealed class ProductService : IProductService
         string? category,
         string? brand,
         Guid baseUomId,
+        DevcraftWMS.Domain.Enums.TrackingMode trackingMode,
         decimal? weightKg,
         decimal? lengthCm,
         decimal? widthCm,
@@ -88,6 +89,7 @@ public sealed class ProductService : IProductService
             Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim(),
             Brand = string.IsNullOrWhiteSpace(brand) ? null : brand.Trim(),
             BaseUomId = baseUomId,
+            TrackingMode = trackingMode,
             WeightKg = weightKg,
             LengthCm = lengthCm,
             WidthCm = widthCm,
@@ -122,6 +124,7 @@ public sealed class ProductService : IProductService
         string? category,
         string? brand,
         Guid baseUomId,
+        DevcraftWMS.Domain.Enums.TrackingMode trackingMode,
         decimal? weightKg,
         decimal? lengthCm,
         decimal? widthCm,
@@ -180,6 +183,7 @@ public sealed class ProductService : IProductService
         product.Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim();
         product.Brand = string.IsNullOrWhiteSpace(brand) ? null : brand.Trim();
         product.BaseUomId = baseUomId;
+        product.TrackingMode = trackingMode;
         product.WeightKg = weightKg;
         product.LengthCm = lengthCm;
         product.WidthCm = widthCm;

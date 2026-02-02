@@ -23,6 +23,7 @@ public sealed class UpdateProductCommandHandler : IRequestHandler<UpdateProductC
             request.Category,
             request.Brand,
             request.BaseUomId,
+            request.TrackingMode,
             request.WeightKg,
             request.LengthCm,
             request.WidthCm,

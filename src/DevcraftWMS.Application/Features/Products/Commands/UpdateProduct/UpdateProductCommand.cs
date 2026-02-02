@@ -13,6 +13,7 @@ public sealed record UpdateProductCommand(
     string? Category,
     string? Brand,
     Guid BaseUomId,
+    DevcraftWMS.Domain.Enums.TrackingMode TrackingMode,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,

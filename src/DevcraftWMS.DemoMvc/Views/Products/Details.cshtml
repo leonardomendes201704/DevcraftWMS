@@ -1,3 +1,4 @@
+@using DevcraftWMS.DemoMvc.Infrastructure
 @using DevcraftWMS.DemoMvc.ViewModels.Shared
 @using Microsoft.AspNetCore.Html
 @model DevcraftWMS.DemoMvc.ViewModels.Products.ProductDetailsPageViewModel
@@ -16,6 +17,7 @@
             new() { Label = "ERP Code", Value = string.IsNullOrWhiteSpace(Model.Product.ErpCode) ? "-" : Model.Product.ErpCode },
             new() { Label = "Category", Value = string.IsNullOrWhiteSpace(Model.Product.Category) ? "-" : Model.Product.Category },
             new() { Label = "Brand", Value = string.IsNullOrWhiteSpace(Model.Product.Brand) ? "-" : Model.Product.Brand },
+            new() { Label = "Tracking", Value = Model.Product.TrackingMode.GetDisplayName() },
             new() { Label = "Status", Value = Model.Product.IsActive ? "Active" : "Inactive", BadgeText = Model.Product.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.Product.IsActive ? "text-bg-success" : "text-bg-secondary" },
             new() { Label = "Created", Value = Model.Product.CreatedAtUtc.ToLocalTime().ToString("g") }
         }

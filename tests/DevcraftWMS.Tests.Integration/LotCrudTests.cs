@@ -109,6 +109,7 @@ public sealed class LotCrudTests : IClassFixture<CustomWebApplicationFactory>
             category = "Demo",
             brand = "Devcraft",
             baseUomId,
+            trackingMode = 2,
             weightKg = 1.1,
             lengthCm = 10,
             widthCm = 5,

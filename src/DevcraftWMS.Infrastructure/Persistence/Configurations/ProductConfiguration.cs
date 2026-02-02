@@ -19,6 +19,7 @@ public sealed class ProductConfiguration : AuditableEntityConfiguration<Product>
         builder.Property(p => p.ErpCode).HasMaxLength(50);
         builder.Property(p => p.Category).HasMaxLength(100);
         builder.Property(p => p.Brand).HasMaxLength(100);
+        builder.Property(p => p.TrackingMode).IsRequired();
         builder.Property(p => p.WeightKg).HasPrecision(18, 4);
         builder.Property(p => p.LengthCm).HasPrecision(18, 4);
         builder.Property(p => p.WidthCm).HasPrecision(18, 4);

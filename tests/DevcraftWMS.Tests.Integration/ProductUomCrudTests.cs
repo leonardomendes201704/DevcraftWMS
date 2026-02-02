@@ -50,7 +50,8 @@ public sealed class ProductUomCrudTests : IClassFixture<CustomWebApplicationFact
         {
             code = "SKU-FAIL",
             name = "Invalid Product",
-            baseUomId = Guid.NewGuid()
+            baseUomId = Guid.NewGuid(),
+            trackingMode = 0
         });
 
         var response = await client.PostAsync("/api/products", new StringContent(payload, Encoding.UTF8, "application/json"));
@@ -80,7 +81,8 @@ public sealed class ProductUomCrudTests : IClassFixture<CustomWebApplicationFact
         {
             code = $"SKU-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
             name = "Sample Product",
-            baseUomId
+            baseUomId,
+            trackingMode = 0
         });
 
         var response = await client.PostAsync("/api/products", new StringContent(payload, Encoding.UTF8, "application/json"));

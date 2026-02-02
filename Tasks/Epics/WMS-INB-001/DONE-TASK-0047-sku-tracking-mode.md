@@ -1,21 +1,21 @@
-﻿# TASK-0046 - Portaria: novo projeto web
+﻿# TASK-0047 - SKU: TrackingMode (None/Lot/LotAndExpiry)
 
 ## Resumo
-Criar novo projeto web Portaria para check-in e fila de docas.
+Adicionar TrackingMode no SKU (None/Lot/LotAndExpiry).
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Projeto MVC separado
-- Layout/menus basicos
-- Auth sessao JWT + contexto cliente
+- Enum + DisplayName
+- Persistencia + migrations
+- Exposicao em API/UI
 
 ## Dependencias
 - TASK-0044
 
 ## Estimativa
-- 6h
+- 4h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- Projeto compila e roda
-- UI consistente com DemoMvc
-- Fluxo de login e sessao funcional
+- SKU salva TrackingMode
+- Validacoes respeitam TrackingMode
+- Swagger e UI atualizados
 
 ## Status
-PENDENTE
+DONE

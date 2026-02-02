@@ -218,6 +218,7 @@ public sealed class ReceiptCrudTests : IClassFixture<CustomWebApplicationFactory
             category = "Inbound",
             brand = "Devcraft",
             baseUomId,
+            trackingMode = 0,
             weightKg = 1.1,
             lengthCm = 10,
             widthCm = 5,

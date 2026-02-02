@@ -32,7 +32,14 @@ public sealed class LotServiceTests
     [Fact]
     public async Task CreateLot_Should_Return_Failure_When_Code_Exists()
     {
-        var product = new Product { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid(), Code = "SKU-01", Name = "Product" };
+        var product = new Product
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU-01",
+            Name = "Product",
+            TrackingMode = TrackingMode.Lot
+        };
         var lotRepository = new FakeLotRepository(codeExists: true);
         var productRepository = new FakeProductRepository(product);
         var service = new LotService(lotRepository, productRepository, new FakeCustomerContext());
@@ -52,7 +59,14 @@ public sealed class LotServiceTests
     [Fact]
     public async Task CreateLot_Should_Return_Failure_When_Expiration_Before_Manufacture()
     {
-        var product = new Product { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid(), Code = "SKU-01", Name = "Product" };
+        var product = new Product
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU-01",
+            Name = "Product",
+            TrackingMode = TrackingMode.Lot
+        };
         var lotRepository = new FakeLotRepository();
         var productRepository = new FakeProductRepository(product);
         var service = new LotService(lotRepository, productRepository, new FakeCustomerContext());
@@ -67,6 +81,60 @@ public sealed class LotServiceTests
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("lots.lot.invalid_dates");
+    }
+
+    [Fact]
+    public async Task CreateLot_Should_Return_Failure_When_TrackingMode_None()
+    {
+        var product = new Product
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU-01",
+            Name = "Product",
+            TrackingMode = TrackingMode.None
+        };
+        var lotRepository = new FakeLotRepository();
+        var productRepository = new FakeProductRepository(product);
+        var service = new LotService(lotRepository, productRepository, new FakeCustomerContext());
+
+        var result = await service.CreateLotAsync(
+            product.Id,
+            "LOT-001",
+            null,
+            null,
+            LotStatus.Available,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("lots.tracking.not_allowed");
+    }
+
+    [Fact]
+    public async Task CreateLot_Should_Return_Failure_When_TrackingMode_Requires_Expiry()
+    {
+        var product = new Product
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU-01",
+            Name = "Product",
+            TrackingMode = TrackingMode.LotAndExpiry
+        };
+        var lotRepository = new FakeLotRepository();
+        var productRepository = new FakeProductRepository(product);
+        var service = new LotService(lotRepository, productRepository, new FakeCustomerContext());
+
+        var result = await service.CreateLotAsync(
+            product.Id,
+            "LOT-001",
+            null,
+            null,
+            LotStatus.Available,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("lots.tracking.expiration_required");
     }
 
     private sealed class FakeLotRepository : ILotRepository

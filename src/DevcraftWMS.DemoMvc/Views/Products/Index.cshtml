@@ -1,5 +1,6 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Infrastructure
 @model DevcraftWMS.DemoMvc.ViewModels.Products.ProductListPageViewModel
 @{
     ViewData["Title"] = "Products";
@@ -102,6 +103,7 @@
         .AddColumn("Category", item => new HtmlString(HtmlEncoder.Default.Encode(item.Category ?? "-")), "Category")
         .AddColumn("Brand", item => new HtmlString(HtmlEncoder.Default.Encode(item.Brand ?? "-")), "Brand")
         .AddColumn("EAN", item => new HtmlString(HtmlEncoder.Default.Encode(item.Ean ?? "-")), "Ean")
+        .AddColumn("Tracking", item => new HtmlString(HtmlEncoder.Default.Encode(item.TrackingMode.GetDisplayName())), "TrackingMode")
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .AddAction("Details", item => Url.Action("Details", "Products", new { id = item.Id }))

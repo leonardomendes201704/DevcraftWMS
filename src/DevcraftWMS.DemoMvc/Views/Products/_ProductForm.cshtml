@@ -51,6 +51,15 @@
         </div>
         <span class="text-danger" asp-validation-for="BaseUomId"></span>
     </div>
+    <div class="col-md-4">
+        <label class="form-label">Tracking Mode</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+            <select class="form-select" asp-for="TrackingMode" asp-items="Model.TrackingModeOptions">
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="TrackingMode"></span>
+    </div>
     <div class="col-md-3">
         <label class="form-label">Category</label>
         <div class="input-group">

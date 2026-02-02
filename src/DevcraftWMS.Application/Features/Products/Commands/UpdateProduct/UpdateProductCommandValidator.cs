@@ -15,6 +15,8 @@ public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProd
         RuleFor(x => x.Category).MaximumLength(100);
         RuleFor(x => x.Brand).MaximumLength(100);
         RuleFor(x => x.BaseUomId).NotEmpty();
+        RuleFor(x => x.TrackingMode).Must(mode => Enum.IsDefined(mode))
+            .WithMessage("Tracking mode is invalid.");
         RuleFor(x => x.WeightKg).GreaterThanOrEqualTo(0).When(x => x.WeightKg.HasValue);
         RuleFor(x => x.LengthCm).GreaterThan(0).When(x => x.LengthCm.HasValue);
         RuleFor(x => x.WidthCm).GreaterThan(0).When(x => x.WidthCm.HasValue);

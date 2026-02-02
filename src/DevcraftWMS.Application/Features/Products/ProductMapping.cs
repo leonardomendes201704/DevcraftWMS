@@ -15,6 +15,7 @@ public static class ProductMapping
             product.Category,
             product.Brand,
             product.BaseUomId,
+            product.TrackingMode,
             product.WeightKg,
             product.LengthCm,
             product.WidthCm,
@@ -31,6 +32,7 @@ public static class ProductMapping
             product.Category,
             product.Brand,
             product.Ean,
+            product.TrackingMode,
             product.IsActive,
             product.CreatedAtUtc);
 }
