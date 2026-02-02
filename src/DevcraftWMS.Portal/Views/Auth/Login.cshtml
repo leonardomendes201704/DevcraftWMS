@@ -1,0 +1,45 @@
+@model DevcraftWMS.Portal.ViewModels.Auth.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    ViewData["Subtitle"] = "Access the customer portal";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-6 col-xl-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3">Sign in</h4>
+                <form asp-action="Login" method="post" class="d-grid gap-3">
+                    <div>
+                        <label class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="you@example.com" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="Email"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="Password"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <hr class="my-4" />
+                <form asp-action="Login" method="post">
+                    <input type="hidden" name="mode" value="token" />
+                    <label class="form-label">Paste JWT token</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                        <input asp-for="Token" class="form-control" placeholder="Bearer token" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="Token"></span>
+                    <button type="submit" class="btn btn-outline-secondary mt-3">Store token</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

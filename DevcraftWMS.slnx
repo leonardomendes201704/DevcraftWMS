@@ -5,6 +5,7 @@
     <Project Path="src/DevcraftWMS.DemoMvc/DevcraftWMS.DemoMvc.csproj" />
     <Project Path="src/DevcraftWMS.Domain/DevcraftWMS.Domain.csproj" />
     <Project Path="src/DevcraftWMS.Infrastructure/DevcraftWMS.Infrastructure.csproj" />
+    <Project Path="src/DevcraftWMS.Portal/DevcraftWMS.Portal.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DevcraftWMS.Tests.Integration/DevcraftWMS.Tests.Integration.csproj" />

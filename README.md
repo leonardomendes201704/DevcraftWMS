@@ -19,6 +19,14 @@ Run the demo UI (server-rendered MVC) that exercises API features:
 
 By default it calls the API at `https://localhost:7263`. Update the base URL from the **Settings** screen or set `ApiBaseUrl` in `src/DevcraftWMS.DemoMvc/appsettings.json`.
 
+## Customer Portal UI
+Run the customer portal (server-rendered MVC) for inbound flows:
+```bash
+ dotnet run --project src/DevcraftWMS.Portal
+```
+
+By default it calls the API at `https://localhost:7263`. Update the base URL in `src/DevcraftWMS.Portal/appsettings.json`.
+
 ## Customer context (multi-client)
 This template supports an active customer context for multi-client scenarios:
 - DemoMvc provides a customer selector in the topbar (stored in session).
@@ -288,6 +296,8 @@ Logging:RetentionDays:Errors          -> Error log retention days
 Logging:RetentionDays:Transactions    -> Transaction log retention days
 Logging:Enrichment:TenantClaim        -> Claim used for tenant id
 Logging:Enrichment:UserIdClaim        -> Claim used for user id
+DemoMvc:ApiBaseUrl                    -> API base URL for DemoMvc (key: ApiBaseUrl in DevcraftWMS.DemoMvc)
+Portal:ApiBaseUrl                     -> API base URL for Customer Portal (key: ApiBaseUrl in DevcraftWMS.Portal)
 Logging:Enrichment:TenantHeader       -> Header used for tenant id
 Logging:Queue:Capacity                -> In-memory log queue capacity
 Logging:RequestIdHeader               -> Request id header name

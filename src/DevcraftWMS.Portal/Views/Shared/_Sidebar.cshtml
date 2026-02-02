@@ -1,0 +1,34 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string Active(string name) => controller.Equals(name, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="d-flex align-items-center gap-2">
+            <span class="logo-circle"><i class="bi bi-grid-fill"></i></span>
+            <div>
+                <div class="fw-semibold">Customer Portal</div>
+                <div class="text-muted small">DevcraftWMS</div>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <div class="nav-section">Inbound</div>
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+            <i class="bi bi-file-earmark-text"></i> ASNs
+        </a>
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+            <i class="bi bi-truck"></i> Inbound Orders
+        </a>
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+            <i class="bi bi-receipt"></i> Receipts
+        </a>
+        <div class="nav-section">Reports</div>
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+            <i class="bi bi-bar-chart-line"></i> Receiving Reports
+        </a>
+    </nav>
+</aside>

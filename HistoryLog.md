@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0045 - Portal do Cliente (projeto web) completed.
+  - Key changes: created DevcraftWMS.Portal MVC project with shared layout, login/session flow, customer context selector, and API client base.
 - Tasking - Created inbound epic tasks (WMS-INB-001).
   - Key changes: created epic folder with prioritized, small-scope tasks for ASN, OE, portaria, recebimento, qualidade/quarentena, putaway, encerramento, and new Portal/Portaria projects.
 - Tasking - Marked TASK-0010 as done.
