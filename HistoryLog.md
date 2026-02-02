@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Tasking - Created inbound epic tasks (WMS-INB-001).
+  - Key changes: created epic folder with prioritized, small-scope tasks for ASN, OE, portaria, recebimento, qualidade/quarentena, putaway, encerramento, and new Portal/Portaria projects.
 - Tasking - Marked TASK-0010 as done.
   - Key changes: renamed task file to DONE prefix and recorded completed subtasks.
 - Fix - Seed movement lookup translation.

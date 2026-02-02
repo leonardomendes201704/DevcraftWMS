@@ -1,0 +1,1731 @@
+Cenário: Entrada e Armazenagem (WMS) com produtos variados e controle opcional por lote/validade
+1) Contexto do cliente e dos produtos
+
+O cliente AutoPeças Orion (Cliente A) utiliza o armazém do operador logístico CD Vale Verde (3PL). Ele armazena:
+
+Produtos sem controle de lote/validade
+
+Parafusos, arruelas, abraçadeiras, itens de ferragem.
+
+Produtos com controle de lote e validade
+
+Adesivos industriais, selantes, químicos automotivos, sprays, lubrificantes.
+
+Produtos com regras especiais
+
+Inflamáveis (regras de doca, segregação, área específica)
+
+Produtos frágeis (embalagem / manuseio)
+
+Produtos de alto valor (armazenagem em área restrita)
+
+O contrato define:
+
+O cliente deve registrar previamente o pedido de entrada (ASN / Pré-Recebimento).
+
+O backoffice do armazém transforma o pedido em Ordem de Entrada (OE).
+
+O processo de recebimento exige conferência física, checagem documental, e, quando aplicável, validação de lote/validade.
+
+O WMS exige rastreabilidade por SSCC/etiqueta, unidade logística (caixa/pallet), localização, e status.
+
+2) Cliente registra o pedido (Pré-Recebimento / ASN)
+2.1 Ação do Cliente (Portal / Integração / EDI)
+
+No portal do WMS (ou via integração), o cliente cria um Pedido de Armazenagem informando:
+
+Dados do envio
+
+Transportadora
+
+Placa/cavalo/carreta (se souber)
+
+Previsão de chegada
+
+Tipo de carga (palletizada, batida, mista)
+
+Número da NF-e / CT-e (ou lista)
+
+Observações (ex.: “contém inflamáveis”, “precisa doca 3”, “entrega fracionada”)
+
+Itens do pedido
+Para cada SKU:
+
+Código do produto (SKU)
+
+Descrição
+
+Quantidade e unidade (cx, un, kg, etc.)
+
+Tipo de embalagem (caixa, fardo, pallet)
+
+Se exige controle: lote e validade? sim/não
+
+Se sim:
+
+Lote(s) previstos (às vezes o cliente já informa, às vezes só na chegada)
+
+Validade (quando aplicável)
+
+Regras do produto:
+
+Temperatura, segregação, “não empilhar”, inflamável, etc.
+
+2.2 Validações automáticas no momento do pedido
+
+Ao salvar, o WMS valida:
+
+SKU existe no cadastro do cliente (tabelas/tenant)
+
+Unidades e fator de conversão (cx→un, pallet→cx)
+
+Campos obrigatórios por tipo de produto:
+
+Se “controlado por validade”: validade obrigatória na entrada (ou “a informar na conferência”)
+
+Restrições de horário / docas disponíveis (se o WMS tiver agendamento)
+
+Saída do processo (cliente):
+
+Pedido fica com status “Pedido Registrado”
+
+Sistema gera um identificador, ex.: PR-2026-000184
+
+Se integrado, pode gerar um “ASN” com layout padrão.
+
+3) Backoffice recebe o pedido e emite a Ordem de Entrada (OE)
+3.1 Triagem do backoffice
+
+Um analista do CD abre a fila de pedidos “Pendentes de aprovação”. Ele confere:
+
+NF-e anexada / XML (se obrigatório)
+
+Dados da transportadora e previsão
+
+Se há produtos especiais (inflamáveis, químicos)
+
+Se o cliente solicitou agendamento (janela de entrega)
+
+Se estiver ok:
+
+Aprova e gera a OE: OE-2026-000392
+
+Vincula NF-e/CT-e, previsão, e define prioridade
+
+Reserva recursos (opcional): doca prevista, equipe, equipamentos (paleteira/empilhadeira)
+
+Se houver inconsistência:
+
+Status vira “Pendente de ajuste”
+
+O sistema notifica o cliente: “Pedido incompleto: falta XML da NF-e 3512..., ou falta indicar controle de validade no SKU X”.
+
+3.2 Emissão da OE
+
+Ao emitir, o WMS cria:
+
+Cabeçalho da OE (cliente, data, previsão, transportadora)
+
+Itens da OE (SKUs e quantidades previstas)
+
+Regras de conferência
+
+Conferência cega (operador não vê quantidade prevista) ou conferência assistida
+
+Percentual de amostragem (qualidade)
+
+Obrigatoriedade de foto/avaria
+
+Unidades esperadas
+
+Ex.: “20 caixas do SKU A”, “4 pallets do SKU B”
+
+Saída do processo (backoffice):
+
+Status: OE Emitida
+
+OE entra na fila operacional do recebimento
+
+4) Operadores recebem a OE (pré-alocação e preparação de doca)
+4.1 Encarregado do recebimento
+
+No início do turno, o encarregado abre o painel do WMS:
+
+OEs previstas para o dia (por janela)
+
+Docas e ocupação
+
+Tipo de carga e complexidade
+
+Ele define:
+
+Doca de recebimento sugerida (ex.: Doca 02 para palletizado, Doca 05 para batido)
+
+Equipe (2 conferentes + 1 empilhadeirista)
+
+Equipamentos (coletor RF, impressora de etiquetas, paleteira, balança)
+
+No WMS, a OE muda para:
+
+“Aguardando chegada do veículo” (se agendada)
+ou
+
+“Liberada para portaria” (se chegada pode ocorrer sem agendamento rígido)
+
+5) Caminhão chega: Portaria recebe e registra o check-in
+5.1 Processo físico
+
+O caminhão chega no CD às 08:17.
+
+Na portaria:
+
+Segurança solicita documentos:
+
+CNH, CRLV, NF-e/CT-e, comprovante de agendamento (se houver)
+
+Verifica:
+
+Placa confere com o informado
+
+Se o motorista está autorizado
+
+Se há restrição (ex.: carga perigosa sem sinalização)
+
+5.2 Processo no WMS (check-in)
+
+O porteiro acessa o módulo “Portaria” e registra:
+
+Placa, motorista, transportadora
+
+Hora de chegada
+
+Lista de documentos
+
+Seleciona a OE correspondente (ou pesquisa por NF-e / pedido)
+
+Se tudo ok:
+
+Status do veículo: “Check-in realizado”
+
+Status da OE: “Veículo na portaria”
+
+Sistema sugere doca (com base em fila e tipo de carga)
+
+Se docas cheias:
+
+Veículo fica em pátio com status “Aguardando doca”
+
+WMS registra fila por ordem de chegada, prioridade, SLA do cliente.
+
+6) Encaminhamento para doca de recebimento
+
+Quando uma doca libera:
+
+Portaria chama o motorista
+
+Motorista se dirige à doca indicada (ex.: Doca 02)
+
+Conferente valida lacre (se aplicável)
+
+WMS muda para:
+
+“Em doca”
+
+e inicia a etapa “Recebimento”
+
+7) Recebimento na doca: descarregamento + conferência
+7.1 Abertura do recebimento
+
+O operador inicia no coletor:
+
+Seleciona OE-2026-000392
+
+Confirma doca
+
+Confirma tipo de conferência (cega/assistida)
+
+O sistema cria o “Romaneio de Recebimento” (uma sessão operacional)
+
+7.2 Descarregamento
+
+O descarregamento pode ser:
+
+A) Palletizado
+
+Empilhadeira retira pallets
+
+Cada pallet pode vir com etiqueta do cliente (SSCC) ou sem identificação
+
+B) Batido (caixa a caixa)
+
+Caixas descarregadas para área de staging
+
+Exige mais tempo e contagem manual/RF
+
+7.3 Identificação das Unidades Logísticas (UL)
+
+Aqui o WMS “materializa” o recebimento:
+
+Se o pallet já tem SSCC válido:
+
+Operador bipaa etiqueta do pallet → o WMS reconhece UL
+
+Se não tem:
+
+Operador cria UL no sistema:
+
+“Pallet P000873”
+
+Imprime etiqueta do CD (SSCC interno)
+
+Cola no pallet
+
+Para caixas soltas:
+
+Pode criar UL por “caixa” ou por “lote de caixas” dependendo do processo
+
+Status das ULs:
+
+“Recebido em doca”
+
+“Aguardando conferência”
+
+“Aguardando qualidade”
+
+“Liberado para armazenagem”
+
+8) Conferência: quantidade, integridade, avarias
+8.1 Conferência de quantidade
+
+O conferente vai item a item:
+
+Bipaa SKU (ou seleciona da lista)
+
+Informa quantidade (ou bipaa unidades, dependendo do fluxo)
+
+WMS compara com o previsto na OE
+
+Exceções comuns
+
+Falta: veio menos do que a OE
+
+Sobra: veio mais do que a OE
+
+Divergência de SKU: produto diferente
+
+Unidade errada: veio em “un” mas OE está em “cx”
+
+Avaria: embalagem rasgada, vazamento, amassado
+
+Quando há divergência:
+
+WMS registra ocorrência no ato
+
+Pode exigir foto
+
+Pode gerar:
+
+“Pendência de backoffice”
+
+“Solicitação de devolução”
+
+“Entrada parcial”
+
+8.2 Conferência documental
+
+Se o processo exigir:
+
+Importa XML da NF-e
+
+Confere chave, CNPJ, CFOP, quantidades, pesos
+
+Se divergente: marca “NF-e divergente” e bloqueia finalização automática
+
+9) Controle por lote e validade (quando aplicável)
+
+Esse é o ponto crítico do seu requisito.
+
+9.1 Produtos NÃO controlados
+
+Operador só confirma SKU + quantidade
+
+Lote/validade não é solicitado
+
+O estoque nasce “livre” (sem rastreio por lote)
+
+9.2 Produtos controlados por lote/validade
+
+Ao registrar a quantidade, o coletor obriga:
+
+Lote (digitado ou lido de etiqueta)
+
+Validade (data)
+
+(Opcional) fabricação, número de série, etc.
+
+Regras típicas
+
+Validade mínima aceitável (ex.: precisa ter pelo menos 90 dias)
+
+FEFO (First Expire First Out) será usado no picking depois
+
+Um mesmo SKU pode entrar com múltiplos lotes no mesmo caminhão
+
+Se o operador digitar validade abaixo do mínimo:
+
+WMS trava com motivo:
+
+“Validade insuficiente: mínimo 90 dias, recebido 45 dias”
+
+Define destino:
+
+“Quarentena”
+
+“Aguardando aprovação do cliente”
+
+“Devolução”
+
+10) Qualidade, quarentena e liberação
+
+Dependendo do SKU e do cliente:
+
+Alguns itens exigem inspeção (amostragem)
+
+Alguns entram direto
+
+O analista de qualidade:
+
+Abre a fila “Aguardando Inspeção”
+
+Visualiza ULs e itens
+
+Registra:
+
+aprovado / reprovado
+
+observações
+
+fotos
+
+ações (retrabalho, devolução, descarte, segregação)
+
+Status
+
+“Quarentena” → bloqueia movimentação e picking
+
+“Liberado” → segue para endereçamento
+
+11) Endereçamento e armazenagem (Putaway)
+11.1 Geração de tarefa de armazenagem
+
+Após conferência e qualidade, o WMS cria tarefas de putaway:
+
+Por UL (pallet/caixa)
+
+Com prioridade (doca precisa liberar rápido)
+
+Com regras:
+
+Classe do produto (A/B/C)
+
+Tipo (inflamável, alto valor)
+
+Compatibilidade (não misturar com alimento, etc.)
+
+Capacidade do endereço (peso/volume)
+
+Restrições (altura máxima, “não empilhar”)
+
+O WMS sugere endereços:
+
+Área de pulmão
+
+Porta-pallet
+
+Flow rack
+
+Picking (se já for giro alto)
+
+Área segregada
+
+11.2 Execução pelo operador
+
+O empilhadeirista recebe no coletor:
+
+Tarefa: “Armazenar UL P000873”
+
+Origem: Doca 02 / Staging
+
+Destino sugerido: S03-R12-N02-B04
+
+Regras: “Inflamável: área Q-INFLAM”
+
+Confirmação: bipar endereço + bipar UL
+
+Ao concluir:
+
+Estoque passa a existir “endereço + lote/validade (se houver) + quantidade”
+
+Status da UL: “Armazenado”
+
+A doca libera espaço e o fluxo continua
+
+12) Fechamento da OE e comunicação ao cliente
+
+Quando todos os itens previstos foram tratados (ou justificadas as divergências):
+
+Conferente encerra o recebimento
+
+Backoffice valida pendências:
+
+faltas/sobras
+
+avarias
+
+notas divergentes
+
+Emite o fechamento da OE
+
+O WMS gera:
+
+Relatório de recebimento (romaneio)
+
+Divergências e ocorrências
+
+Estoque gerado (por endereço e por lote/validade)
+
+O cliente recebe notificação:
+
+“OE-2026-000392 finalizada”
+
+“Foram recebidos 98% do previsto; 2% em divergência”
+
+“Lote X com validade abaixo do mínimo ficou em quarentena”
+
+13) Pós-processo: inventário e rastreabilidade
+
+Como o estoque nasce estruturado, o WMS já habilita:
+
+Rastreabilidade (onde está cada lote)
+
+FEFO para picking
+
+Bloqueios por quarentena
+
+Inventário cíclico por endereço/ABC
+
+SLA de recebimento (tempo portaria → doca → armazenado)
+
+14) Pontos extras “de vida real” (bem comuns)
+
+Para ficar ainda mais realista, esse cenário normalmente inclui:
+
+Chegada sem OE (caminhão chega “de surpresa”)
+
+Portaria cria pré-registro → backoffice tenta vincular NF-e → cria OE emergencial
+
+Entrada parcial
+
+Metade do pedido chega hoje, metade amanhã
+
+Cross-docking
+
+Parte do recebido já vira “separação imediata” sem armazenar (se houver pedido de saída)
+
+Reetiquetagem
+
+Cliente manda sem etiqueta padrão → CD etiqueta no padrão interno
+
+Produto com embalagem irregular
+
+Cubagem/peso real divergente → ajuste cadastral + bloqueio de endereço
+
+
+-------------------------
+
+Especificação Funcional (WMS) — Processo de Entrada e Armazenagem
+
+Nome do Processo: Recebimento + Armazenagem (Inbound / Putaway)
+Versão: 1.0
+Status: Draft para validação
+Abrangência: Cliente (pré-recebimento) → Backoffice (OE) → Portaria → Doca/Recebimento → Qualidade/Quarentena → Endereçamento/Putaway → Fechamento da OE → Notificação ao cliente
+
+1) Objetivo
+
+Estabelecer o fluxo operacional e sistêmico para entrada de mercadorias em um armazém misto, contemplando:
+
+Registro do pedido de armazenagem pelo cliente (ASN / Pré-Recebimento)
+
+Emissão de Ordem de Entrada (OE) pelo backoffice
+
+Controle de check-in na portaria, direcionamento para doca e gestão de filas
+
+Recebimento físico, conferência, divergências e registro documental (NF-e/CT-e)
+
+Controle opcional de lote e validade, com regras de quarentena e bloqueio
+
+Geração e execução de tarefas de endereçamento/armazenagem (putaway)
+
+Encerramento e comunicação (relatórios, divergências, estoque gerado)
+
+2) Escopo
+2.1 Em Escopo
+
+Pré-Recebimento/ASN (portal ou integração)
+
+Emissão/gestão de OE
+
+Check-in portaria / pátio / docas
+
+Conferência (cega ou assistida)
+
+Tratamento de divergências (falta, sobra, SKU divergente, avaria)
+
+Lote/validade (obrigatório por SKU conforme regra)
+
+Quarentena e qualidade (aprovação/reprovação)
+
+Putaway (sugestão e confirmação de endereço)
+
+Relatório final e notificação ao cliente
+
+2.2 Fora de Escopo (neste documento)
+
+Processo de saída (picking/expedição)
+
+Faturamento/cobrança de armazenagem
+
+Integrações específicas (layout EDI detalhado) — apenas requisitos gerais
+
+Gestão de manutenção de equipamentos e segurança patrimonial (apenas eventos)
+
+3) Conceitos e definições
+
+Pedido de Armazenagem / Pré-Recebimento / ASN: comunicação antecipada do cliente informando o que será entregue.
+
+OE (Ordem de Entrada): ordem operacional emitida pelo CD para receber, conferir e gerar estoque.
+
+UL (Unidade Logística): unidade manipulável: pallet, caixa, fardo, contêiner, etc. Pode ter SSCC.
+
+Staging: área temporária próxima à doca para organizar recebimento antes do putaway.
+
+Quarentena: status/área onde o estoque fica bloqueado até liberação.
+
+Putaway: endereçamento e armazenagem física no endereço final.
+
+Armazém misto: coexistência de áreas e estratégias diferentes: porta-pallet, picking, flow rack, pulmão, segregados, cross-dock.
+
+4) Atores (Personas)
+
+Cliente (Expedidor / Administrativo do Cliente)
+Registra o pedido e fornece documentos/informações.
+
+Backoffice do CD (Analista Inbound)
+Aprova pedido, emite OE, trata divergências e fecha recebimento.
+
+Portaria / Segurança
+Realiza check-in, valida documentos, direciona doca e controla fila.
+
+Encarregado de Recebimento
+Planeja recursos, prioriza OEs e coordena docas/equipe.
+
+Operador de Recebimento (Conferente)
+Faz conferência física, registra lote/validade quando necessário.
+
+Qualidade
+Inspeciona, libera ou bloqueia em quarentena.
+
+Operador de Armazenagem (Empilhadeirista/Putaway)
+Executa tarefas de endereçamento e confirma endereço no WMS.
+
+Administrador WMS (opcional)
+Mantém regras, cadastros e parametrizações.
+
+5) Pré-condições
+
+Cliente cadastrado (tenant, contrato, regras de recebimento)
+
+SKUs cadastrados com:
+
+unidade/embalagem
+
+dimensões/peso (quando aplicável)
+
+classe (A/B/C), restrições e compatibilidades
+
+regra de rastreio: sem lote / com lote / com lote+validade
+
+Endereços cadastrados por zona:
+
+Porta-pallet, Picking, Pulmão, Segregados, Quarentena, Cross-Dock
+
+Usuários e perfis definidos (portaria, conferente, qualidade, empilhadeira)
+
+6) Entradas e Saídas do Processo
+6.1 Entradas (dados/documentos)
+
+Pedido do cliente (ASN) com itens e quantidades
+
+Documentos: NF-e (XML/chave), CT-e (opcional), romaneio do transportador
+
+Dados do veículo: placa, motorista, transportadora, lacre (se aplicável)
+
+6.2 Saídas (resultados)
+
+OE emitida e encerrada
+
+Estoque criado com rastreabilidade:
+
+endereço
+
+UL/SSCC
+
+lote/validade (quando aplicável)
+
+status (liberado/quarentena/bloqueado)
+
+Relatório de recebimento + divergências
+
+Notificação ao cliente (conclusão e pendências)
+
+7) Regras de Negócio (RN)
+RN-01 — Obrigatoriedade de Lote/Validade por SKU
+
+SKU com rastreio configurado como “Lote e Validade” deve exigir ambos no recebimento.
+
+SKU configurado como “Apenas lote” exige lote e dispensa validade.
+
+SKU sem rastreio não solicita lote/validade.
+
+RN-02 — Validade mínima
+
+Quando configurado por cliente/SKU, validade recebida deve respeitar mínimo (ex.: ≥ 90 dias).
+
+Se inválida: estoque deve ir para Quarentena com motivo “Validade insuficiente”.
+
+RN-03 — Conferência cega vs assistida
+
+Parametrização por cliente/OE:
+
+Cega: operador não vê quantidade prevista.
+
+Assistida: operador vê previsão e o sistema sinaliza discrepâncias.
+
+RN-04 — Divergências geram ocorrência obrigatória
+
+Tipos mínimos:
+
+Falta, sobra, SKU divergente, avaria, embalagem divergente, documento divergente.
+Cada ocorrência deve conter:
+
+tipo, descrição, evidência (foto se obrigatório), responsável e data/hora.
+
+RN-05 — Quarentena bloqueia movimentação e picking
+
+Estoque em quarentena não pode ser usado para saída.
+
+Somente qualidade/backoffice pode liberar.
+
+RN-06 — Endereçamento respeita zona e compatibilidade
+
+Inflamáveis → endereços marcados como “Inflamável”
+
+Alto valor → área restrita
+
+Alimentos/Químicos → não compatíveis (evitar co-armazenagem na mesma célula/zona)
+
+RN-07 — Putaway obrigatório para concluir OE (exceto cross-dock)
+
+Para finalizar OE, as ULs devem estar:
+
+armazenadas (endereço final), ou
+
+em quarentena (endereço de quarentena), ou
+
+em cross-dock com tarefa de expedição vinculada
+
+RN-08 — SSCC / UL interna
+
+Se carga não vier com SSCC válido, o CD deve gerar UL interna (etiqueta) para rastreio.
+
+8) Estados e Status (modelo de status)
+8.1 Status do Pedido (ASN)
+
+Registrado → Pendente ajuste → Aprovado → Convertido em OE → Cancelado
+
+8.2 Status da OE
+
+Emitida → Liberada para portaria → Veículo na portaria → Aguardando doca → Em doca
+→ Em conferência → Aguardando qualidade (se aplicável) → Aguardando putaway → Encerrada
+(ou: Encerrada com pendências / Encerrada parcial)
+
+8.3 Status da UL
+
+Criada → Recebida → Conferida → Quarentena → Liberada → Armazenada → Expedida (se cross-dock)
+
+9) Fluxo Principal (Happy Path)
+9.1 Cliente registra ASN
+
+Cliente acessa portal ou integra via API/EDI.
+
+Cria Pedido PR-XXXX com previsão de entrega e itens.
+
+Anexa XML NF-e (se obrigatório) ou informa chaves.
+
+Sistema valida campos obrigatórios e salva.
+
+9.2 Backoffice emite OE
+
+Backoffice revisa fila de pedidos.
+
+Aprova e converte em OE-XXXX.
+
+Define parâmetros: doca sugerida, tipo de conferência, prioridade.
+
+OE entra na fila operacional “Previstas”.
+
+9.3 Portaria faz check-in
+
+Caminhão chega.
+
+Portaria registra check-in: placa, motorista, documentos.
+
+Vincula a OE por número / NF-e / pedido.
+
+Direciona para doca conforme fila e capacidade.
+
+9.4 Recebimento na doca
+
+Operador inicia recebimento da OE no coletor.
+
+Descarrega e identifica UL (SSCC ou etiqueta interna).
+
+Realiza conferência de quantidade e integridade.
+
+Para SKUs controlados:
+
+registra lote/validade conforme RN-01/RN-02.
+
+9.5 Qualidade (quando aplicável)
+
+ULs exigidas entram em “Aguardando Qualidade”.
+
+Qualidade aprova → UL “Liberada”.
+
+Se reprova → Quarentena com motivo.
+
+9.6 Putaway (endereçamento e armazenagem)
+
+WMS gera tarefas de putaway por UL/volume.
+
+Empilhadeirista executa:
+
+bipar UL e bipar endereço
+
+Estoque é criado/atualizado no endereço final.
+
+9.7 Encerramento e notificação
+
+Backoffice valida pendências/divergências.
+
+OE é encerrada.
+
+Cliente recebe notificação com:
+
+recebido x previsto
+
+divergências
+
+itens em quarentena
+
+estoque gerado
+
+10) Fluxos Alternativos e Exceções
+FA-01 — Caminhão chega sem OE (não agendado)
+
+Portaria registra check-in “Sem OE”.
+
+Backoffice busca por NF-e e cria OE emergencial.
+
+Recebimento segue após liberação.
+
+FA-02 — Entrada parcial (faltas)
+
+Conferência registra falta.
+
+OE pode ser encerrada como “Parcial”.
+
+Cliente é notificado e backoffice define próxima entrega.
+
+FA-03 — Sobra de mercadoria
+
+Sistema registra sobra.
+
+Backoffice decide:
+
+criar OE complementar, ou
+
+rejeitar e devolver, ou
+
+manter em staging “Aguardando decisão”.
+
+FA-04 — Validade insuficiente
+
+Sistema bloqueia e direciona para quarentena.
+
+Cliente decide (aceitar com desconto, devolver, descarte, etc.).
+
+Só após decisão muda status.
+
+FA-05 — Avaria detectada
+
+Ocorrência com foto obrigatória.
+
+Decide: devolução, retrabalho, descarte, aceite parcial.
+
+FA-06 — Cross-dock
+
+Itens com destino imediato para saída:
+
+não vão para endereço final
+
+vão para zona cross-dock
+
+geram tarefa de expedição vinculada
+
+11) Requisitos Funcionais (RF)
+RF-01 — Registro de ASN
+
+Permitir criar pedido com itens, documentos, previsão.
+
+Suportar múltiplas NF-es por pedido.
+
+Permitir anexos (XML/PDF/imagens).
+
+RF-02 — Emissão e gestão de OE
+
+Converter ASN em OE.
+
+Parametrizar: conferência cega/assistida, prioridade, doca sugerida.
+
+Permitir cancelamento controlado (com trilha de auditoria).
+
+RF-03 — Portaria / Check-in
+
+Registro rápido de chegada, documentos e vínculo com OE.
+
+Fila de veículos aguardando doca.
+
+Controle de timestamps (SLA).
+
+RF-04 — Recebimento com UL/SSCC
+
+Leitura de SSCC quando existir.
+
+Geração de UL interna e impressão de etiqueta quando não existir.
+
+Suportar recebimento palletizado e batido.
+
+RF-05 — Conferência e divergências
+
+Capturar quantidades, ocorrências e fotos.
+
+Permitir modo cego.
+
+Registrar divergências com workflow de aprovação.
+
+RF-06 — Lote/validade
+
+Tornar obrigatório conforme cadastro do SKU.
+
+Validar regras de validade mínima.
+
+Permitir múltiplos lotes do mesmo SKU na mesma OE.
+
+RF-07 — Qualidade e quarentena
+
+Tela de fila para inspeção.
+
+Aprovar/reprovar e registrar evidências.
+
+Bloquear estoque automaticamente.
+
+RF-08 — Putaway
+
+Geração automática de tarefas por UL.
+
+Sugestão de endereço baseada em zona/capacidade/regras.
+
+Confirmação obrigatória por leitura (UL + endereço).
+
+RF-09 — Encerramento e comunicação
+
+Encerrar OE somente quando ULs estiverem em destino válido.
+
+Gerar relatório final.
+
+Notificar cliente.
+
+12) Requisitos Não Funcionais (RNF)
+
+Auditoria completa: quem fez o quê, quando, em qual dispositivo (RF), com histórico de mudanças.
+
+Performance: operação em doca exige respostas rápidas (< 1–2s para ações de leitura/confirmar).
+
+Offline (opcional): modo degradado para RF collectors com sincronização posterior.
+
+Segurança: perfis por função (portaria não altera estoque; conferente não libera quarentena).
+
+Rastreabilidade: logs de UL, lote, validade e movimentações.
+
+13) Dados mínimos (modelo conceitual)
+
+Entidades principais (alto nível):
+
+Cliente / Tenant
+
+SKU (Produto)
+
+Pedido (ASN)
+
+Ordem de Entrada (OE)
+
+Documento (NF-e/CT-e/Anexos)
+
+Veículo / Check-in
+
+Unidade Logística (UL / SSCC)
+
+Ocorrência (divergências/avarias)
+
+Inspeção de Qualidade
+
+Endereço (zona/capacidade/restrições)
+
+Movimento de Estoque / Inventário
+
+Campos chave em UL/Estoque:
+
+ClienteId, SkuId, Quantidade, Unidade
+
+Lote (nullable), Validade (nullable)
+
+EndereçoId
+
+Status (Liberado/Quarentena/Bloqueado)
+
+Referência de OE / Recebimento
+
+14) KPIs e SLAs recomendados
+
+Tempo Chegada → Doca
+
+Tempo Doca → Conferência concluída
+
+Tempo Conferência → Armazenado
+
+% divergência por cliente / por SKU
+
+Produtividade (UL/h por operador)
+
+% itens em quarentena e motivos
+
+15) Critérios de Aceite (Definition of Done)
+
+Fluxo completo executável sem intervenção manual “por fora”
+
+Divergências registradas com trilha e notificação ao cliente
+
+Produtos controlados exigem lote/validade e aplicam validade mínima
+
+Estoque gerado com endereço + rastreio conforme cadastro
+
+Putaway gera tarefas e exige confirmação por leitura
+
+Relatório final e status consistentes
+
+16) Anexo A — Cenário exemplo (dados)
+
+Cliente: AutoPeças Orion
+OE: OE-2026-000392
+Itens:
+
+SKU-1001 Parafuso 10mm (sem lote) — 2000 un
+
+SKU-2208 Selante Industrial (lote+validade) — 120 cx (lote L2401, validade 2026-08-15)
+
+SKU-3302 Spray Inflamável (lote+validade, segregado) — 30 cx
+
+Regras:
+
+Spray → zona “Inflamável”
+
+Selante → validade mínima 90 dias
+
+Conferência assistida, foto obrigatória em avaria
+
+-----------------------
+
+1) Documento para Azure DevOps Wiki (Markdown)
+WMS — Processo de Entrada e Armazenagem (Inbound / Putaway)
+
+Versão: 1.0
+Tipo: Especificação Funcional (BRD/FRD)
+Armazém: Misto (porta-pallet, picking, pulmão, segregados, quarentena, cross-dock)
+Objetivo: Padronizar e detalhar o fluxo de entrada de mercadorias desde o ASN até a criação do estoque endereçado.
+
+1. Objetivo
+
+Garantir um processo completo para:
+
+Cliente registrar Pedido de Armazenagem (ASN/Pré-Recebimento)
+
+Backoffice emitir Ordem de Entrada (OE)
+
+Portaria registrar check-in e fila de doca
+
+Operação receber, conferir e tratar divergências
+
+Controlar lote/validade quando aplicável
+
+Direcionar para qualidade/quarentena quando necessário
+
+Gerar tarefas de putaway e confirmar endereço
+
+Encerrar OE e notificar o cliente com relatório
+
+2. Escopo
+Em escopo
+
+ASN (portal/integrado), OE, portaria, doca, conferência, divergências
+
+Lote/validade por SKU
+
+Quarentena/qualidade e liberação
+
+Putaway (tarefas e confirmação por leitura)
+
+Relatório final e notificação ao cliente
+
+Fora de escopo
+
+Saída (picking/expedição) completa (apenas cross-dock como exceção)
+
+Cobrança/contratos
+
+Layouts EDI específicos (somente requisitos gerais)
+
+3. Atores
+
+Cliente: cria ASN e fornece documentos
+
+Backoffice Inbound: aprova e emite OE, trata pendências, encerra
+
+Portaria: check-in do veículo, fila e doca
+
+Encarregado: prioriza OEs e recursos
+
+Conferente: recebimento e conferência + lote/validade
+
+Qualidade: inspeção, quarentena e liberação
+
+Empilhadeirista: putaway e confirmação de endereço
+
+4. Conceitos
+
+ASN/Pré-Recebimento: aviso antecipado do que será entregue
+
+OE: ordem operacional do CD para receber e gerar estoque
+
+UL: unidade logística (pallet/caixa/fardo) com SSCC ou etiqueta interna
+
+Staging: área temporária de organização antes do putaway
+
+Quarentena: bloqueio operacional até liberação
+
+Putaway: armazenagem no endereço final
+
+5. Pré-condições
+
+Cliente e SKUs cadastrados
+
+SKUs com parametrização de rastreio: sem lote / lote / lote+validade
+
+Endereços cadastrados por zona (picking, pulmão, segregados, quarentena, etc.)
+
+Perfis de acesso por função
+
+6. Regras de Negócio (RN)
+
+RN-01 — Lote/validade obrigatório por SKU
+
+SKU “lote+validade” exige ambos no recebimento
+
+SKU “lote” exige lote
+
+SKU “sem rastreio” não solicita
+
+RN-02 — Validade mínima
+
+Se configurado por cliente/SKU, validade deve respeitar mínimo (ex.: ≥ 90 dias)
+
+Caso contrário: direciona para Quarentena com motivo
+
+RN-03 — Conferência cega vs assistida
+
+Parametrizável por cliente/OE
+
+RN-04 — Divergências exigem ocorrência
+
+Falta, sobra, SKU divergente, avaria, embalagem divergente, documento divergente
+
+Podem exigir foto
+
+RN-05 — Quarentena bloqueia movimentações
+
+Somente qualidade/backoffice libera
+
+RN-06 — Endereçamento por compatibilidade e zona
+
+Inflamáveis/alto valor/segregados obedecem áreas dedicadas e compatibilidades
+
+RN-07 — Putaway obrigatório para encerrar OE (exceto cross-dock)
+
+UL deve estar em endereço final ou quarentena, ou zona cross-dock vinculada
+
+RN-08 — UL interna quando sem SSCC
+
+Geração de etiqueta interna para rastreabilidade
+
+7. Fluxo Principal (Happy Path)
+
+Cliente registra ASN com itens e documentos
+
+Backoffice aprova e emite OE (prioridade, doca sugerida, tipo de conferência)
+
+Caminhão chega → portaria faz check-in e vincula OE
+
+Direcionamento para doca / fila
+
+Recebimento: descarrega, cria/identifica UL, confere quantidades e integridade
+
+Se SKU controlado: registra lote/validade (validade mínima aplicada)
+
+Qualidade (quando aplicável): aprova ou manda para quarentena
+
+Putaway: WMS gera tarefa, operador confirma UL + endereço
+
+Encerramento OE: relatórios, divergências e notificação ao cliente
+
+8. Fluxos Alternativos
+
+FA-01: Caminhão sem OE → backoffice cria OE emergencial após NF-e
+
+FA-02: Entrada parcial (faltas) → encerrar parcial / pendência
+
+FA-03: Sobra → OE complementar ou devolução
+
+FA-04: Validade insuficiente → quarentena / decisão do cliente
+
+FA-05: Avaria → ocorrência + evidência
+
+FA-06: Cross-dock → não endereça, vai para zona cross-dock e segue para expedição
+
+9. Status (alto nível)
+
+ASN: Registrado → Pendente ajuste → Aprovado → Convertido em OE → Cancelado
+OE: Emitida → Liberada portaria → Veículo na portaria → Aguardando doca → Em doca → Em conferência → (Qualidade/Quarentena) → Aguardando putaway → Encerrada
+UL: Criada → Recebida → Conferida → Quarentena → Liberada → Armazenada
+
+10. KPIs
+
+Chegada→Doca, Doca→Conferência, Conferência→Armazenado
+
+% divergências (por cliente e SKU)
+
+% quarentena e motivos
+
+Produtividade UL/h
+
+2) Checklist de Implementação (para Task / Epic)
+2.1 Cadastros e parametrizações
+
+ Cadastro de SKU com flags: TrackingMode = None | Batch | BatchAndExpiry
+
+ Regra de validade mínima por Cliente/SKU
+
+ Cadastro de Zonas: Staging, Picking, Bulk/PortaPallet, Quarantine, Segregated(Inflammable/HighValue), CrossDock
+
+ Cadastro de Endereços com: capacidade, restrições, compatibilidades
+
+ Perfis e permissões por papel (portaria/conferente/qualidade/putaway/backoffice)
+
+2.2 ASN / Pedido do Cliente
+
+ Tela/API para criar ASN com itens e documentos
+
+ Validações por SKU (lote/validade obrigatório conforme cadastro)
+
+ Upload/anexo XML NF-e e chaves
+
+ Status e trilha de auditoria
+
+2.3 OE (Backoffice)
+
+ Converter ASN → OE
+
+ Parametrizar tipo de conferência (cega/assistida)
+
+ Priorização e doca sugerida
+
+ Cancelamento controlado
+
+2.4 Portaria e Pátio
+
+ Check-in do veículo com timestamps
+
+ Vínculo por OE/NF-e/ASN
+
+ Fila “Aguardando doca”
+
+ Direcionamento para doca
+
+2.5 Recebimento e Conferência
+
+ Sessão de recebimento (romaneio) por OE
+
+ Criação/leitura de UL (SSCC ou etiqueta interna)
+
+ Conferência quantidades
+
+ Registro de divergências + evidências (foto opcional/obrigatória)
+
+ Regras de lote/validade (obrigatoriedade + validade mínima)
+
+2.6 Qualidade e Quarentena
+
+ Fila de inspeção por UL/Item
+
+ Aprovar/Reprovar + motivos + evidências
+
+ Bloqueio de estoque em quarentena (sem picking/movimentação)
+
+2.7 Putaway (endereçamento)
+
+ Geração automática de tarefas por UL
+
+ Sugestão de endereço por zona/capacidade/regras
+
+ Confirmação UL + endereço (scanner/coletor)
+
+ Criação de estoque endereçado
+
+2.8 Encerramento e Notificação
+
+ Encerrar OE com validações (UL em destino válido)
+
+ Relatório final: recebido x previsto, divergências, quarentena
+
+ Notificação ao cliente (portal/email/webhook)
+
+3) Perguntas de Validação (para alinhamento com negócio)
+
+O agendamento de doca é obrigatório ou sugestivo?
+
+A conferência é sempre assistida ou pode ser cega por cliente?
+
+Quando houver “sobra”, o CD pode receber e estocar “provisoriamente” ou sempre precisa aprovação?
+
+Qual o comportamento padrão para validade insuficiente: bloquear sempre ou permitir aceite com autorização?
+
+Quais SKUs exigem qualidade obrigatória? (por família/classe)
+
+Cross-dock é permitido para qualquer SKU ou somente para alguns clientes?
+
+O cliente pode informar lote/validade no ASN ou isso é sempre coletado na conferência?
+
+Necessidade de pesagem/cubagem real no recebimento?
+
+4) Mapa de Telas (sugestão)
+
+Portal Cliente → ASN
+
+Criar pedido, anexar docs, itens, previsão
+
+Backoffice → Aprovação + Emissão OE
+
+Lista de ASNs, aprovar, gerar OE, parametrizar conferência
+
+Portaria → Check-in
+
+Placa/motorista/docs, buscar OE, fila de doca, direcionar doca
+
+Recebimento → Iniciar Recebimento (OE)
+
+Criar sessão, UL/SSCC, conferência, divergências
+
+Qualidade → Inspeção
+
+Aprovar/reprovar, quarentena
+
+Putaway → Tarefas
+
+Lista de tarefas, confirmar UL+endereço
+
+Backoffice → Encerrar OE
+
+Pendências, relatório, notificação
+
+5) APIs mínimas (proposta)
+
+Nomes ilustrativos. Dá pra adaptar para seu padrão (REST + MediatR, etc.)
+
+ASN
+
+POST /api/asns
+
+GET /api/asns?status=...
+
+GET /api/asns/{id}
+
+POST /api/asns/{id}/attachments
+
+POST /api/asns/{id}/submit (opcional)
+
+OE
+
+POST /api/inbound-orders (criar manual)
+
+POST /api/asns/{id}/convert-to-inbound-order
+
+GET /api/inbound-orders?status=...
+
+GET /api/inbound-orders/{id}
+
+POST /api/inbound-orders/{id}/set-params (conferência/prioridade)
+
+POST /api/inbound-orders/{id}/cancel
+
+Portaria
+
+POST /api/gate/checkins
+
+GET /api/gate/checkins?status=...
+
+POST /api/gate/checkins/{id}/assign-dock
+
+Recebimento
+
+POST /api/receipts/start (inicia sessão da OE)
+
+POST /api/receipts/{receiptId}/ul (criar UL / registrar SSCC)
+
+POST /api/receipts/{receiptId}/count (conferência item/quantidade)
+
+POST /api/receipts/{receiptId}/exceptions (divergências/avarias)
+
+POST /api/receipts/{receiptId}/finish
+
+Qualidade / Quarentena
+
+GET /api/quality/queue
+
+POST /api/quality/inspections
+
+POST /api/quarantine/{ulId}/release
+
+Putaway
+
+GET /api/putaway/tasks?status=...
+
+POST /api/putaway/tasks/{id}/confirm (ul + endereço)
+
+POST /api/putaway/tasks/{id}/reassign (opcional)
+
+6) Máquina de Estados (eventos sugeridos)
+6.1 OE — Eventos
+
+InboundOrderCreated
+
+InboundOrderReleasedToGate
+
+TruckCheckedIn
+
+DockAssigned
+
+ReceiptStarted
+
+ReceiptConfirmed (parcial ou total)
+
+QualityRequired
+
+QualityApproved / QualityRejected
+
+PutawayTasksCreated
+
+PutawayCompleted
+
+InboundOrderClosed / InboundOrderClosedPartial
+
+6.2 UL — Eventos
+
+UlCreated (SSCC lido ou UL interna)
+
+UlReceived
+
+UlCounted
+
+UlMovedToQuarantine
+
+UlReleased
+
+UlPutawayConfirmed
+
+------------------------------
+
+
+EPIC — WMS-INB-001: Inbound & Putaway (Entrada e Armazenagem)
+Objetivo do Epic
+
+Implementar o processo completo de Entrada e Armazenagem em armazém misto, desde o ASN (Pré-Recebimento) do cliente até conferência, qualidade/quarentena, putaway e encerramento da OE, com rastreio opcional por lote/validade.
+
+Critérios de sucesso (DoD do Epic)
+
+Fluxo end-to-end executável sem controles “por fora”
+
+Estoque gerado por endereço, com UL/SSCC e lote/validade quando aplicável
+
+Divergências registradas e visíveis em relatórios
+
+Quarentena bloqueando movimentação/saída, com liberação controlada
+
+Putaway com tarefas e confirmação UL+endereço
+
+Relatório final e notificação ao cliente
+
+FEATURE 1 — WMS-INB-001-F01: Cadastro e Parametrizações Inbound
+
+Descrição: Criar/validar cadastros e regras necessárias para operação inbound.
+
+Tasks
+
+T1. WMS-INB-001-F01-T01 — Adicionar modo de rastreio por SKU (sem lote / lote / lote+validade)
+
+Implementar propriedade TrackingMode no SKU
+
+Atualizar validações e persistência
+Aceite: SKUs podem ser configurados e o modo é aplicado nas telas/APIs.
+
+T2. WMS-INB-001-F01-T02 — Configurar regra de validade mínima por Cliente/SKU
+
+Permitir definir ValidadeMinimaDias por SKU (ou política do cliente)
+Aceite: Sistema bloqueia/alerta conforme regra no recebimento.
+
+T3. WMS-INB-001-F01-T03 — Criar Zonas do armazém (Staging, Picking, Pulmão, Quarentena, Segregados, Cross-dock)
+Aceite: Endereços possuem zona e regras podem usar zona.
+
+T4. WMS-INB-001-F01-T04 — Endereços com capacidade e restrições
+
+Peso/volume máximo, compatibilidade (inflamável, alto valor etc.)
+Aceite: Putaway respeita restrições.
+
+T5. WMS-INB-001-F01-T05 — Perfis e permissões por papel (portaria, conferente, qualidade, putaway, backoffice)
+Aceite: Usuário sem permissão não executa ações críticas (ex.: liberar quarentena).
+
+FEATURE 2 — WMS-INB-001-F02: ASN / Pré-Recebimento do Cliente
+
+Descrição: Permitir cliente registrar antecipadamente o pedido com itens e documentos.
+
+Tasks
+
+T1. WMS-INB-001-F02-T01 — Criar endpoint POST /asns e modelo de dados
+Aceite: ASN criado com cabeçalho e itens.
+
+T2. WMS-INB-001-F02-T02 — Tela “Criar ASN” no portal/backoffice
+
+Itens, quantidades, previsão, transportadora, observações
+Aceite: Fluxo de criação completo com validações.
+
+T3. WMS-INB-001-F02-T03 — Upload/anexo de documentos (XML NF-e, PDF, imagens)
+Aceite: Anexos vinculados ao ASN.
+
+T4. WMS-INB-001-F02-T04 — Validações por SKU (lote/validade obrigatório conforme TrackingMode)
+Aceite: SKUs “lote+validade” exigem dados no momento correto.
+
+T5. WMS-INB-001-F02-T05 — Status do ASN (Registrado / Pendente ajuste / Aprovado / Convertido / Cancelado)
+Aceite: Status muda por ações e fica auditável.
+
+FEATURE 3 — WMS-INB-001-F03: Emissão e Gestão de Ordem de Entrada (OE)
+
+Descrição: Backoffice aprova ASN e emite OE com parâmetros operacionais.
+
+Tasks
+
+T1. WMS-INB-001-F03-T01 — Converter ASN → OE
+Aceite: OE gerada com itens e vínculo ao ASN/NF-e.
+
+T2. WMS-INB-001-F03-T02 — Parametrizar conferência (cega/assistida) e prioridade
+Aceite: Conferência respeita o modo configurado.
+
+T3. WMS-INB-001-F03-T03 — Definir doca sugerida e regras de recebimento por OE
+Aceite: Doca sugerida aparece para portaria/encarregado.
+
+T4. WMS-INB-001-F03-T04 — Cancelamento controlado de OE
+Aceite: Só perfis autorizados cancelam e o motivo é registrado.
+
+T5. WMS-INB-001-F03-T05 — Tela de fila de OEs (Previstas / Em andamento / Pendências)
+Aceite: Operação visualiza por status e prioridade.
+
+FEATURE 4 — WMS-INB-001-F04: Portaria / Check-in / Pátio / Doca
+
+Descrição: Registrar chegada do veículo, controlar fila e direcionar doca.
+
+Tasks
+
+T1. WMS-INB-001-F04-T01 — Endpoint e tela de Check-in (placa, motorista, docs, horários)
+Aceite: Check-in cria registro com timestamps.
+
+T2. WMS-INB-001-F04-T02 — Vínculo do check-in a OE por pesquisa (OE, NF-e, ASN)
+Aceite: Portaria encontra e vincula rapidamente.
+
+T3. WMS-INB-001-F04-T03 — Fila “Aguardando doca” com ordenação por prioridade/SLA
+Aceite: Portaria/encarregado gerenciam fila.
+
+T4. WMS-INB-001-F04-T04 — Atribuição de doca e mudança de status
+Aceite: OE passa para “Em doca” com registro de horário.
+
+FEATURE 5 — WMS-INB-001-F05: Recebimento e Conferência (UL/SSCC, divergências, lote/validade)
+
+Descrição: Receber fisicamente, identificar UL, conferir e registrar ocorrências.
+
+Tasks
+
+T1. WMS-INB-001-F05-T01 — Iniciar sessão de recebimento (romaneio) por OE
+Aceite: Sessão criada e vinculada à OE e doca.
+
+T2. WMS-INB-001-F05-T02 — Leitura de SSCC e criação de UL interna quando necessário
+Aceite: UL sempre existe (SSCC externo ou interno).
+
+T3. WMS-INB-001-F05-T03 — Impressão de etiqueta de UL interna
+Aceite: Etiqueta gerada e reimpressão disponível.
+
+T4. WMS-INB-001-F05-T04 — Conferência de itens (modo cego/assistido)
+Aceite: Conferência funciona conforme parametrização.
+
+T5. WMS-INB-001-F05-T05 — Registro de divergências (falta/sobra/SKU/embalagem/doc/avaria)
+Aceite: Ocorrência obrigatória com motivo; foto quando exigido.
+
+T6. WMS-INB-001-F05-T06 — Captura obrigatória de lote/validade para SKUs controlados
+Aceite: Sem lote/validade o item não finaliza.
+
+T7. WMS-INB-001-F05-T07 — Validade mínima e ação automática (Quarentena)
+Aceite: Validade insuficiente direciona e bloqueia.
+
+FEATURE 6 — WMS-INB-001-F06: Qualidade e Quarentena
+
+Descrição: Inspecionar itens/UL e liberar ou bloquear.
+
+Tasks
+
+T1. WMS-INB-001-F06-T01 — Fila de inspeção de qualidade por UL/SKU
+Aceite: Lista mostra pendências e permite executar inspeção.
+
+T2. WMS-INB-001-F06-T02 — Registrar inspeção (aprovar/reprovar, evidência, motivo)
+Aceite: Resultado muda status e fica auditável.
+
+T3. WMS-INB-001-F06-T03 — Quarentena bloqueia estoque para movimentação e picking
+Aceite: Operações de saída não usam estoque em quarentena.
+
+T4. WMS-INB-001-F06-T04 — Liberação controlada (somente perfis autorizados)
+Aceite: Evento de liberação registra usuário, data e motivo.
+
+FEATURE 7 — WMS-INB-001-F07: Putaway (tarefas, sugestão de endereço, confirmação)
+
+Descrição: Gerar tarefas de armazenagem e executar com confirmação por leitura.
+
+Tasks
+
+T1. WMS-INB-001-F07-T01 — Gerar tarefas automáticas de putaway por UL
+Aceite: Ao liberar UL, tarefas são criadas.
+
+T2. WMS-INB-001-F07-T02 — Motor de sugestão de endereço (zona/capacidade/restrições/compatibilidade)
+Aceite: Sugestões respeitam regras de armazém misto.
+
+T3. WMS-INB-001-F07-T03 — Execução da tarefa: confirmar UL + endereço
+Aceite: Sem confirmação dupla não finaliza tarefa.
+
+T4. WMS-INB-001-F07-T04 — Atualizar estoque endereçado ao concluir putaway
+Aceite: Estoque aparece no endereço correto com lote/validade quando aplicável.
+
+T5. WMS-INB-001-F07-T05 — Reatribuição manual de tarefa (exceção)
+Aceite: Backoffice/encarregado pode trocar destino com motivo.
+
+FEATURE 8 — WMS-INB-001-F08: Encerramento da OE, Relatórios e Notificação ao Cliente
+
+Descrição: Finalizar OE com consistência, emitir relatório e comunicar cliente.
+
+Tasks
+
+T1. WMS-INB-001-F08-T01 — Validação de encerramento (UL em destino válido: armazenado/quarentena/cross-dock)
+Aceite: Não encerra OE com UL “solta” em staging sem justificativa.
+
+T2. WMS-INB-001-F08-T02 — Encerrar OE (total/parcial) e registrar pendências
+Aceite: OE encerra com status coerente e auditoria.
+
+T3. WMS-INB-001-F08-T03 — Relatório de recebimento (previsto x recebido + divergências + quarentena)
+Aceite: Relatório exportável e visível ao cliente/backoffice.
+
+T4. WMS-INB-001-F08-T04 — Notificação ao cliente (portal/email/webhook)
+Aceite: Cliente recebe evento de conclusão e pendências.
+
+T5. WMS-INB-001-F08-T05 — KPIs inbound (chegada→doca, doca→conferência, conferência→armazenado)
+Aceite: Métricas calculadas por OE e período.
+
+Template de Descrição (para cada Task no Azure DevOps)
+
+Copie e use como padrão em cada item:
+
+Descrição
+
+Contexto:
+
+Objetivo:
+
+Regra(s) de negócio:
+
+Impactos:
+
+Observações:
+
+Critérios de Aceite
+
+ …
+
+ …
+
+DoD
+
+ Cobertura mínima de testes (unit/integração conforme aplicável)
+
+ Logs/auditoria de eventos críticos
+
+ Validações e mensagens para o usuário
+
+ Atualização de documentação Wiki
+ 
+ 
+ ------------------------
+ 
+ Bônus: “Questions to Validate”
+ 
+ Conferência é sempre assistida ou pode ser cega por cliente?
+
+Cliente pode informar lote/validade no ASN ou somente na doca?
+
+Em caso de sobra: armazenar provisoriamente ou bloquear até aprovação?
+
+Quais famílias de SKU exigem qualidade obrigatória?
+
+Cross-dock é permitido para todos ou somente para alguns?
+
+Validade mínima é por SKU, por cliente, por ambos?
