@@ -123,6 +123,7 @@ Every code change must append an entry to `HistoryLog.md` at solution root with:
 - Every new feature must start with a task file under `Tasks/`.
 - Task code format: `TASK-####` (4 digits, incrementing).
 - File naming: `Tasks/<TASKCODE>-<kebab-case-title>.md`.
+- When a task is completed, rename the file with the prefix `DONE-` (example: `Tasks/DONE-TASK-0001-sample-task.md`).
 - Task code must be referenced in commit messages and PR titles when possible.
 - Update the task file with progress notes and final acceptance checklist status.
 

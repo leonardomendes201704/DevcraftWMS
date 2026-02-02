@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Guideline - Prefix DONE for completed tasks.
+  - Key changes: added rule to AGENTS and renamed completed task files with DONE- prefix.
 - TASK-0020 - Login Help manual added.
   - Key changes: added Help button and modal manual for the Login screen.
 - TASK-0019 - Dashboard Help manual added.
