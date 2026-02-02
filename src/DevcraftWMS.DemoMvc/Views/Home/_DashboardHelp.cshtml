@@ -1,0 +1,47 @@
+﻿<div class="modal fade" id="dashboardHelp" tabindex="-1" aria-labelledby="dashboardHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dashboardHelpLabel">Dashboard Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>The dashboard provides a quick operational overview (API health, warehouse KPIs, expiring lots, and recent logs).</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Key Areas</h6>
+                    <ul class="mb-0">
+                        <li><strong>API Status:</strong> health check result and a shortcut to Settings.</li>
+                        <li><strong>Active Warehouses:</strong> KPI for operational warehouses.</li>
+                        <li><strong>Expiring Lots:</strong> count within the configured expiration window.</li>
+                        <li><strong>Quick Links:</strong> shortcuts to core modules.</li>
+                        <li><strong>Recent Requests / Errors:</strong> latest log entries for fast triage.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Related Screens</h6>
+                    <ul class="mb-0">
+                        <li>Use <strong>View lots</strong> to open the Lots list filtered by expiration window.</li>
+                        <li>Open <strong>Logs</strong> to review full Request/Error/Transaction history.</li>
+                        <li>Use Quick Links to jump into CRUD modules (Warehouses, Products, Locations).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>API status down:</strong> check API runtime and Settings configuration.</li>
+                        <li><strong>No log entries:</strong> ensure logging is enabled and traffic exists.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
