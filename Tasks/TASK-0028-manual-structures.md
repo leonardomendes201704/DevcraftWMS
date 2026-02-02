@@ -68,4 +68,4 @@ Hoje as telas nao possuem documentacao contextual embutida.
 - Padronizar estrutura do HTML de manual para todas as telas.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)

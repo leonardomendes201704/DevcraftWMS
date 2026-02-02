@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0028 - Structures Help manual added.
+  - Key changes: added Help button and modal manual covering Structures Index + CRUD screens.
 - TASK-0027 - Sections Help manual added.
   - Key changes: added Help button and modal manual covering Sections Index + CRUD screens.
 - TASK-0026 - Sectors Help manual added.
