@@ -104,6 +104,64 @@ public sealed class ReceiptServiceTests
     }
 
     [Fact]
+    public async Task AddItem_Should_Return_Failure_When_Location_Disallows_Lot_Tracking()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-007",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            TrackingMode = TrackingMode.Lot
+        };
+
+        var lotId = Guid.NewGuid();
+        var lot = new Lot
+        {
+            Id = lotId,
+            ProductId = productId,
+            Code = "LOT-001",
+            Status = LotStatus.Available
+        };
+
+        var location = new Location
+        {
+            Id = Guid.NewGuid(),
+            Code = "LOC-01",
+            AllowLotTracking = false,
+            AllowExpiryTracking = false
+        };
+
+        var uomId = Guid.NewGuid();
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeProductRepository(product),
+            new FakeLotRepository(lot),
+            new FakeLocationRepository(location),
+            new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.AddItemAsync(receipt.Id, productId, lotId, location.Id, uomId, 1, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("locations.location.tracking_not_allowed");
+    }
+
+    [Fact]
     public async Task AddItem_Should_Quarantine_Lot_When_Shelf_Life_Is_Too_Short()
     {
         var receipt = new Receipt

@@ -100,7 +100,11 @@ public sealed class InventoryBalanceCrudTests : IClassFixture<CustomWebApplicati
             barcode = "BC-0001",
             level = 1,
             row = 1,
-            column = 1
+            column = 1,
+            maxWeightKg = 1000m,
+            maxVolumeM3 = 2.5m,
+            allowLotTracking = true,
+            allowExpiryTracking = true
         });
 
         var createResponse = await client.PostAsync($"/api/structures/{structureId}/locations", new StringContent(createPayload, Encoding.UTF8, "application/json"));

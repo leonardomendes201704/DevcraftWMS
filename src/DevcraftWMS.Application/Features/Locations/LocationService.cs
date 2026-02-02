@@ -28,6 +28,10 @@ public sealed class LocationService : ILocationService
         int level,
         int row,
         int column,
+        decimal? maxWeightKg,
+        decimal? maxVolumeM3,
+        bool allowLotTracking,
+        bool allowExpiryTracking,
         CancellationToken cancellationToken)
     {
         var customerId = _customerContext.CustomerId;
@@ -51,6 +55,11 @@ public sealed class LocationService : ILocationService
             }
         }
 
+        if (allowExpiryTracking && !allowLotTracking)
+        {
+            return RequestResult<LocationDto>.Failure("locations.location.invalid_tracking", "Expiry tracking requires lot tracking.");
+        }
+
         var normalizedCode = code.Trim().ToUpperInvariant();
         var exists = await _locationRepository.CodeExistsAsync(structureId, normalizedCode, cancellationToken);
         if (exists)
@@ -67,7 +76,11 @@ public sealed class LocationService : ILocationService
             Barcode = barcode.Trim(),
             Level = level,
             Row = row,
-            Column = column
+            Column = column,
+            MaxWeightKg = maxWeightKg,
+            MaxVolumeM3 = maxVolumeM3,
+            AllowLotTracking = allowLotTracking,
+            AllowExpiryTracking = allowExpiryTracking
         };
 
         location.CustomerAccesses.Add(new LocationCustomer
@@ -89,6 +102,10 @@ public sealed class LocationService : ILocationService
         int level,
         int row,
         int column,
+        decimal? maxWeightKg,
+        decimal? maxVolumeM3,
+        bool allowLotTracking,
+        bool allowExpiryTracking,
         CancellationToken cancellationToken)
     {
         var location = await _locationRepository.GetTrackedByIdAsync(id, cancellationToken);
@@ -111,6 +128,11 @@ public sealed class LocationService : ILocationService
             }
         }
 
+        if (allowExpiryTracking && !allowLotTracking)
+        {
+            return RequestResult<LocationDto>.Failure("locations.location.invalid_tracking", "Expiry tracking requires lot tracking.");
+        }
+
         var normalizedCode = code.Trim().ToUpperInvariant();
         if (!string.Equals(location.Code, normalizedCode, StringComparison.OrdinalIgnoreCase))
         {
@@ -127,6 +149,10 @@ public sealed class LocationService : ILocationService
         location.Level = level;
         location.Row = row;
         location.Column = column;
+        location.MaxWeightKg = maxWeightKg;
+        location.MaxVolumeM3 = maxVolumeM3;
+        location.AllowLotTracking = allowLotTracking;
+        location.AllowExpiryTracking = allowExpiryTracking;
 
         await _locationRepository.UpdateAsync(location, cancellationToken);
         return RequestResult<LocationDto>.Success(LocationMapping.Map(location));

@@ -176,7 +176,11 @@ public sealed class ReceiptCrudTests : IClassFixture<CustomWebApplicationFactory
             barcode = "LOC-01",
             level = 1,
             row = 1,
-            column = 1
+            column = 1,
+            maxWeightKg = 1000m,
+            maxVolumeM3 = 2.5m,
+            allowLotTracking = true,
+            allowExpiryTracking = true
         });
 
         var response = await client.PostAsync($"/api/structures/{structureId}/locations", new StringContent(payload, Encoding.UTF8, "application/json"));

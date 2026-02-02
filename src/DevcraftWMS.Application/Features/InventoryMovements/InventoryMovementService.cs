@@ -84,6 +84,12 @@ public sealed class InventoryMovementService : IInventoryMovementService
             return RequestResult<InventoryMovementDto>.Failure("inventory.product.not_found", "Product not found.");
         }
 
+        var compatibilityFailure = ValidateLocationCompatibility(toLocation, product, quantity);
+        if (compatibilityFailure is not null)
+        {
+            return compatibilityFailure;
+        }
+
         Lot? lot = null;
         if (lotId.HasValue)
         {
@@ -162,6 +168,40 @@ public sealed class InventoryMovementService : IInventoryMovementService
         movement.ToLocation = toLocation;
 
         return RequestResult<InventoryMovementDto>.Success(InventoryMovementMapping.MapDetails(movement));
+    }
+
+    private static RequestResult<InventoryMovementDto>? ValidateLocationCompatibility(Location location, Product product, decimal quantity)
+    {
+        if (product.TrackingMode is TrackingMode.Lot or TrackingMode.LotAndExpiry && !location.AllowLotTracking)
+        {
+            return RequestResult<InventoryMovementDto>.Failure("locations.location.tracking_not_allowed", "Location does not allow lot-tracked products.");
+        }
+
+        if (product.TrackingMode == TrackingMode.LotAndExpiry && !location.AllowExpiryTracking)
+        {
+            return RequestResult<InventoryMovementDto>.Failure("locations.location.expiry_not_allowed", "Location does not allow expiry-tracked products.");
+        }
+
+        if (location.MaxWeightKg.HasValue && product.WeightKg.HasValue)
+        {
+            var totalWeight = product.WeightKg.Value * quantity;
+            if (totalWeight > location.MaxWeightKg.Value)
+            {
+                return RequestResult<InventoryMovementDto>.Failure("locations.location.capacity_exceeded_weight", "Product weight exceeds location capacity.");
+            }
+        }
+
+        if (location.MaxVolumeM3.HasValue && product.VolumeCm3.HasValue)
+        {
+            var volumeM3 = product.VolumeCm3.Value / 1_000_000m;
+            var totalVolume = volumeM3 * quantity;
+            if (totalVolume > location.MaxVolumeM3.Value)
+            {
+                return RequestResult<InventoryMovementDto>.Failure("locations.location.capacity_exceeded_volume", "Product volume exceeds location capacity.");
+            }
+        }
+
+        return null;
     }
 
     public async Task<RequestResult<InventoryMovementDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken)

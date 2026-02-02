@@ -241,7 +241,11 @@ public sealed class SampleDataSeeder
                         Barcode = $"BC-{code}",
                         Level = level,
                         Row = row,
-                        Column = column
+                        Column = column,
+                        MaxWeightKg = 1000,
+                        MaxVolumeM3 = 2.5m,
+                        AllowLotTracking = true,
+                        AllowExpiryTracking = true
                     });
                 }
             }

@@ -20,5 +20,9 @@ public sealed class CreateLocationCommandHandler : MediatR.IRequestHandler<Creat
             request.Level,
             request.Row,
             request.Column,
+            request.MaxWeightKg,
+            request.MaxVolumeM3,
+            request.AllowLotTracking,
+            request.AllowExpiryTracking,
             cancellationToken);
 }

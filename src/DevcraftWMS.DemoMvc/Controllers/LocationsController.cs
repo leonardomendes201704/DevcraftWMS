@@ -317,7 +317,11 @@ public sealed class LocationsController : Controller
             Barcode = result.Data.Barcode,
             Level = result.Data.Level,
             Row = result.Data.Row,
-            Column = result.Data.Column
+            Column = result.Data.Column,
+            MaxWeightKg = result.Data.MaxWeightKg,
+            MaxVolumeM3 = result.Data.MaxVolumeM3,
+            AllowLotTracking = result.Data.AllowLotTracking,
+            AllowExpiryTracking = result.Data.AllowExpiryTracking
         };
 
         await PopulateLocationFormOptionsAsync(model, cancellationToken);

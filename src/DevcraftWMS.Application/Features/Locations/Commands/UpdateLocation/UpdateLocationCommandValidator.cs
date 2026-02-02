@@ -13,5 +13,11 @@ public sealed class UpdateLocationCommandValidator : AbstractValidator<UpdateLoc
         RuleFor(x => x.Level).GreaterThan(0).LessThanOrEqualTo(200);
         RuleFor(x => x.Row).GreaterThan(0).LessThanOrEqualTo(200);
         RuleFor(x => x.Column).GreaterThan(0).LessThanOrEqualTo(200);
+        RuleFor(x => x.MaxWeightKg)
+            .GreaterThan(0)
+            .When(x => x.MaxWeightKg.HasValue);
+        RuleFor(x => x.MaxVolumeM3)
+            .GreaterThan(0)
+            .When(x => x.MaxVolumeM3.HasValue);
     }
 }

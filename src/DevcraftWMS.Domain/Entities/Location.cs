@@ -9,6 +9,10 @@ public sealed class Location : AuditableEntity
     public int Level { get; set; }
     public int Row { get; set; }
     public int Column { get; set; }
+    public decimal? MaxWeightKg { get; set; }
+    public decimal? MaxVolumeM3 { get; set; }
+    public bool AllowLotTracking { get; set; } = true;
+    public bool AllowExpiryTracking { get; set; } = true;
 
     public Structure? Structure { get; set; }
     public Zone? Zone { get; set; }

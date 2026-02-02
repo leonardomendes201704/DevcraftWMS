@@ -26,6 +26,10 @@ public sealed class LocationServiceTests
             1,
             1,
             1,
+            null,
+            null,
+            true,
+            true,
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
@@ -50,6 +54,10 @@ public sealed class LocationServiceTests
             1,
             1,
             1,
+            null,
+            null,
+            true,
+            true,
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
@@ -85,10 +93,42 @@ public sealed class LocationServiceTests
             1,
             1,
             1,
+            null,
+            null,
+            true,
+            true,
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("locations.structure.mismatch");
+    }
+
+    [Fact]
+    public async Task CreateLocation_Should_Return_Failure_When_Expiry_Tracking_Disallows_Lot()
+    {
+        var structure = new Structure { Id = Guid.NewGuid(), SectionId = Guid.NewGuid(), Code = "R-01", Name = "Rack", Levels = 4 };
+        var locationRepository = new FakeLocationRepository();
+        var structureRepository = new FakeStructureRepository(structure);
+        var zoneRepository = new FakeZoneRepository(null);
+        var customerContext = new FakeCustomerContext();
+        var service = new LocationService(locationRepository, structureRepository, zoneRepository, customerContext);
+
+        var result = await service.CreateLocationAsync(
+            structure.Id,
+            null,
+            "L-01",
+            "BC-01",
+            1,
+            1,
+            1,
+            null,
+            null,
+            allowLotTracking: false,
+            allowExpiryTracking: true,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("locations.location.invalid_tracking");
     }
 
     private sealed class FakeLocationRepository : ILocationRepository

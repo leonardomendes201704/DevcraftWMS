@@ -157,6 +157,12 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status404NotFound
             },
+            "locations.zone.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
             "locations.location.code_exists" => new ProblemDetails
             {
                 Title = "Conflict",
@@ -164,6 +170,36 @@ public static class ResultExtensions
                 Status = StatusCodes.Status409Conflict
             },
             "locations.structure.mismatch" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "locations.location.invalid_tracking" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "locations.location.tracking_not_allowed" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "locations.location.expiry_not_allowed" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "locations.location.capacity_exceeded_weight" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "locations.location.capacity_exceeded_volume" => new ProblemDetails
             {
                 Title = "Bad Request",
                 Detail = result.ErrorMessage,

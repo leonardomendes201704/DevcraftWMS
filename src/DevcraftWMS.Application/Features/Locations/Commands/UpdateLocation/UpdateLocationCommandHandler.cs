@@ -21,5 +21,9 @@ public sealed class UpdateLocationCommandHandler : MediatR.IRequestHandler<Updat
             request.Level,
             request.Row,
             request.Column,
+            request.MaxWeightKg,
+            request.MaxVolumeM3,
+            request.AllowLotTracking,
+            request.AllowExpiryTracking,
             cancellationToken);
 }

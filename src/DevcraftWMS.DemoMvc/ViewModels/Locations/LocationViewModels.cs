@@ -29,6 +29,10 @@ public sealed record LocationListItemViewModel(
     int Level,
     int Row,
     int Column,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -42,6 +46,10 @@ public sealed record LocationDetailViewModel(
     int Level,
     int Row,
     int Column,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -70,6 +78,14 @@ public sealed class LocationFormViewModel
     public int Column { get; set; } = 1;
 
     public Guid? ZoneId { get; set; }
+    [Range(0.001, 999999)]
+    public decimal? MaxWeightKg { get; set; }
+
+    [Range(0.000001, 999999)]
+    public decimal? MaxVolumeM3 { get; set; }
+
+    public bool AllowLotTracking { get; set; } = true;
+    public bool AllowExpiryTracking { get; set; } = true;
 
     public IReadOnlyList<SelectListItem> Warehouses { get; set; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sectors { get; set; } = Array.Empty<SelectListItem>();

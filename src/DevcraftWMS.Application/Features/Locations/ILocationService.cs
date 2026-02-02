@@ -12,6 +12,10 @@ public interface ILocationService
         int level,
         int row,
         int column,
+        decimal? maxWeightKg,
+        decimal? maxVolumeM3,
+        bool allowLotTracking,
+        bool allowExpiryTracking,
         CancellationToken cancellationToken);
 
     Task<RequestResult<LocationDto>> UpdateLocationAsync(
@@ -23,6 +27,10 @@ public interface ILocationService
         int level,
         int row,
         int column,
+        decimal? maxWeightKg,
+        decimal? maxVolumeM3,
+        bool allowLotTracking,
+        bool allowExpiryTracking,
         CancellationToken cancellationToken);
 
     Task<RequestResult<LocationDto>> DeactivateLocationAsync(Guid id, CancellationToken cancellationToken);

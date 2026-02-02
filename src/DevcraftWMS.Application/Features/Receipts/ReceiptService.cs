@@ -209,6 +209,12 @@ public sealed class ReceiptService : IReceiptService
             return RequestResult<ReceiptItemDto>.Failure("receipts.location.not_found", "Location not found.");
         }
 
+        var compatibilityFailure = ValidateLocationCompatibility(location, product, quantity);
+        if (compatibilityFailure is not null)
+        {
+            return compatibilityFailure;
+        }
+
         var uom = await _uomRepository.GetByIdAsync(uomId, cancellationToken);
         if (uom is null)
         {
@@ -304,5 +310,39 @@ public sealed class ReceiptService : IReceiptService
         await _receiptRepository.UpdateAsync(receipt, cancellationToken);
 
         return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
+    private static RequestResult<ReceiptItemDto>? ValidateLocationCompatibility(Location location, Product product, decimal quantity)
+    {
+        if (product.TrackingMode is TrackingMode.Lot or TrackingMode.LotAndExpiry && !location.AllowLotTracking)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("locations.location.tracking_not_allowed", "Location does not allow lot-tracked products.");
+        }
+
+        if (product.TrackingMode == TrackingMode.LotAndExpiry && !location.AllowExpiryTracking)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("locations.location.expiry_not_allowed", "Location does not allow expiry-tracked products.");
+        }
+
+        if (location.MaxWeightKg.HasValue && product.WeightKg.HasValue)
+        {
+            var totalWeight = product.WeightKg.Value * quantity;
+            if (totalWeight > location.MaxWeightKg.Value)
+            {
+                return RequestResult<ReceiptItemDto>.Failure("locations.location.capacity_exceeded_weight", "Product weight exceeds location capacity.");
+            }
+        }
+
+        if (location.MaxVolumeM3.HasValue && product.VolumeCm3.HasValue)
+        {
+            var volumeM3 = product.VolumeCm3.Value / 1_000_000m;
+            var totalVolume = volumeM3 * quantity;
+            if (totalVolume > location.MaxVolumeM3.Value)
+            {
+                return RequestResult<ReceiptItemDto>.Failure("locations.location.capacity_exceeded_volume", "Product volume exceeds location capacity.");
+            }
+        }
+
+        return null;
     }
 }

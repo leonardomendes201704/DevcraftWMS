@@ -33,7 +33,11 @@ public sealed class LocationCrudTests : IClassFixture<CustomWebApplicationFactor
             barcode = "BC-0001",
             level = 1,
             row = 1,
-            column = 1
+            column = 1,
+            maxWeightKg = 1000m,
+            maxVolumeM3 = 2.5m,
+            allowLotTracking = true,
+            allowExpiryTracking = true
         });
 
         var createResponse = await client.PostAsync($"/api/structures/{structureId}/locations", new StringContent(createPayload, Encoding.UTF8, "application/json"));
@@ -50,7 +54,11 @@ public sealed class LocationCrudTests : IClassFixture<CustomWebApplicationFactor
             barcode = "BC-0002",
             level = 2,
             row = 2,
-            column = 2
+            column = 2,
+            maxWeightKg = 1200m,
+            maxVolumeM3 = 3.0m,
+            allowLotTracking = true,
+            allowExpiryTracking = true
         });
 
         var updateResponse = await client.PutAsync($"/api/locations/{locationId}", new StringContent(updatePayload, Encoding.UTF8, "application/json"));

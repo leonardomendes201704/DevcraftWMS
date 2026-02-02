@@ -10,6 +10,10 @@ public sealed record LocationDto(
     int Level,
     int Row,
     int Column,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -23,5 +27,9 @@ public sealed record LocationListItemDto(
     int Level,
     int Row,
     int Column,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking,
     bool IsActive,
     DateTime CreatedAtUtc);

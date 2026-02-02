@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0050 - Location capacity and compatibility completed.
+  - Key changes: added max weight/volume and tracking flags to locations, enforced compatibility in receipts/movements, updated Location UI, tests, and migration AddLocationCapacityAndRestrictions.
 - TASK-0049 - Zones completed.
   - Key changes: added Zone entity/type, customer access, and Location.ZoneId link; added Zones API/UI with filters; added zone seed data; added unit/integration tests; added migration AddZones.
 - TASK-0048 - Minimum shelf-life per SKU completed.

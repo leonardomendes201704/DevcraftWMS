@@ -10,4 +10,8 @@ public sealed record UpdateLocationCommand(
     string Barcode,
     int Level,
     int Row,
-    int Column) : MediatR.IRequest<RequestResult<LocationDto>>;
+    int Column,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking) : MediatR.IRequest<RequestResult<LocationDto>>;

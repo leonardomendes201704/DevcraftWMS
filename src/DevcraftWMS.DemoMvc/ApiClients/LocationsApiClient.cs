@@ -41,13 +41,16 @@ public sealed class LocationsApiClient : ApiClientBase
 
     public Task<ApiResult<LocationDetailViewModel>> CreateAsync(Guid structureId, LocationFormViewModel payload, CancellationToken cancellationToken)
         => PostAsync<LocationDetailViewModel>($"/api/structures/{structureId}/locations", new LocationCreateRequest(
-            structureId,
             payload.Code,
             payload.Barcode,
             payload.Level,
             payload.Row,
             payload.Column,
-            payload.ZoneId), cancellationToken);
+            payload.ZoneId,
+            payload.MaxWeightKg,
+            payload.MaxVolumeM3,
+            payload.AllowLotTracking,
+            payload.AllowExpiryTracking), cancellationToken);
 
     public Task<ApiResult<LocationDetailViewModel>> UpdateAsync(Guid id, LocationFormViewModel payload, CancellationToken cancellationToken)
         => PutAsync<LocationDetailViewModel>($"/api/locations/{id}", new LocationUpdateRequest(
@@ -57,12 +60,37 @@ public sealed class LocationsApiClient : ApiClientBase
             payload.Level,
             payload.Row,
             payload.Column,
-            payload.ZoneId), cancellationToken);
+            payload.ZoneId,
+            payload.MaxWeightKg,
+            payload.MaxVolumeM3,
+            payload.AllowLotTracking,
+            payload.AllowExpiryTracking), cancellationToken);
 
     public Task<ApiResult<LocationDetailViewModel>> DeactivateAsync(Guid id, CancellationToken cancellationToken)
         => DeleteAsync<LocationDetailViewModel>($"/api/locations/{id}", cancellationToken);
 }
 
-public sealed record LocationCreateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column, Guid? ZoneId);
+public sealed record LocationCreateRequest(
+    string Code,
+    string Barcode,
+    int Level,
+    int Row,
+    int Column,
+    Guid? ZoneId,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking);
 
-public sealed record LocationUpdateRequest(Guid StructureId, string Code, string Barcode, int Level, int Row, int Column, Guid? ZoneId);
+public sealed record LocationUpdateRequest(
+    Guid StructureId,
+    string Code,
+    string Barcode,
+    int Level,
+    int Row,
+    int Column,
+    Guid? ZoneId,
+    decimal? MaxWeightKg,
+    decimal? MaxVolumeM3,
+    bool AllowLotTracking,
+    bool AllowExpiryTracking);

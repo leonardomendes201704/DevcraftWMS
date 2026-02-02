@@ -16,6 +16,10 @@
             new() { Label = "Column", Value = Model.Column.ToString() },
             new() { Label = "Zone", Value = Model.ZoneName ?? "-" },
             new() { Label = "Structure", Value = Model.StructureId.ToString() },
+            new() { Label = "Max Weight (kg)", Value = Model.MaxWeightKg.HasValue ? Model.MaxWeightKg.Value.ToString("N3") : "-" },
+            new() { Label = "Max Volume (m³)", Value = Model.MaxVolumeM3.HasValue ? Model.MaxVolumeM3.Value.ToString("N6") : "-" },
+            new() { Label = "Allow Lot Tracking", Value = Model.AllowLotTracking ? "Yes" : "No" },
+            new() { Label = "Allow Expiry Tracking", Value = Model.AllowExpiryTracking ? "Yes" : "No" },
             new() { Label = "Status", Value = Model.IsActive ? "Active" : "Inactive", BadgeText = Model.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.IsActive ? "text-bg-success" : "text-bg-secondary" },
             new() { Label = "Created", Value = Model.CreatedAtUtc.ToLocalTime().ToString("g") }
         }

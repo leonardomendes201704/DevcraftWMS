@@ -16,6 +16,10 @@ public sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.Level).IsRequired();
         builder.Property(l => l.Row).IsRequired();
         builder.Property(l => l.Column).IsRequired();
+        builder.Property(l => l.MaxWeightKg).HasPrecision(18, 3);
+        builder.Property(l => l.MaxVolumeM3).HasPrecision(18, 6);
+        builder.Property(l => l.AllowLotTracking).HasDefaultValue(true);
+        builder.Property(l => l.AllowExpiryTracking).HasDefaultValue(true);
 
         builder.HasOne(l => l.Structure)
             .WithMany(s => s.Locations)

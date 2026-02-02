@@ -25,7 +25,18 @@ public sealed class LocationsController : ControllerBase
     public async Task<IActionResult> CreateLocation(Guid structureId, [FromBody] CreateLocationRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new CreateLocationCommand(structureId, request.ZoneId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
+            new CreateLocationCommand(
+                structureId,
+                request.ZoneId,
+                request.Code,
+                request.Barcode,
+                request.Level,
+                request.Row,
+                request.Column,
+                request.MaxWeightKg,
+                request.MaxVolumeM3,
+                request.AllowLotTracking,
+                request.AllowExpiryTracking),
             cancellationToken);
 
         if (result.IsSuccess && result.Value is not null)
@@ -68,7 +79,19 @@ public sealed class LocationsController : ControllerBase
     public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new UpdateLocationCommand(id, request.StructureId, request.ZoneId, request.Code, request.Barcode, request.Level, request.Row, request.Column),
+            new UpdateLocationCommand(
+                id,
+                request.StructureId,
+                request.ZoneId,
+                request.Code,
+                request.Barcode,
+                request.Level,
+                request.Row,
+                request.Column,
+                request.MaxWeightKg,
+                request.MaxVolumeM3,
+                request.AllowLotTracking,
+                request.AllowExpiryTracking),
             cancellationToken);
 
         return this.ToActionResult(result);
