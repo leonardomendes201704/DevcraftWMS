@@ -1,0 +1,92 @@
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryBalances.InventoryBalanceFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Warehouse</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+            <select class="form-select" asp-for="WarehouseId" asp-items="Model.Warehouses">
+                <option value="">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Sector</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
+            <select class="form-select" asp-for="SectorId" asp-items="Model.Sectors">
+                <option value="">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Section</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-layout-text-sidebar"></i></span>
+            <select class="form-select" asp-for="SectionId" asp-items="Model.Sections">
+                <option value="">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Structure</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-stack"></i></span>
+            <select class="form-select" asp-for="StructureId" asp-items="Model.Structures">
+                <option value="">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Location</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+            <select class="form-select" asp-for="LocationId" asp-items="Model.Locations">
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="LocationId"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Product</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-upc"></i></span>
+            <select class="form-select" asp-for="ProductId" asp-items="Model.Products">
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="ProductId"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Lot</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-collection"></i></span>
+            <select class="form-select" asp-for="LotId" asp-items="Model.Lots">
+                <option value="">No lot</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Quantity on hand</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box"></i></span>
+            <input class="form-control" asp-for="QuantityOnHand" type="number" step="0.0001" min="0" />
+        </div>
+        <span class="text-danger" asp-validation-for="QuantityOnHand"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Quantity reserved</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-arrow-in-right"></i></span>
+            <input class="form-control" asp-for="QuantityReserved" type="number" step="0.0001" min="0" />
+        </div>
+        <span class="text-danger" asp-validation-for="QuantityReserved"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-flag"></i></span>
+            <select class="form-select" asp-for="Status" asp-items="Html.GetEnumSelectList<DevcraftWMS.DemoMvc.Enums.InventoryBalanceStatus>()"></select>
+        </div>
+    </div>
+</div>

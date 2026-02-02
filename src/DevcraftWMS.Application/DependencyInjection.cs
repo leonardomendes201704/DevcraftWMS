@@ -18,6 +18,7 @@ using DevcraftWMS.Application.Features.Products;
 using DevcraftWMS.Application.Features.Lots;
 using DevcraftWMS.Application.Features.Uoms;
 using DevcraftWMS.Application.Features.ProductUoms;
+using DevcraftWMS.Application.Features.InventoryBalances;
 
 namespace DevcraftWMS.Application;
 
@@ -42,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ILotService, LotService>();
         services.AddScoped<IUomService, UomService>();
         services.AddScoped<IProductUomService, ProductUomService>();
+        services.AddScoped<IInventoryBalanceService, InventoryBalanceService>();
 
         return services;
     }

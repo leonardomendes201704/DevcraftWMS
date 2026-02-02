@@ -63,4 +63,4 @@ Nao existe tabela de saldos por location.
 - - Definir status de saldo (Available/Blocked/Damaged).
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)

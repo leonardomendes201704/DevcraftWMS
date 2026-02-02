@@ -1,0 +1,138 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryBalances.InventoryBalanceListPageViewModel
+@{
+    ViewData["Title"] = "Inventory Balances";
+    ViewData["Subtitle"] = "Track stock by location, product, and lot";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "InventoryBalances",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["SectorId"] = Model.Query.SectorId?.ToString(),
+            ["SectionId"] = Model.Query.SectionId?.ToString(),
+            ["StructureId"] = Model.Query.StructureId?.ToString(),
+            ["LocationId"] = Model.Query.LocationId?.ToString(),
+            ["ProductId"] = Model.Query.ProductId?.ToString(),
+            ["LotId"] = Model.Query.LotId?.ToString(),
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    List<GridSelectOption> SelectFromItems(IReadOnlyList<SelectListItem> items)
+        => items.Select(item => new GridSelectOption
+        {
+            Value = item.Value ?? string.Empty,
+            Text = item.Text ?? string.Empty,
+            Selected = item.Selected
+        }).ToList();
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<InventoryBalanceStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.ToString(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "InventoryBalances",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Warehouse", Name = "WarehouseId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Warehouses) },
+            new() { Label = "Sector", Name = "SectorId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Sectors) },
+            new() { Label = "Section", Name = "SectionId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Sections) },
+            new() { Label = "Structure", Name = "StructureId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Structures) },
+            new() { Label = "Location", Name = "LocationId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Locations) },
+            new() { Label = "Product", Name = "ProductId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Products) },
+            new() { Label = "Lot", Name = "LotId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Lots) },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "InventoryBalances")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "inventoryFilters",
+        Title = "Inventory filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryBalances.InventoryBalanceListItemViewModel>()
+        .WithTitle("Inventory Balances")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Balance", Url.Action("Create", "InventoryBalances") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Location", item => new HtmlString(HtmlEncoder.Default.Encode(item.LocationId.ToString())), "LocationId")
+        .AddColumn("Product", item => new HtmlString(HtmlEncoder.Default.Encode(item.ProductId.ToString())), "ProductId")
+        .AddColumn("Lot", item => new HtmlString(HtmlEncoder.Default.Encode(item.LotId?.ToString() ?? "-")), "LotId")
+        .AddColumn("On Hand", item => new HtmlString(item.QuantityOnHand.ToString("N2")), "QuantityOnHand")
+        .AddColumn("Reserved", item => new HtmlString(item.QuantityReserved.ToString("N2")), "QuantityReserved")
+        .AddColumn("Available", item => new HtmlString(item.QuantityAvailable.ToString("N2")), "QuantityAvailable")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{item.Status}</span>"), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "InventoryBalances", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "InventoryBalances", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "InventoryBalances", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

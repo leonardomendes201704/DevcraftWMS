@@ -69,3 +69,6 @@ O repositorio cresceu e hoje possui multiplas camadas e features. Para garantir 
 
 ## Riscos / Questões em Aberto
 - Garantir que todos os enums recebam DisplayName sem impactar serializacao.
+
+## Status
+Concluida (DONE)

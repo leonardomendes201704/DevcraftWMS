@@ -1,0 +1,23 @@
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryBalances.InventoryBalanceDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate Inventory Balance";
+    ViewData["Subtitle"] = $"Balance {Model.Id}";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-warning">
+            This will deactivate the inventory balance. You can re-enable it by editing the record.
+        </div>
+        <p><strong>Location:</strong> @Model.LocationId</p>
+        <p><strong>Product:</strong> @Model.ProductId</p>
+        <p><strong>Lot:</strong> @(Model.LotId?.ToString() ?? "-")</p>
+        <p><strong>Available:</strong> @Model.QuantityAvailable.ToString("N2")</p>
+        <p><strong>Status:</strong> @Model.Status</p>
+        <form asp-action="DeleteConfirmed" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">Deactivate</button>
+            <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </form>
+    </div>
+</div>
