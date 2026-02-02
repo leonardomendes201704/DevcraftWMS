@@ -4,6 +4,12 @@
     ViewData["Subtitle"] = "Configure DemoMvc and view API settings";
 }
 
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#settingsHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+
 <div class="card">
     <div class="card-body">
         <form method="post">
@@ -256,6 +262,8 @@
         </div>
     </div>
 </div>
+
+<partial name="_SettingsHelp" />
 
 
 @section Scripts {

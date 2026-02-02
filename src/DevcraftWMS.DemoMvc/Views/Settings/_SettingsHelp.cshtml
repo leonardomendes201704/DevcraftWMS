@@ -1,0 +1,52 @@
+<div class="modal fade" id="settingsHelp" tabindex="-1" aria-labelledby="settingsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsHelpLabel">Settings Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>This screen manages DemoMvc configuration and displays API settings for reference.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>DemoMvc Settings (Editable)</h6>
+                    <ul class="mb-0">
+                        <li>Edit values in the form to update demo settings.</li>
+                        <li>Settings are stored in <strong>App_Data/ui-settings.json</strong> (demo-only).</li>
+                        <li>No masking is applied in the demo.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>API Settings (Read-only)</h6>
+                    <ul class="mb-0">
+                        <li>Loaded from <code>/api/settings</code>.</li>
+                        <li>Use this view to verify backend configuration.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Frontend Settings (Read-only)</h6>
+                    <ul class="mb-0">
+                        <li>Shows all DemoMvc configuration keys and descriptions.</li>
+                        <li>Useful for troubleshooting environment values.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>API settings unavailable:</strong> verify API is running and base URL.</li>
+                        <li><strong>Validation errors:</strong> check required fields and formats.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

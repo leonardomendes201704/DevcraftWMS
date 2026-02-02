@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0037 - Settings Help manual added.
+  - Key changes: added Help button and modal manual for Settings screen (DemoMvc + API settings).
 - TASK-0036 - Email Test Help manual added.
   - Key changes: added Help button and modal manual for Email Test screen.
 - TASK-0035 - Frontend Errors Help manual added.
