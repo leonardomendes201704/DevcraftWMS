@@ -57,9 +57,11 @@ Nao existe historico de transferencias.
 - - Definir regras de bloqueio e status de movimento.
 
 ## Status
-Dividida em subtasks:
-- TASK-0039-movimentacoes-modelo-db
-- TASK-0040-movimentacoes-api-aplicacao
-- TASK-0041-movimentacoes-demomvc-ui
-- TASK-0042-movimentacoes-testes
-- TASK-0043-movimentacoes-seed-observabilidade
+DONE
+
+Subtasks concluídas:
+- DONE-TASK-0039-movimentacoes-modelo-db
+- DONE-TASK-0040-movimentacoes-api-aplicacao
+- DONE-TASK-0041-movimentacoes-demomvc-ui
+- DONE-TASK-0042-movimentacoes-testes
+- DONE-TASK-0043-movimentacoes-seed-observabilidade

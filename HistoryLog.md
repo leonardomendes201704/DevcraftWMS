@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Tasking - Marked TASK-0010 as done.
+  - Key changes: renamed task file to DONE prefix and recorded completed subtasks.
 - Fix - Seed movement lookup translation.
   - Key changes: replaced StartsWith with EF.Functions.Like for SQLite translation in seed detection.
 - Fix - Inventory movements structure lookup.
