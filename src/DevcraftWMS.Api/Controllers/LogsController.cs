@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.Logs.Queries.GetErrorLogById;
@@ -10,6 +11,7 @@ using DevcraftWMS.Application.Features.Logs.Queries.ListTransactionLogs;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Role:Backoffice")]
 [Route("api/logs")]
 public sealed class LogsController : ControllerBase
 {

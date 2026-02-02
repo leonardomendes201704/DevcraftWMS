@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Domain.Entities;
+using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Infrastructure.Auth;
 
@@ -43,8 +44,16 @@ public sealed class AdminUserSeeder
             {
                 existing.PasswordHash = _passwordHasher.Hash(password);
                 existing.IsActive = true;
+                existing.Role = UserRole.Admin;
                 await _userRepository.UpdateAsync(existing, cancellationToken);
                 _logger.LogInformation("Admin user password updated from configuration: {Email}", existing.Email);
+            }
+            else if (existing.Role != UserRole.Admin)
+            {
+                existing.Role = UserRole.Admin;
+                existing.IsActive = true;
+                await _userRepository.UpdateAsync(existing, cancellationToken);
+                _logger.LogInformation("Admin user role updated from configuration: {Email}", existing.Email);
             }
 
             return;
@@ -56,7 +65,8 @@ public sealed class AdminUserSeeder
             Email = email.Trim().ToLowerInvariant(),
             FullName = fullName.Trim(),
             PasswordHash = _passwordHasher.Hash(password),
-            IsActive = true
+            IsActive = true,
+            Role = UserRole.Admin
         };
 
         await _userRepository.AddAsync(user, cancellationToken);

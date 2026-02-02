@@ -18,7 +18,7 @@ public sealed class SettingsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Policy = "Role:Backoffice")]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetApiSettingsQuery(), cancellationToken);

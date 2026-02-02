@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
@@ -11,6 +12,7 @@ using DevcraftWMS.Application.Features.Emails.Queries.ListInboxEmails;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Role:Backoffice")]
 [Route("api/emails")]
 public sealed class EmailsController : ControllerBase
 {

@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using DevcraftWMS.Api.Extensions;
@@ -9,6 +10,7 @@ using DevcraftWMS.Domain.Enums;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Role:Backoffice")]
 [Route("api/dashboard")]
 public sealed class DashboardController : ControllerBase
 {

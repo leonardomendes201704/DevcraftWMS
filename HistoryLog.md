@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Tasking - Added RBAC management tasks (API/UI).
+  - Key changes: created TASK-0089/0090/0091 for roles, user management, and backoffice UI.
+- TASK-0051 - RBAC base roles and policies completed.
+  - Key changes: added UserRole, role claim in JWT, admin role seeding, role-based policies and controller guards, test auth default, and migration AddUserRole.
 - TASK-0050 - Location capacity and compatibility completed.
   - Key changes: added max weight/volume and tracking flags to locations, enforced compatibility in receipts/movements, updated Location UI, tests, and migration AddLocationCapacityAndRestrictions.
 - TASK-0049 - Zones completed.

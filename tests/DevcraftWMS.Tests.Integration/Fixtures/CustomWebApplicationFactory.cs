@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -126,6 +127,17 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         base.ConfigureClient(client);
         client.DefaultRequestHeaders.Add("X-Customer-Id", "00000000-0000-0000-0000-000000000001");
+
+        using var scope = Services.CreateScope();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var jwtTokenService = scope.ServiceProvider.GetRequiredService<IJwtTokenService>();
+        var adminUser = userRepository.GetByEmailAsync("admin@admin.com.br").GetAwaiter().GetResult();
+
+        if (adminUser is not null)
+        {
+            var token = jwtTokenService.CreateToken(adminUser.Id, adminUser.Email, adminUser.Role.ToString());
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
     }
 }
 

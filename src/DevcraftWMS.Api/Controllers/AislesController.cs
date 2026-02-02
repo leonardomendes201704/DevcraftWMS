@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
@@ -11,6 +12,7 @@ using DevcraftWMS.Application.Features.Aisles.Queries.ListAislesPaged;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Role:Backoffice")]
 [Route("api")]
 public sealed class AislesController : ControllerBase
 {

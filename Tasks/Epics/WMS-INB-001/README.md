@@ -21,7 +21,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [TASK-0048] SKU/Cliente: regra de validade minima | Prioridade: P0 | Dependencias: TASK-0047 | Estimativa: 4h
 - [DONE-TASK-0049] Zonas do armazem (staging/picking/bulk/quarantine/cross-dock) | Prioridade: P0 | Dependencias: TASK-0044 | Estimativa: 5h
 - [DONE-TASK-0050] Enderecos: capacidade e restricoes/compatibilidade | Prioridade: P0 | Dependencias: TASK-0049 | Estimativa: 6h
-- [TASK-0051] RBAC: perfis e permissoes base por papel | Prioridade: P1 | Dependencias: TASK-0044 | Estimativa: 6h
+- [DONE-TASK-0051] RBAC: perfis e permissoes base por papel | Prioridade: P1 | Dependencias: TASK-0044 | Estimativa: 6h
 - [TASK-0052] ASN: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0047 | Estimativa: 5h
 - [TASK-0053] ASN: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 6h
 - [TASK-0054] Portal Cliente: UI criar ASN | Prioridade: P0 | Dependencias: TASK-0045,TASK-0053 | Estimativa: 6h
@@ -59,3 +59,6 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [TASK-0086] Cubagem/Pesagem real no recebimento | Prioridade: P2 | Dependencias: TASK-0047 | Estimativa: 6h
 - [TASK-0087] Portal Cliente: relatorios de recebimento | Prioridade: P2 | Dependencias: TASK-0080,TASK-0045 | Estimativa: 6h
 - [TASK-0088] Portaria: permissoes por papel | Prioridade: P2 | Dependencias: TASK-0051,TASK-0063 | Estimativa: 4h
+- [TASK-0089] RBAC: modelo de perfis e permissoes (API) | Prioridade: P1 | Dependencias: DONE-TASK-0051 | Estimativa: 6h
+- [TASK-0090] RBAC: gestao de usuarios e perfis (API) | Prioridade: P1 | Dependencias: TASK-0089 | Estimativa: 6h
+- [TASK-0091] RBAC: gestao de perfis e usuarios (UI Backoffice) | Prioridade: P1 | Dependencias: TASK-0090 | Estimativa: 6h

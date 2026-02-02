@@ -1,4 +1,4 @@
-﻿# TASK-0051 - RBAC: perfis e permissoes base por papel
+# TASK-0051 - RBAC: perfis e permissoes base por papel
 
 ## Resumo
 Definir perfis e permissoes base por papel operacional.

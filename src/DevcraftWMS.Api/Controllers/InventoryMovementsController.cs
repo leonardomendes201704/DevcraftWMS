@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
@@ -10,6 +11,7 @@ using DevcraftWMS.Domain.Enums;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Role:Backoffice")]
 [Route("api/inventory/movements")]
 public sealed class InventoryMovementsController : ControllerBase
 {

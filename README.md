@@ -49,6 +49,23 @@ Configuration:
 }
 ```
 
+## RBAC (roles and permissions)
+The API uses JWT role claims for role-based access control (RBAC).
+
+Base roles:
+- Admin
+- Backoffice
+- Portaria
+- Conferente
+- Qualidade
+- Putaway
+
+Policy behavior:
+- Each role policy allows `Admin` plus the specific role.
+- Critical operational endpoints (master data, inventory, receipts, logs, settings) require `Role:Backoffice`.
+
+JWT token must include the `role` claim. Admin seed user is created with `Admin` role.
+
 
 ### GridBuilder example
 Use `GridBuilder<T>` to build reusable list grids with filters, sorting, and actions:

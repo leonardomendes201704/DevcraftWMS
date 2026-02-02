@@ -3,6 +3,7 @@ using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Abstractions.Notifications;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
+using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Application.Features.Auth.Commands;
 
@@ -39,13 +40,14 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
             Email = request.Email.Trim().ToLowerInvariant(),
             FullName = request.FullName.Trim(),
             PasswordHash = _passwordHasher.Hash(request.Password),
-            IsActive = true
+            IsActive = true,
+            Role = UserRole.Backoffice
         };
 
         await _userRepository.AddAsync(user, cancellationToken);
         await _outboxEnqueuer.EnqueueAsync("UserRegistered", $"{{\"userId\":\"{user.Id}\",\"email\":\"{user.Email}\"}}", cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
     }
 }
@@ -77,7 +79,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         user.LastLoginUtc = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
     }
 }
@@ -127,7 +129,8 @@ public sealed class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginC
                     Email = info.Email.Trim().ToLowerInvariant(),
                     FullName = info.FullName.Trim(),
                     PasswordHash = string.Empty,
-                    IsActive = true
+                    IsActive = true,
+                    Role = UserRole.Backoffice
                 };
                 await _userRepository.AddAsync(user, cancellationToken);
             }
@@ -151,7 +154,7 @@ public sealed class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginC
         user.LastLoginUtc = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
     }
 }

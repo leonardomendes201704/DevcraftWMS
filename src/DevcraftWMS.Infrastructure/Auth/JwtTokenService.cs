@@ -16,7 +16,7 @@ public sealed class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public string CreateToken(Guid userId, string email)
+    public string CreateToken(Guid userId, string email, string role)
     {
         var jwtSection = _configuration.GetSection("Jwt");
         var issuer = jwtSection["Issuer"] ?? "DevcraftWMS";
@@ -31,7 +31,8 @@ public sealed class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Email, email)
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Role, role)
         };
 
         var token = new JwtSecurityToken(

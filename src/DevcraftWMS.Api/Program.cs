@@ -127,11 +127,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey!)),
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Role:Admin", policy =>
+        policy.RequireRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()));
+    options.AddPolicy("Role:Backoffice", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Backoffice.ToString())));
+    options.AddPolicy("Role:Portaria", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Portaria.ToString())));
+    options.AddPolicy("Role:Conferente", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Conferente.ToString())));
+    options.AddPolicy("Role:Qualidade", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Qualidade.ToString())));
+    options.AddPolicy("Role:Putaway", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Putaway.ToString())));
+});
 
 // --------------------------
 // Health Checks

@@ -1,0 +1,32 @@
+# TASK-0090 - RBAC: gestao de usuarios e perfis (API)
+
+## Resumo
+Criar endpoints para gestao de usuarios internos e atribuicao de perfis/roles.
+
+## Objetivo
+Permitir criar/editar/desativar usuarios e atribuir perfis com rastreabilidade.
+
+## Escopo
+- CRUD de usuarios internos (list/get/create/update/deactivate)
+- Atribuicao de perfis (add/remove)
+- Resets de senha (fluxo admin)
+- Auditoria em logs
+
+## Dependencias
+- TASK-0089
+
+## Estimativa
+- 6h
+
+## Entregaveis
+- CQRS + endpoints.
+- Tests (unit + integration).
+- UI/ENVs se necessário.
+
+## Criterios de Aceite
+- Admin consegue criar/editar usuarios e atribuir perfis.
+- Perfis impactam acesso (claims role no token).
+- Logs de alteracoes registradas.
+
+## Status
+PENDENTE
