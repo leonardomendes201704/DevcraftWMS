@@ -49,6 +49,7 @@ public sealed class SampleDataSeeder
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
         await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
+        await EnsureInventoryBalancesAndMovementsAsync(customer.Id, locations, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(
@@ -594,5 +595,153 @@ public sealed class SampleDataSeeder
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureInventoryBalancesAndMovementsAsync(Guid customerId, IReadOnlyList<Location> locations, CancellationToken cancellationToken)
+    {
+        if (_options.MovementCount <= 0)
+        {
+            return;
+        }
+
+        var existingSeedMovements = await _dbContext.InventoryMovements
+            .AnyAsync(m => m.CustomerId == customerId && m.Reference != null && m.Reference.StartsWith("SEED-MOVE-", StringComparison.OrdinalIgnoreCase), cancellationToken);
+
+        if (existingSeedMovements)
+        {
+            return;
+        }
+
+        var products = await _dbContext.Products
+            .Where(p => p.CustomerId == customerId)
+            .ToListAsync(cancellationToken);
+
+        if (products.Count == 0 || locations.Count < 2)
+        {
+            return;
+        }
+
+        var lots = await _dbContext.Lots
+            .Where(l => products.Select(p => p.Id).Contains(l.ProductId))
+            .ToListAsync(cancellationToken);
+
+        var random = new Random(42);
+        var now = DateTime.UtcNow;
+
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        foreach (var product in products)
+        {
+            var location = locations[random.Next(locations.Count)];
+            var lot = lots.FirstOrDefault(l => l.ProductId == product.Id);
+            var lotId = lot?.Id;
+            var existingBalance = await _dbContext.InventoryBalances
+                .FirstOrDefaultAsync(b => b.LocationId == location.Id && b.ProductId == product.Id && b.LotId == lotId, cancellationToken);
+
+            if (existingBalance is null)
+            {
+                _dbContext.InventoryBalances.Add(new InventoryBalance
+                {
+                    Id = Guid.NewGuid(),
+                    LocationId = location.Id,
+                    ProductId = product.Id,
+                    LotId = lotId,
+                    QuantityOnHand = Math.Max(_options.MovementQuantityMax * 2, 50),
+                    QuantityReserved = 0,
+                    Status = InventoryBalanceStatus.Available
+                });
+            }
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var balances = await _dbContext.InventoryBalances
+            .Where(b => products.Select(p => p.Id).Contains(b.ProductId))
+            .ToListAsync(cancellationToken);
+
+        var movementsToCreate = new List<InventoryMovement>();
+
+        for (var i = 1; i <= _options.MovementCount; i++)
+        {
+            var balance = balances
+                .OrderByDescending(b => b.QuantityOnHand)
+                .FirstOrDefault();
+
+            if (balance is null || balance.QuantityOnHand <= _options.MovementQuantityMin)
+            {
+                break;
+            }
+
+            var toLocation = locations.FirstOrDefault(l => l.Id != balance.LocationId);
+            if (toLocation is null)
+            {
+                break;
+            }
+
+            var quantity = Math.Min(balance.QuantityOnHand, RandomDecimal(random, _options.MovementQuantityMin, _options.MovementQuantityMax));
+            if (quantity <= 0)
+            {
+                continue;
+            }
+
+            balance.QuantityOnHand -= quantity;
+
+            var destinationBalance = balances.FirstOrDefault(b =>
+                b.LocationId == toLocation.Id &&
+                b.ProductId == balance.ProductId &&
+                b.LotId == balance.LotId);
+
+            if (destinationBalance is null)
+            {
+                destinationBalance = new InventoryBalance
+                {
+                    Id = Guid.NewGuid(),
+                    LocationId = toLocation.Id,
+                    ProductId = balance.ProductId,
+                    LotId = balance.LotId,
+                    QuantityOnHand = 0,
+                    QuantityReserved = 0,
+                    Status = balance.Status
+                };
+                _dbContext.InventoryBalances.Add(destinationBalance);
+                balances.Add(destinationBalance);
+            }
+
+            destinationBalance.QuantityOnHand += quantity;
+
+            movementsToCreate.Add(new InventoryMovement
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                FromLocationId = balance.LocationId,
+                ToLocationId = toLocation.Id,
+                ProductId = balance.ProductId,
+                LotId = balance.LotId,
+                Quantity = quantity,
+                Reason = "Seed movement",
+                Reference = $"SEED-MOVE-{i:000}",
+                Status = InventoryMovementStatus.Completed,
+                PerformedAtUtc = now.AddDays(-random.Next(0, _options.MovementPerformedWindowDays))
+            });
+        }
+
+        if (movementsToCreate.Count > 0)
+        {
+            _dbContext.InventoryMovements.AddRange(movementsToCreate);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static decimal RandomDecimal(Random random, decimal min, decimal max)
+    {
+        if (max <= min)
+        {
+            return min;
+        }
+
+        var next = (decimal)random.NextDouble();
+        return Math.Round(min + (max - min) * next, 3);
     }
 }

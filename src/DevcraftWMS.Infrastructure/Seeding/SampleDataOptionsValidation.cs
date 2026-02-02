@@ -51,6 +51,26 @@ public sealed class SampleDataOptionsValidation : IValidateOptions<SampleDataOpt
             return ValidateOptionsResult.Fail("Seed:SampleData:LotExpirationWindowDays must be greater than zero.");
         }
 
+        if (options.MovementCount < 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:MovementCount must be zero or greater.");
+        }
+
+        if (options.MovementPerformedWindowDays <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:MovementPerformedWindowDays must be greater than zero.");
+        }
+
+        if (options.MovementQuantityMin <= 0 || options.MovementQuantityMax <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:MovementQuantityMin/Max must be greater than zero.");
+        }
+
+        if (options.MovementQuantityMax < options.MovementQuantityMin)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:MovementQuantityMax must be greater than or equal to MovementQuantityMin.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

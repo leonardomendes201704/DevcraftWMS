@@ -11,4 +11,8 @@ public sealed class SampleDataOptions
     public int ProductCount { get; set; } = 10;
     public int LotsPerProduct { get; set; } = 1;
     public int LotExpirationWindowDays { get; set; } = 90;
+    public int MovementCount { get; set; } = 5;
+    public int MovementPerformedWindowDays { get; set; } = 14;
+    public decimal MovementQuantityMin { get; set; } = 1;
+    public decimal MovementQuantityMax { get; set; } = 15;
 }

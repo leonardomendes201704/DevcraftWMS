@@ -225,7 +225,7 @@ Endpoints:
 - `POST /api/emails/inbox/sync` to trigger a manual inbox sync.
 
 ## Sample data seed
-You can seed a demo warehouse with a customer and 10 products by enabling:
+You can seed a demo warehouse with a customer, products, lots, balances, and movements by enabling:
 ```json
 "Seed": {
   "SampleData": {
@@ -234,7 +234,8 @@ You can seed a demo warehouse with a customer and 10 products by enabling:
 }
 ```
 When enabled, the seed creates a shared warehouse, physical hierarchy (sector/section/structure/aisle/locations),
-customer visibility mappings, and products + UoM conversions. It is idempotent and skips if the warehouse already exists.
+customer visibility mappings, products + UoM conversions, lots, inventory balances, and sample movements.
+It is idempotent and skips movements if seeded references already exist.
 
 ## Key conventions
 - Controllers are thin and call MediatR only.
@@ -333,6 +334,10 @@ Seed:SampleData:WarehouseName      -> Sample warehouse name
 Seed:SampleData:ProductCount       -> Number of products to seed
 Seed:SampleData:LotsPerProduct     -> Lots per product in sample seed
 Seed:SampleData:LotExpirationWindowDays -> Expiration window (days) for seeded lots
+Seed:SampleData:MovementCount          -> Number of sample movements to seed
+Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back from today)
+Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
+Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path

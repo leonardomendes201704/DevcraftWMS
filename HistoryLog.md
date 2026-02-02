@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0043 - Movimentacoes Internas (Seed + Observabilidade) completed.
+  - Key changes: added optional seed for inventory movements/balances with configurable quantities and windows, plus README/env updates.
 - TASK-0042 - Movimentacoes Internas (Testes) completed.
   - Key changes: added unit tests for movement service and integration tests for movement creation and insufficient balance scenarios.
 - TASK-0041 - Movimentacoes Internas (DemoMvc UI) completed.

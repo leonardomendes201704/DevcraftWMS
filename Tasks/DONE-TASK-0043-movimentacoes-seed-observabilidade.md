@@ -52,4 +52,4 @@ Sem dados, UX e dashboards ficam vazios.
 - Evitar duplicacao de dados na seed.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
