@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0024 - UoM Help manual added.
+  - Key changes: added Help button and modal manual covering UoM Index + CRUD screens.
 - TASK-0023 - Lots Help manual added.
   - Key changes: added Help button and modal manual covering Lots Index + CRUD screens.
 - TASK-0022 - Products Help manual added.
