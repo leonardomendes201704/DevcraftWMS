@@ -134,6 +134,12 @@
     var modalSection = new FormSectionViewModel { Title = "Modal & toast", Description = "Overlays and transient messages" };
 }
 
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#uiShowcaseHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+
 <div class="row g-4">
     <div class="col-12">
         <div class="d-flex flex-wrap gap-2">
@@ -419,6 +425,8 @@
         </div>
     </div>
 </div>
+
+<partial name="_UiShowcaseHelp" />
 
 @section Scripts {
     <script src="~/js/address-lookup.js" asp-append-version="true"></script>
