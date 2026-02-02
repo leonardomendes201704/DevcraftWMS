@@ -169,6 +169,60 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status400BadRequest
             },
+            "products.product.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "products.uom.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "products.product.code_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "products.product.ean_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "products.product.erp_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "products.uom.is_base" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "products.uom.already_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
+            "uoms.uom.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "uoms.uom.code_exists" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
             "auth.email_exists" => new ProblemDetails
             {
                 Title = "Conflict",

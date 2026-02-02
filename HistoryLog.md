@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0007 - E2E product and UoM management completed.
+  - Key changes: added product/uom/productuom entities, API CRUD + UoM conversions, DemoMvc screens, tests, and migration AddProductsAndUoms.
 - TASK-0006 - E2E aisle management (Aisles) completed.
   - Key changes: added aisle entity + mappings, API CRUD endpoints, DemoMvc screens, tests, and migration AddAisles.
 

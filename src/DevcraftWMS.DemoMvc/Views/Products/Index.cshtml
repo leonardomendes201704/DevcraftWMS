@@ -1,0 +1,114 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.Products.ProductListPageViewModel
+@{
+    ViewData["Title"] = "Products";
+    ViewData["Subtitle"] = "Manage SKU catalog with filters and pagination";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Products",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["Code"] = Model.Query.Code,
+            ["Name"] = Model.Query.Name,
+            ["Category"] = Model.Query.Category,
+            ["Brand"] = Model.Query.Brand,
+            ["Ean"] = Model.Query.Ean,
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Products",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "SKU Code", Name = "Code", Value = Model.Query.Code },
+            new() { Label = "Name", Name = "Name", Value = Model.Query.Name },
+            new() { Label = "Category", Name = "Category", Value = Model.Query.Category },
+            new() { Label = "Brand", Name = "Brand", Value = Model.Query.Brand },
+            new() { Label = "EAN", Name = "Ean", Value = Model.Query.Ean },
+            new()
+            {
+                Label = "Status",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Products")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "productsFilters",
+        Title = "Product filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<ProductListItemViewModel>()
+        .WithTitle("Products")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Product", Url.Action("Create", "Products") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("SKU", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
+        .AddColumn("Category", item => new HtmlString(HtmlEncoder.Default.Encode(item.Category ?? "-")), "Category")
+        .AddColumn("Brand", item => new HtmlString(HtmlEncoder.Default.Encode(item.Brand ?? "-")), "Brand")
+        .AddColumn("EAN", item => new HtmlString(HtmlEncoder.Default.Encode(item.Ean ?? "-")), "Ean")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Products", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Products", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Products", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

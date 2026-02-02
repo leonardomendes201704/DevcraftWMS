@@ -36,6 +36,8 @@
         Links = new List<QuickLinkItem>
         {
             new() { Text = "Customers", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
+            new() { Text = "Products", Url = Url.Action("Index", "Products") ?? "#", IconClass = "bi bi-upc" },
+            new() { Text = "UoM", Url = Url.Action("Index", "Uoms") ?? "#", IconClass = "bi bi-rulers" },
             new() { Text = "Warehouses", Url = Url.Action("Index", "Warehouses") ?? "#", IconClass = "bi bi-box-seam" },
             new() { Text = "Sectors", Url = Url.Action("Index", "Sectors") ?? "#", IconClass = "bi bi-grid-3x3-gap" },
             new() { Text = "Sections", Url = Url.Action("Index", "Sections") ?? "#", IconClass = "bi bi-layout-text-sidebar" },

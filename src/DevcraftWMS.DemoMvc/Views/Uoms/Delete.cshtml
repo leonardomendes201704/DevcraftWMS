@@ -1,0 +1,26 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Uoms.UomDetailViewModel
+@{
+    ViewData["Title"] = "Deactivate UoM";
+    ViewData["Subtitle"] = $"{Model.Code} - {Model.Name}";
+}
+
+<div class="card">
+    <div class="card-body">
+        <p>Are you sure you want to deactivate this UoM?</p>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Code</dt>
+            <dd class="col-sm-9">@Model.Code</dd>
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+        </dl>
+
+        <form asp-action="DeleteConfirmed" method="post" class="mt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Deactivate</button>
+                <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -421,6 +421,154 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("OutboxMessages", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("BaseUomId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Ean")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ErpCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("HeightCm")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("LengthCm")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("VolumeCm3")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("WidthCm")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BaseUomId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Ean")
+                        .IsUnique();
+
+                    b.HasIndex("ErpCode")
+                        .IsUnique();
+
+                    b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ProductUom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ConversionFactor")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsBase")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UomId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UomId");
+
+                    b.HasIndex("ProductId", "IsBase");
+
+                    b.HasIndex("ProductId", "UomId")
+                        .IsUnique();
+
+                    b.ToTable("ProductUoms", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Section", b =>
                 {
                     b.Property<Guid>("Id")
@@ -580,6 +728,54 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Structures", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Uom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Uoms", (string)null);
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.User", b =>
@@ -1396,6 +1592,36 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Structure");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Uom", "BaseUom")
+                        .WithMany("Products")
+                        .HasForeignKey("BaseUomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BaseUom");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ProductUom", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Product", "Product")
+                        .WithMany("ProductUoms")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Uom", "Uom")
+                        .WithMany("ProductUoms")
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Uom");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Section", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.Sector", "Sector")
@@ -1478,6 +1704,11 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("DeliveryAttempts");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("ProductUoms");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Section", b =>
                 {
                     b.Navigation("Aisles");
@@ -1493,6 +1724,13 @@ namespace DevcraftWMS.Infrastructure.Migrations
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Structure", b =>
                 {
                     b.Navigation("Locations");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Uom", b =>
+                {
+                    b.Navigation("ProductUoms");
+
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Warehouse", b =>

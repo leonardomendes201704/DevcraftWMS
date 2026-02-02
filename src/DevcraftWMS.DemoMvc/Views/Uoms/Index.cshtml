@@ -1,0 +1,126 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.Uoms.UomListPageViewModel
+@{
+    ViewData["Title"] = "Units of Measure";
+    ViewData["Subtitle"] = "Manage UoM catalog";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "Uoms",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["Code"] = Model.Query.Code,
+            ["Name"] = Model.Query.Name,
+            ["Type"] = Model.Query.Type?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var typeOptions = Html.GetEnumSelectList<UomType>()
+        .Select(option => new GridSelectOption
+        {
+            Value = option.Value ?? string.Empty,
+            Text = option.Text ?? string.Empty,
+            Selected = Model.Query.Type?.ToString() == option.Value
+        })
+        .ToList();
+
+    typeOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Any", Selected = Model.Query.Type is null });
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "Uoms",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Code", Name = "Code", Value = Model.Query.Code },
+            new() { Label = "Name", Name = "Name", Value = Model.Query.Name },
+            new()
+            {
+                Label = "Type",
+                Name = "Type",
+                Type = GridFilterType.Select,
+                Options = typeOptions
+            },
+            new()
+            {
+                Label = "Status",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "Uoms")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "uomsFilters",
+        Title = "UoM filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<UomListItemViewModel>()
+        .WithTitle("Units of Measure")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New UoM", Url.Action("Create", "Uoms") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
+        .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
+        .AddColumn("Type", item => new HtmlString(HtmlEncoder.Default.Encode(item.Type.ToString())), "Type")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "Uoms", new { id = item.Id }))
+        .AddAction("Edit", item => Url.Action("Edit", "Uoms", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .AddAction("Delete", item => Url.Action("Delete", "Uoms", new { id = item.Id }), "btn btn-sm btn-outline-danger")
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />

@@ -1,0 +1,110 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Products.ProductFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">SKU Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-upc"></i></span>
+            <input class="form-control" asp-for="Code" />
+        </div>
+        <span class="text-danger" asp-validation-for="Code"></span>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+            <input class="form-control" asp-for="Name" />
+        </div>
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+    <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+            <textarea class="form-control" asp-for="Description" rows="2"></textarea>
+        </div>
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">EAN / GTIN</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+            <input class="form-control" asp-for="Ean" />
+        </div>
+        <span class="text-danger" asp-validation-for="Ean"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">ERP Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-clipboard-data"></i></span>
+            <input class="form-control" asp-for="ErpCode" />
+        </div>
+        <span class="text-danger" asp-validation-for="ErpCode"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Base UoM</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+            <select class="form-select" asp-for="BaseUomId" asp-items="Model.BaseUoms">
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="BaseUomId"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Category</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-folder"></i></span>
+            <input class="form-control" asp-for="Category" />
+        </div>
+        <span class="text-danger" asp-validation-for="Category"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Brand</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-bag"></i></span>
+            <input class="form-control" asp-for="Brand" />
+        </div>
+        <span class="text-danger" asp-validation-for="Brand"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Weight (kg)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-speedometer2"></i></span>
+            <input class="form-control" asp-for="WeightKg" type="number" step="0.0001" />
+        </div>
+        <span class="text-danger" asp-validation-for="WeightKg"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Length (cm)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-arrows-expand"></i></span>
+            <input class="form-control" asp-for="LengthCm" type="number" step="0.0001" />
+        </div>
+        <span class="text-danger" asp-validation-for="LengthCm"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Width (cm)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-arrows-expand"></i></span>
+            <input class="form-control" asp-for="WidthCm" type="number" step="0.0001" />
+        </div>
+        <span class="text-danger" asp-validation-for="WidthCm"></span>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Height (cm)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-arrows-expand"></i></span>
+            <input class="form-control" asp-for="HeightCm" type="number" step="0.0001" />
+        </div>
+        <span class="text-danger" asp-validation-for="HeightCm"></span>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Volume (cm³)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box"></i></span>
+            <input class="form-control" asp-for="VolumeCm3" type="number" step="0.0001" />
+        </div>
+        <span class="text-danger" asp-validation-for="VolumeCm3"></span>
+    </div>
+</div>
