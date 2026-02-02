@@ -1,0 +1,72 @@
+<div class="modal fade" id="productsHelp" tabindex="-1" aria-labelledby="productsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productsHelpLabel">Products Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>This screen manages SKU master data and unit-of-measure configurations for inventory operations.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Index (List)</h6>
+                    <ul class="mb-0">
+                        <li>Filter by SKU code, name, category, brand, or EAN.</li>
+                        <li>Use Status and Include Inactive to control visibility.</li>
+                        <li>Sort by clicking column headers.</li>
+                        <li>Use pagination and page size to navigate large catalogs.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Create</h6>
+                    <ul class="mb-0">
+                        <li>Click <strong>New Product</strong> to create a SKU.</li>
+                        <li>Required fields: Code, Name, Base UoM.</li>
+                        <li>Optional fields: Description, EAN, ERP code, category, brand, dimensions, weight.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Details</h6>
+                    <ul class="mb-0">
+                        <li>Review SKU master data and dimension/weight details.</li>
+                        <li>Manage UoM conversions (add conversion factors for packaging).</li>
+                        <li>Navigate to Lots for the selected product if needed.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Edit</h6>
+                    <ul class="mb-0">
+                        <li>Update SKU information and dimensions.</li>
+                        <li>Base UoM changes should be consistent with conversions.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Deactivate</h6>
+                    <ul class="mb-0">
+                        <li>Deactivate a SKU from the Delete action.</li>
+                        <li>Inactive products can be included via filters.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>Code/EAN/ERP already used:</strong> each must be unique per customer.</li>
+                        <li><strong>Invalid dimensions:</strong> values must be positive when provided.</li>
+                        <li><strong>Missing Base UoM:</strong> create the unit first in UoM.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
