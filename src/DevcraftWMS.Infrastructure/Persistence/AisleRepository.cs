@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 
 namespace DevcraftWMS.Infrastructure.Persistence;
@@ -7,10 +8,12 @@ namespace DevcraftWMS.Infrastructure.Persistence;
 public sealed class AisleRepository : IAisleRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ICustomerContext _customerContext;
 
-    public AisleRepository(ApplicationDbContext dbContext)
+    public AisleRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
     {
         _dbContext = dbContext;
+        _customerContext = customerContext;
     }
 
     public async Task<bool> CodeExistsAsync(Guid sectionId, string code, CancellationToken cancellationToken = default)
@@ -41,15 +44,17 @@ public sealed class AisleRepository : IAisleRepository
 
     public async Task<Aisle?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Aisles
             .AsNoTracking()
-            .SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(a => a.Id == id && a.CustomerAccesses.Any(c => c.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<Aisle?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Aisles
-            .SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(a => a.Id == id && a.CustomerAccesses.Any(c => c.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -92,7 +97,9 @@ public sealed class AisleRepository : IAisleRepository
         bool? isActive,
         bool includeInactive)
     {
-        var query = _dbContext.Aisles.AsNoTracking().Where(a => a.SectionId == sectionId);
+        var customerId = GetCustomerId();
+        var query = _dbContext.Aisles.AsNoTracking()
+            .Where(a => a.SectionId == sectionId && a.CustomerAccesses.Any(c => c.CustomerId == customerId));
 
         if (isActive.HasValue)
         {
@@ -114,6 +121,17 @@ public sealed class AisleRepository : IAisleRepository
         }
 
         return query;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            throw new InvalidOperationException("Customer context is required.");
+        }
+
+        return customerId.Value;
     }
 
     private static IQueryable<Aisle> ApplyOrdering(IQueryable<Aisle> query, string orderBy, string orderDir)

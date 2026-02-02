@@ -5,22 +5,22 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Warehouses;
 
 public sealed record WarehouseQuery(
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Search,
-    string? Code,
-    string? Name,
-    WarehouseType? WarehouseType,
-    string? City,
-    string? State,
-    string? Country,
-    string? ExternalId,
-    string? ErpCode,
-    string? CostCenterCode,
-    bool? IsPrimary,
-    bool IncludeInactive);
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Search = null,
+    string? Code = null,
+    string? Name = null,
+    WarehouseType? WarehouseType = null,
+    string? City = null,
+    string? State = null,
+    string? Country = null,
+    string? ExternalId = null,
+    string? ErpCode = null,
+    string? CostCenterCode = null,
+    bool? IsPrimary = null,
+    bool IncludeInactive = false);
 
 public sealed record WarehouseListItemViewModel(
     Guid Id,

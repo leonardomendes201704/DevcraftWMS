@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Locations;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -13,7 +14,8 @@ public sealed class LocationServiceTests
     {
         var locationRepository = new FakeLocationRepository();
         var structureRepository = new FakeStructureRepository(null);
-        var service = new LocationService(locationRepository, structureRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new LocationService(locationRepository, structureRepository, customerContext);
 
         var result = await service.CreateLocationAsync(
             Guid.NewGuid(),
@@ -34,7 +36,8 @@ public sealed class LocationServiceTests
         var structure = new Structure { Id = Guid.NewGuid(), SectionId = Guid.NewGuid(), Code = "R-01", Name = "Rack", Levels = 4 };
         var locationRepository = new FakeLocationRepository(codeExists: true);
         var structureRepository = new FakeStructureRepository(structure);
-        var service = new LocationService(locationRepository, structureRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new LocationService(locationRepository, structureRepository, customerContext);
 
         var result = await service.CreateLocationAsync(
             structure.Id,
@@ -65,7 +68,8 @@ public sealed class LocationServiceTests
 
         var locationRepository = new FakeLocationRepository(location: location);
         var structureRepository = new FakeStructureRepository(new Structure { Id = Guid.NewGuid(), SectionId = Guid.NewGuid(), Code = "R-01", Name = "Rack", Levels = 4 });
-        var service = new LocationService(locationRepository, structureRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new LocationService(locationRepository, structureRepository, customerContext);
 
         var result = await service.UpdateLocationAsync(
             location.Id,
@@ -167,5 +171,10 @@ public sealed class LocationServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

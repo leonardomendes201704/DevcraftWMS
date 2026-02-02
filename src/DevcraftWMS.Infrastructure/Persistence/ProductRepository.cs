@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 
 namespace DevcraftWMS.Infrastructure.Persistence;
@@ -7,52 +8,60 @@ namespace DevcraftWMS.Infrastructure.Persistence;
 public sealed class ProductRepository : IProductRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ICustomerContext _customerContext;
 
-    public ProductRepository(ApplicationDbContext dbContext)
+    public ProductRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
     {
         _dbContext = dbContext;
+        _customerContext = customerContext;
     }
 
     public async Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.Code == code, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.Code == code, cancellationToken);
     }
 
     public async Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.Code == code && p.Id != excludeId, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.Code == code && p.Id != excludeId, cancellationToken);
     }
 
     public async Task<bool> EanExistsAsync(string ean, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.Ean == ean, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.Ean == ean, cancellationToken);
     }
 
     public async Task<bool> EanExistsAsync(string ean, Guid excludeId, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.Ean == ean && p.Id != excludeId, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.Ean == ean && p.Id != excludeId, cancellationToken);
     }
 
     public async Task<bool> ErpCodeExistsAsync(string erpCode, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.ErpCode == erpCode, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.ErpCode == erpCode, cancellationToken);
     }
 
     public async Task<bool> ErpCodeExistsAsync(string erpCode, Guid excludeId, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .AnyAsync(p => p.ErpCode == erpCode && p.Id != excludeId, cancellationToken);
+            .AnyAsync(p => p.CustomerId == customerId && p.ErpCode == erpCode && p.Id != excludeId, cancellationToken);
     }
 
     public async Task AddAsync(Product product, CancellationToken cancellationToken = default)
@@ -69,15 +78,17 @@ public sealed class ProductRepository : IProductRepository
 
     public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
             .AsNoTracking()
-            .SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(p => p.CustomerId == customerId && p.Id == id, cancellationToken);
     }
 
     public async Task<Product?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Products
-            .SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(p => p.CustomerId == customerId && p.Id == id, cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -126,7 +137,8 @@ public sealed class ProductRepository : IProductRepository
         bool? isActive,
         bool includeInactive)
     {
-        var query = _dbContext.Products.AsNoTracking();
+        var customerId = GetCustomerId();
+        var query = _dbContext.Products.AsNoTracking().Where(p => p.CustomerId == customerId);
 
         if (isActive.HasValue)
         {
@@ -163,6 +175,17 @@ public sealed class ProductRepository : IProductRepository
         }
 
         return query;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            throw new InvalidOperationException("Customer context is required.");
+        }
+
+        return customerId.Value;
     }
 
     private static IQueryable<Product> ApplyOrdering(IQueryable<Product> query, string orderBy, string orderDir)

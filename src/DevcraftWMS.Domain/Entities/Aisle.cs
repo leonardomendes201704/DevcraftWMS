@@ -7,4 +7,5 @@ public sealed class Aisle : AuditableEntity
     public string Name { get; set; } = string.Empty;
 
     public Section? Section { get; set; }
+    public ICollection<AisleCustomer> CustomerAccesses { get; set; } = new List<AisleCustomer>();
 }

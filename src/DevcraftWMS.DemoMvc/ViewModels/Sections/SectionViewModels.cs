@@ -5,16 +5,16 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Sections;
 
 public sealed record SectionQuery(
-    Guid WarehouseId,
-    Guid SectorId,
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Name,
-    bool? IsActive,
-    bool IncludeInactive);
+    Guid WarehouseId = default,
+    Guid SectorId = default,
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Name = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record SectionListItemViewModel(
     Guid Id,

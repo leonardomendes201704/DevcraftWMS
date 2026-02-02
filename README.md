@@ -224,6 +224,18 @@ Endpoints:
 - `GET /api/emails/inbox` to list inbox messages.
 - `POST /api/emails/inbox/sync` to trigger a manual inbox sync.
 
+## Sample data seed
+You can seed a demo warehouse with a customer and 10 products by enabling:
+```json
+"Seed": {
+  "SampleData": {
+    "Enabled": true
+  }
+}
+```
+When enabled, the seed creates a shared warehouse, physical hierarchy (sector/section/structure/aisle/locations),
+customer visibility mappings, and products + UoM conversions. It is idempotent and skips if the warehouse already exists.
+
 ## Key conventions
 - Controllers are thin and call MediatR only.
 - Commands mutate; queries read-only.
@@ -312,6 +324,13 @@ ExternalAuth:Providers:Microsoft:UserInfoUrl -> Microsoft Graph user info endpoi
 AdminUser:Email                    -> Admin seed email
 AdminUser:Password                 -> Admin seed password
 AdminUser:FullName                 -> Admin display name
+Seed:SampleData:Enabled            -> Enable sample data seeding on startup
+Seed:SampleData:CustomerId         -> Sample customer id for seeded data
+Seed:SampleData:CustomerName       -> Sample customer name
+Seed:SampleData:CustomerEmail      -> Sample customer email
+Seed:SampleData:WarehouseCode      -> Sample warehouse code
+Seed:SampleData:WarehouseName      -> Sample warehouse name
+Seed:SampleData:ProductCount       -> Number of products to seed
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path
 Telemetry:BatchSize                 -> Demo MVC telemetry batch size

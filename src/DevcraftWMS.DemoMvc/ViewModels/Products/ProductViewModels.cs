@@ -5,17 +5,17 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Products;
 
 public sealed record ProductQuery(
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Name,
-    string? Category,
-    string? Brand,
-    string? Ean,
-    bool? IsActive,
-    bool IncludeInactive);
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Name = null,
+    string? Category = null,
+    string? Brand = null,
+    string? Ean = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record ProductListItemViewModel(
     Guid Id,

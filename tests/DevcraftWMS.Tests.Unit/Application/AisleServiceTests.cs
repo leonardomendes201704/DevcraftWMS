@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Aisles;
 using DevcraftWMS.Domain.Entities;
 
@@ -12,7 +13,8 @@ public sealed class AisleServiceTests
     {
         var aisleRepository = new FakeAisleRepository();
         var sectionRepository = new FakeSectionRepository(null);
-        var service = new AisleService(aisleRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new AisleService(aisleRepository, sectionRepository, customerContext);
 
         var result = await service.CreateAisleAsync(
             Guid.NewGuid(),
@@ -30,7 +32,8 @@ public sealed class AisleServiceTests
         var section = new Section { Id = Guid.NewGuid(), SectorId = Guid.NewGuid(), Code = "SEC-A", Name = "Section" };
         var aisleRepository = new FakeAisleRepository(codeExists: true);
         var sectionRepository = new FakeSectionRepository(section);
-        var service = new AisleService(aisleRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new AisleService(aisleRepository, sectionRepository, customerContext);
 
         var result = await service.CreateAisleAsync(
             section.Id,
@@ -55,7 +58,8 @@ public sealed class AisleServiceTests
 
         var aisleRepository = new FakeAisleRepository(aisle: aisle);
         var sectionRepository = new FakeSectionRepository(new Section { Id = Guid.NewGuid(), SectorId = Guid.NewGuid(), Code = "SEC-A", Name = "Section" });
-        var service = new AisleService(aisleRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new AisleService(aisleRepository, sectionRepository, customerContext);
 
         var result = await service.UpdateAisleAsync(
             aisle.Id,
@@ -152,5 +156,10 @@ public sealed class AisleServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Section>>(Array.Empty<Section>());
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

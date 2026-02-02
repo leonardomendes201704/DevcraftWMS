@@ -5,18 +5,18 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Locations;
 
 public sealed record LocationQuery(
-    Guid WarehouseId,
-    Guid SectorId,
-    Guid SectionId,
-    Guid StructureId,
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Barcode,
-    bool? IsActive,
-    bool IncludeInactive);
+    Guid WarehouseId = default,
+    Guid SectorId = default,
+    Guid SectionId = default,
+    Guid StructureId = default,
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Barcode = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record LocationListItemViewModel(
     Guid Id,

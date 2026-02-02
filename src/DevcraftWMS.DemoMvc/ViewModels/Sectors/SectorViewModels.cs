@@ -6,16 +6,16 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Sectors;
 
 public sealed record SectorQuery(
-    Guid WarehouseId,
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Name,
-    SectorType? SectorType,
-    bool? IsActive,
-    bool IncludeInactive);
+    Guid WarehouseId = default,
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Name = null,
+    SectorType? SectorType = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record SectorListItemViewModel(
     Guid Id,

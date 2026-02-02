@@ -219,7 +219,7 @@ public sealed class SectorsController : Controller
         var result = await _warehousesClient.ListAsync(
             new WarehouseQuery(
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,

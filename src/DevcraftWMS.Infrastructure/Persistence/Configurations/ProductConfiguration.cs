@@ -11,6 +11,7 @@ public sealed class ProductConfiguration : AuditableEntityConfiguration<Product>
         builder.ToTable("Products");
 
         builder.HasKey(p => p.Id);
+        builder.Property(p => p.CustomerId).IsRequired();
         builder.Property(p => p.Code).HasMaxLength(32).IsRequired();
         builder.Property(p => p.Name).HasMaxLength(200).IsRequired();
         builder.Property(p => p.Description).HasMaxLength(2000);
@@ -29,8 +30,9 @@ public sealed class ProductConfiguration : AuditableEntityConfiguration<Product>
             .HasForeignKey(p => p.BaseUomId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(p => p.Code).IsUnique();
-        builder.HasIndex(p => p.Ean).IsUnique();
-        builder.HasIndex(p => p.ErpCode).IsUnique();
+        builder.HasIndex(p => p.CustomerId);
+        builder.HasIndex(p => new { p.CustomerId, p.Code }).IsUnique();
+        builder.HasIndex(p => new { p.CustomerId, p.Ean }).IsUnique();
+        builder.HasIndex(p => new { p.CustomerId, p.ErpCode }).IsUnique();
     }
 }

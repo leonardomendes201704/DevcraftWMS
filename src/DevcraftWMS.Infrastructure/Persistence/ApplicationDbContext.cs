@@ -30,6 +30,11 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<Structure> Structures => Set<Structure>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Aisle> Aisles => Set<Aisle>();
+    public DbSet<SectorCustomer> SectorCustomers => Set<SectorCustomer>();
+    public DbSet<SectionCustomer> SectionCustomers => Set<SectionCustomer>();
+    public DbSet<StructureCustomer> StructureCustomers => Set<StructureCustomer>();
+    public DbSet<LocationCustomer> LocationCustomers => Set<LocationCustomer>();
+    public DbSet<AisleCustomer> AisleCustomers => Set<AisleCustomer>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Uom> Uoms => Set<Uom>();
     public DbSet<ProductUom> ProductUoms => Set<ProductUom>();

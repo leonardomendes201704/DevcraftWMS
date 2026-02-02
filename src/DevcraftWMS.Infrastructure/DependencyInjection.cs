@@ -19,6 +19,7 @@ using DevcraftWMS.Infrastructure.Persistence.Logging.Repositories;
 using DevcraftWMS.Infrastructure.Persistence.Logging.Writers;
 using DevcraftWMS.Infrastructure.Persistence.Logging.Workers;
 using DevcraftWMS.Infrastructure.Realtime;
+using DevcraftWMS.Infrastructure.Seeding;
 
 namespace DevcraftWMS.Infrastructure;
 
@@ -60,6 +61,12 @@ public static class DependencyInjection
         services.Configure<AdminUserOptions>(options =>
             configuration.GetSection("AdminUser").Bind(options));
         services.AddScoped<AdminUserSeeder>();
+
+        services.AddOptions<SampleDataOptions>()
+            .Bind(configuration.GetSection("Seed:SampleData"))
+            .ValidateOnStart();
+        services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<SampleDataOptions>, SampleDataOptionsValidation>();
+        services.AddScoped<SampleDataSeeder>();
         services.AddScoped<INotificationPublisher, NoOpNotificationPublisher>();
         services.AddHostedService<OutboxProcessor>();
         services.Configure<OutboxProcessorOptions>(options =>

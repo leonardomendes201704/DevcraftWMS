@@ -11,6 +11,8 @@ public sealed class ProductUomConfiguration : AuditableEntityConfiguration<Produ
         builder.ToTable("ProductUoms");
 
         builder.HasKey(pu => pu.Id);
+        builder.Property(pu => pu.CustomerId).IsRequired();
+        builder.HasIndex(pu => pu.CustomerId);
         builder.Property(pu => pu.ConversionFactor).HasPrecision(18, 4);
 
         builder.HasOne(pu => pu.Product)
@@ -23,7 +25,7 @@ public sealed class ProductUomConfiguration : AuditableEntityConfiguration<Produ
             .HasForeignKey(pu => pu.UomId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(pu => new { pu.ProductId, pu.UomId }).IsUnique();
+        builder.HasIndex(pu => new { pu.CustomerId, pu.ProductId, pu.UomId }).IsUnique();
         builder.HasIndex(pu => new { pu.ProductId, pu.IsBase });
     }
 }

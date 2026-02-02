@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 
@@ -8,15 +9,23 @@ public sealed class AisleService : IAisleService
 {
     private readonly IAisleRepository _aisleRepository;
     private readonly ISectionRepository _sectionRepository;
+    private readonly ICustomerContext _customerContext;
 
-    public AisleService(IAisleRepository aisleRepository, ISectionRepository sectionRepository)
+    public AisleService(IAisleRepository aisleRepository, ISectionRepository sectionRepository, ICustomerContext customerContext)
     {
         _aisleRepository = aisleRepository;
         _sectionRepository = sectionRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<AisleDto>> CreateAisleAsync(Guid sectionId, string code, string name, CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<AisleDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var section = await _sectionRepository.GetByIdAsync(sectionId, cancellationToken);
         if (section is null)
         {
@@ -37,6 +46,12 @@ public sealed class AisleService : IAisleService
             Code = normalizedCode,
             Name = name.Trim()
         };
+
+        aisle.CustomerAccesses.Add(new AisleCustomer
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId.Value
+        });
 
         await _aisleRepository.AddAsync(aisle, cancellationToken);
         return RequestResult<AisleDto>.Success(AisleMapping.Map(aisle));

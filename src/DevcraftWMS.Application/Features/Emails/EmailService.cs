@@ -7,7 +7,6 @@ namespace DevcraftWMS.Application.Features.Emails;
 
 public sealed class EmailService : IEmailService
 {
-    private const int MaxPageSize = 100;
     private readonly IEmailMessageRepository _messageRepository;
     private readonly IEmailInboxRepository _inboxRepository;
     private readonly IEmailInboxReader _inboxReader;
@@ -79,8 +78,6 @@ public sealed class EmailService : IEmailService
             return RequestResult<CursorPaginationResult<EmailMessageDto>>.Failure("emails.message.invalid_status", statusError);
         }
 
-        var normalizedPageNumber = pageNumber < 1 ? 1 : pageNumber;
-        var normalizedPageSize = pageSize is < 1 or > MaxPageSize ? 20 : pageSize;
         var normalizedOrderBy = string.IsNullOrWhiteSpace(orderBy) ? "CreatedAtUtc" : orderBy;
         var normalizedOrderDir = string.Equals(orderDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
 
@@ -92,7 +89,7 @@ public sealed class EmailService : IEmailService
                 Guid.TryParse(token.Parts[1], out var cursorId))
             {
                 var items = await _messageRepository.ListByCreatedAtCursorAsync(
-                    normalizedPageSize,
+                    pageSize,
                     normalizedOrderDir,
                     cursorTime,
                     cursorId,
@@ -106,13 +103,13 @@ public sealed class EmailService : IEmailService
                     : CursorToken.Build(dtos[^1].CreatedAtUtc.ToString("O"), dtos[^1].Id);
 
                 return RequestResult<CursorPaginationResult<EmailMessageDto>>.Success(
-                    new CursorPaginationResult<EmailMessageDto>(dtos, nextCursor, normalizedPageSize, normalizedOrderBy, normalizedOrderDir));
+                    new CursorPaginationResult<EmailMessageDto>(dtos, nextCursor, pageSize, normalizedOrderBy, normalizedOrderDir));
             }
         }
 
         var list = await _messageRepository.ListAsync(
-            normalizedPageNumber,
-            normalizedPageSize,
+            pageNumber,
+            pageSize,
             normalizedOrderBy,
             normalizedOrderDir,
             cursor,
@@ -125,7 +122,7 @@ public sealed class EmailService : IEmailService
 
         var fallbackDtos = list.Select(MapMessage).ToList();
         return RequestResult<CursorPaginationResult<EmailMessageDto>>.Success(
-            new CursorPaginationResult<EmailMessageDto>(fallbackDtos, null, normalizedPageSize, normalizedOrderBy, normalizedOrderDir));
+            new CursorPaginationResult<EmailMessageDto>(fallbackDtos, null, pageSize, normalizedOrderBy, normalizedOrderDir));
     }
 
     public async Task<RequestResult<CursorPaginationResult<EmailInboxMessageDto>>> ListInboxAsync(
@@ -146,8 +143,6 @@ public sealed class EmailService : IEmailService
             return RequestResult<CursorPaginationResult<EmailInboxMessageDto>>.Failure("emails.inbox.invalid_status", statusError);
         }
 
-        var normalizedPageNumber = pageNumber < 1 ? 1 : pageNumber;
-        var normalizedPageSize = pageSize is < 1 or > MaxPageSize ? 20 : pageSize;
         var normalizedOrderBy = string.IsNullOrWhiteSpace(orderBy) ? "ReceivedAtUtc" : orderBy;
         var normalizedOrderDir = string.Equals(orderDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
 
@@ -159,7 +154,7 @@ public sealed class EmailService : IEmailService
                 Guid.TryParse(token.Parts[1], out var cursorId))
             {
                 var items = await _inboxRepository.ListByReceivedAtCursorAsync(
-                    normalizedPageSize,
+                    pageSize,
                     normalizedOrderDir,
                     cursorTime,
                     cursorId,
@@ -173,13 +168,13 @@ public sealed class EmailService : IEmailService
                     : CursorToken.Build(dtos[^1].ReceivedAtUtc.ToString("O"), dtos[^1].Id);
 
                 return RequestResult<CursorPaginationResult<EmailInboxMessageDto>>.Success(
-                    new CursorPaginationResult<EmailInboxMessageDto>(dtos, nextCursor, normalizedPageSize, normalizedOrderBy, normalizedOrderDir));
+                    new CursorPaginationResult<EmailInboxMessageDto>(dtos, nextCursor, pageSize, normalizedOrderBy, normalizedOrderDir));
             }
         }
 
         var list = await _inboxRepository.ListAsync(
-            normalizedPageNumber,
-            normalizedPageSize,
+            pageNumber,
+            pageSize,
             normalizedOrderBy,
             normalizedOrderDir,
             cursor,
@@ -191,7 +186,7 @@ public sealed class EmailService : IEmailService
 
         var fallbackDtos = list.Select(MapInbox).ToList();
         return RequestResult<CursorPaginationResult<EmailInboxMessageDto>>.Success(
-            new CursorPaginationResult<EmailInboxMessageDto>(fallbackDtos, null, normalizedPageSize, normalizedOrderBy, normalizedOrderDir));
+            new CursorPaginationResult<EmailInboxMessageDto>(fallbackDtos, null, pageSize, normalizedOrderBy, normalizedOrderDir));
     }
 
     public async Task<RequestResult<int>> SyncInboxAsync(int maxMessages, CancellationToken cancellationToken)

@@ -2,6 +2,7 @@ namespace DevcraftWMS.Domain.Entities;
 
 public sealed class Product : AuditableEntity
 {
+    public Guid CustomerId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }

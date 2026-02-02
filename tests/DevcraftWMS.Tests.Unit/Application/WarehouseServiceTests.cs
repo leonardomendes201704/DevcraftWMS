@@ -95,4 +95,5 @@ public sealed class WarehouseServiceTests
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Warehouse>>(Array.Empty<Warehouse>());
     }
+
 }

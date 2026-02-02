@@ -5,15 +5,15 @@ using DevcraftWMS.DemoMvc.Enums;
 namespace DevcraftWMS.DemoMvc.ViewModels.Uoms;
 
 public sealed record UomQuery(
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Name,
-    UomType? Type,
-    bool? IsActive,
-    bool IncludeInactive);
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Name = null,
+    UomType? Type = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record UomListItemViewModel(
     Guid Id,

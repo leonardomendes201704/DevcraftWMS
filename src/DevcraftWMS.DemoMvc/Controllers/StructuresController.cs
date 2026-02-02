@@ -357,7 +357,7 @@ public sealed class StructuresController : Controller
         var result = await _warehousesClient.ListAsync(
             new WarehouseQuery(
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -390,7 +390,7 @@ public sealed class StructuresController : Controller
             new SectorQuery(
                 warehouseId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -417,7 +417,7 @@ public sealed class StructuresController : Controller
                 Guid.Empty,
                 sectorId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,

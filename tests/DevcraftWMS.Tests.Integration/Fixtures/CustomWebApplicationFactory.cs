@@ -10,6 +10,7 @@ using DevcraftWMS.Application.Abstractions.Email;
 using DevcraftWMS.Infrastructure.Persistence;
 using DevcraftWMS.Infrastructure.Persistence.Logging;
 using DevcraftWMS.Infrastructure.Email;
+using DevcraftWMS.Domain.Entities;
 
 namespace DevcraftWMS.Tests.Integration.Fixtures;
 
@@ -95,6 +96,19 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             var adminSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.AdminUserSeeder>();
             adminSeeder.SeedAsync().GetAwaiter().GetResult();
+
+            var defaultCustomerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            if (!db.Customers.Any(c => c.Id == defaultCustomerId))
+            {
+                db.Customers.Add(new Customer
+                {
+                    Id = defaultCustomerId,
+                    Name = "Default Customer",
+                    Email = "default-customer@test.local",
+                    DateOfBirth = new DateOnly(1990, 1, 1)
+                });
+                db.SaveChanges();
+            }
         });
     }
 

@@ -355,7 +355,7 @@ public sealed class AislesController : Controller
         var result = await _warehousesClient.ListAsync(
             new WarehouseQuery(
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -388,7 +388,7 @@ public sealed class AislesController : Controller
             new SectorQuery(
                 warehouseId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -415,7 +415,7 @@ public sealed class AislesController : Controller
                 Guid.Empty,
                 sectorId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,

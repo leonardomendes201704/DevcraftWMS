@@ -425,7 +425,7 @@ public sealed class LocationsController : Controller
         var result = await _warehousesClient.ListAsync(
             new WarehouseQuery(
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -458,7 +458,7 @@ public sealed class LocationsController : Controller
             new SectorQuery(
                 warehouseId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -485,7 +485,7 @@ public sealed class LocationsController : Controller
                 Guid.Empty,
                 sectorId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,
@@ -512,7 +512,7 @@ public sealed class LocationsController : Controller
                 Guid.Empty,
                 sectionId,
                 1,
-                200,
+                100,
                 "Name",
                 "asc",
                 null,

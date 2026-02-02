@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Structures;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -13,7 +14,8 @@ public sealed class StructureServiceTests
     {
         var structureRepository = new FakeStructureRepository();
         var sectionRepository = new FakeSectionRepository(null);
-        var service = new StructureService(structureRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new StructureService(structureRepository, sectionRepository, customerContext);
 
         var result = await service.CreateStructureAsync(
             Guid.NewGuid(),
@@ -33,7 +35,8 @@ public sealed class StructureServiceTests
         var section = new Section { Id = Guid.NewGuid(), SectorId = Guid.NewGuid(), Code = "SEC-A", Name = "Section" };
         var structureRepository = new FakeStructureRepository(codeExists: true);
         var sectionRepository = new FakeSectionRepository(section);
-        var service = new StructureService(structureRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new StructureService(structureRepository, sectionRepository, customerContext);
 
         var result = await service.CreateStructureAsync(
             section.Id,
@@ -62,7 +65,8 @@ public sealed class StructureServiceTests
 
         var structureRepository = new FakeStructureRepository(structure: structure);
         var sectionRepository = new FakeSectionRepository(new Section { Id = Guid.NewGuid(), SectorId = Guid.NewGuid(), Code = "SEC-A", Name = "Section" });
-        var service = new StructureService(structureRepository, sectionRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new StructureService(structureRepository, sectionRepository, customerContext);
 
         var result = await service.UpdateStructureAsync(
             structure.Id,
@@ -163,5 +167,10 @@ public sealed class StructureServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Section>>(Array.Empty<Section>());
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

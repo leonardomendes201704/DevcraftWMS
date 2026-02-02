@@ -65,6 +65,49 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("Aisles", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.AisleCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AisleId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("AisleId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("AisleCustomers", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -368,6 +411,49 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("Locations", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.LocationCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("LocationId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("LocationCustomers", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -449,6 +535,9 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("DeletedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -505,13 +594,15 @@ namespace DevcraftWMS.Infrastructure.Migrations
 
                     b.HasIndex("BaseUomId");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("CustomerId", "Code")
                         .IsUnique();
 
-                    b.HasIndex("Ean")
+                    b.HasIndex("CustomerId", "Ean")
                         .IsUnique();
 
-                    b.HasIndex("ErpCode")
+                    b.HasIndex("CustomerId", "ErpCode")
                         .IsUnique();
 
                     b.ToTable("Products", (string)null);
@@ -531,6 +622,9 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DeletedAtUtc")
@@ -559,11 +653,13 @@ namespace DevcraftWMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
                     b.HasIndex("UomId");
 
                     b.HasIndex("ProductId", "IsBase");
 
-                    b.HasIndex("ProductId", "UomId")
+                    b.HasIndex("CustomerId", "ProductId", "UomId")
                         .IsUnique();
 
                     b.ToTable("ProductUoms", (string)null);
@@ -621,6 +717,49 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("Sections", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.SectionCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("SectionId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("SectionCustomers", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Sector", b =>
                 {
                     b.Property<Guid>("Id")
@@ -676,6 +815,49 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("Sectors");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.SectorCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SectorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("SectorId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("SectorCustomers", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Structure", b =>
                 {
                     b.Property<Guid>("Id")
@@ -728,6 +910,49 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Structures", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.StructureCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("StructureId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("StructureId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("StructureCustomers", (string)null);
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Uom", b =>
@@ -1570,6 +1795,25 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Section");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.AisleCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Aisle", "Aisle")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("AisleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aisle");
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.EmailDeliveryAttempt", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.EmailMessage", "EmailMessage")
@@ -1590,6 +1834,25 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Structure");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.LocationCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Location", "Location")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
@@ -1633,6 +1896,25 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Sector");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.SectionCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Section", "Section")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Section");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Sector", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.Warehouse", "Warehouse")
@@ -1644,6 +1926,25 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.SectorCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Sector", "Sector")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("SectorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Sector");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Structure", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.Section", "Section")
@@ -1653,6 +1954,25 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.StructureCustomer", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Structure", "Structure")
+                        .WithMany("CustomerAccesses")
+                        .HasForeignKey("StructureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Structure");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.UserProvider", b =>
@@ -1699,9 +2019,19 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Aisle", b =>
+                {
+                    b.Navigation("CustomerAccesses");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.EmailMessage", b =>
                 {
                     b.Navigation("DeliveryAttempts");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.Location", b =>
+                {
+                    b.Navigation("CustomerAccesses");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Product", b =>
@@ -1713,16 +2043,22 @@ namespace DevcraftWMS.Infrastructure.Migrations
                 {
                     b.Navigation("Aisles");
 
+                    b.Navigation("CustomerAccesses");
+
                     b.Navigation("Structures");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Sector", b =>
                 {
+                    b.Navigation("CustomerAccesses");
+
                     b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Structure", b =>
                 {
+                    b.Navigation("CustomerAccesses");
+
                     b.Navigation("Locations");
                 });
 

@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 
@@ -9,15 +10,18 @@ public sealed class ProductService : IProductService
     private readonly IProductRepository _productRepository;
     private readonly IUomRepository _uomRepository;
     private readonly IProductUomRepository _productUomRepository;
+    private readonly ICustomerContext _customerContext;
 
     public ProductService(
         IProductRepository productRepository,
         IUomRepository uomRepository,
-        IProductUomRepository productUomRepository)
+        IProductUomRepository productUomRepository,
+        ICustomerContext customerContext)
     {
         _productRepository = productRepository;
         _uomRepository = uomRepository;
         _productUomRepository = productUomRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<ProductDto>> CreateProductAsync(
@@ -36,6 +40,12 @@ public sealed class ProductService : IProductService
         decimal? volumeCm3,
         CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<ProductDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var baseUom = await _uomRepository.GetByIdAsync(baseUomId, cancellationToken);
         if (baseUom is null)
         {
@@ -69,6 +79,7 @@ public sealed class ProductService : IProductService
         var product = new Product
         {
             Id = Guid.NewGuid(),
+            CustomerId = customerId.Value,
             Code = normalizedCode,
             Name = name.Trim(),
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
@@ -89,6 +100,7 @@ public sealed class ProductService : IProductService
         var baseProductUom = new ProductUom
         {
             Id = Guid.NewGuid(),
+            CustomerId = customerId.Value,
             ProductId = product.Id,
             UomId = baseUomId,
             ConversionFactor = 1m,
@@ -191,6 +203,7 @@ public sealed class ProductService : IProductService
                 baseProductUom = new ProductUom
                 {
                     Id = Guid.NewGuid(),
+                    CustomerId = product.CustomerId,
                     ProductId = product.Id,
                     UomId = baseUomId,
                     ConversionFactor = 1m,

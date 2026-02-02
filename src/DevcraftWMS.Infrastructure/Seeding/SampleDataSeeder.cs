@@ -1,0 +1,553 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using DevcraftWMS.Domain.Entities;
+using DevcraftWMS.Domain.Enums;
+using DevcraftWMS.Infrastructure.Persistence;
+
+namespace DevcraftWMS.Infrastructure.Seeding;
+
+public sealed class SampleDataSeeder
+{
+    private readonly ApplicationDbContext _dbContext;
+    private readonly SampleDataOptions _options;
+    private readonly ILogger<SampleDataSeeder> _logger;
+
+    public SampleDataSeeder(
+        ApplicationDbContext dbContext,
+        IOptions<SampleDataOptions> options,
+        ILogger<SampleDataSeeder> logger)
+    {
+        _dbContext = dbContext;
+        _options = options.Value;
+        _logger = logger;
+    }
+
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_options.Enabled)
+        {
+            return;
+        }
+
+        var normalizedWarehouseCode = _options.WarehouseCode.Trim().ToUpperInvariant();
+        var customer = await EnsureCustomerAsync(cancellationToken);
+        var uoms = await EnsureUomsAsync(cancellationToken);
+
+        var warehouse = await EnsureWarehouseAsync(normalizedWarehouseCode, cancellationToken);
+        var sector = await EnsureSectorAsync(warehouse.Id, cancellationToken);
+        var section = await EnsureSectionAsync(sector.Id, cancellationToken);
+        var structure = await EnsureStructureAsync(section.Id, cancellationToken);
+        var aisle = await EnsureAisleAsync(section.Id, cancellationToken);
+        var locations = await EnsureLocationsAsync(structure.Id, cancellationToken);
+
+        await EnsureSectorAccessAsync(sector, customer.Id, cancellationToken);
+        await EnsureSectionAccessAsync(section, customer.Id, cancellationToken);
+        await EnsureStructureAccessAsync(structure, customer.Id, cancellationToken);
+        await EnsureAisleAccessAsync(aisle, customer.Id, cancellationToken);
+        await EnsureLocationAccessAsync(locations, customer.Id, cancellationToken);
+
+        await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation(
+            "Sample data seed completed for customer {CustomerId} with {ProductCount} products.",
+            customer.Id,
+            _options.ProductCount);
+    }
+
+    private async Task<Customer> EnsureCustomerAsync(CancellationToken cancellationToken)
+    {
+        var customer = await _dbContext.Customers
+            .FirstOrDefaultAsync(c => c.Id == _options.CustomerId, cancellationToken);
+
+        if (customer is not null)
+        {
+            return customer;
+        }
+
+        customer = new Customer
+        {
+            Id = _options.CustomerId,
+            Name = _options.CustomerName.Trim(),
+            Email = _options.CustomerEmail.Trim().ToLowerInvariant(),
+            DateOfBirth = new DateOnly(1990, 1, 1)
+        };
+
+        _dbContext.Customers.Add(customer);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return customer;
+    }
+
+    private async Task<(Uom BaseUom, Uom BoxUom)> EnsureUomsAsync(CancellationToken cancellationToken)
+    {
+        var baseUom = await _dbContext.Uoms.FirstOrDefaultAsync(u => u.Code == "EA", cancellationToken);
+        var boxUom = await _dbContext.Uoms.FirstOrDefaultAsync(u => u.Code == "BOX", cancellationToken);
+
+        if (baseUom is null)
+        {
+            baseUom = new Uom
+            {
+                Id = Guid.NewGuid(),
+                Code = "EA",
+                Name = "Each",
+                Type = UomType.Unit
+            };
+            _dbContext.Uoms.Add(baseUom);
+        }
+
+        if (boxUom is null)
+        {
+            boxUom = new Uom
+            {
+                Id = Guid.NewGuid(),
+                Code = "BOX",
+                Name = "Box",
+                Type = UomType.Unit
+            };
+            _dbContext.Uoms.Add(boxUom);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return (baseUom, boxUom);
+    }
+
+    private Warehouse BuildWarehouse(string normalizedCode)
+    {
+        var warehouse = new Warehouse
+        {
+            Id = Guid.NewGuid(),
+            Code = normalizedCode,
+            Name = _options.WarehouseName.Trim(),
+            ShortName = "DEMO",
+            Description = "Sample warehouse seeded for demo visibility.",
+            WarehouseType = WarehouseType.DistributionCenter,
+            IsPrimary = true,
+            IsPickingEnabled = true,
+            IsReceivingEnabled = true,
+            IsShippingEnabled = true,
+            IsReturnsEnabled = true,
+            ExternalId = "WH-DEMO-001",
+            ErpCode = "ERP-DEMO",
+            CostCenterCode = "CC-DEMO",
+            CostCenterName = "Demo Operations",
+            CutoffTime = new TimeOnly(18, 0),
+            Timezone = "America/Sao_Paulo"
+        };
+
+        warehouse.Addresses.Add(new WarehouseAddress
+        {
+            Id = Guid.NewGuid(),
+            AddressLine1 = "Av. Demo, 1000",
+            AddressLine2 = "Bloco A",
+            District = "Centro",
+            City = "Sao Paulo",
+            State = "SP",
+            PostalCode = "01000-000",
+            Country = "BR",
+            Latitude = -23.55052m,
+            Longitude = -46.633308m,
+            IsPrimary = true
+        });
+
+        warehouse.Contacts.Add(new WarehouseContact
+        {
+            Id = Guid.NewGuid(),
+            ContactName = "Operations",
+            ContactEmail = "ops@demo.local",
+            ContactPhone = "+55 11 99999-0000",
+            IsPrimary = true
+        });
+
+        warehouse.Capacities.Add(new WarehouseCapacity
+        {
+            Id = Guid.NewGuid(),
+            LengthMeters = 120,
+            WidthMeters = 80,
+            HeightMeters = 12,
+            TotalAreaM2 = 9600,
+            TotalCapacity = 1200,
+            CapacityUnit = CapacityUnit.Pallets,
+            MaxWeightKg = 150000,
+            OperationalArea = 8000,
+            IsPrimary = true
+        });
+
+        return warehouse;
+    }
+
+    private static Sector BuildSector(Guid warehouseId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            Code = "SEC-01",
+            Name = "Storage Sector",
+            Description = "Primary storage sector",
+            SectorType = SectorType.Storage
+        };
+
+    private static Section BuildSection(Guid sectorId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            SectorId = sectorId,
+            Code = "SEC-A",
+            Name = "Section A",
+            Description = "Demo section"
+        };
+
+    private static Structure BuildStructure(Guid sectionId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            SectionId = sectionId,
+            Code = "STR-01",
+            Name = "Rack 01",
+            StructureType = StructureType.SelectiveRack,
+            Levels = 4
+        };
+
+    private static Aisle BuildAisle(Guid sectionId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            SectionId = sectionId,
+            Code = "AIS-01",
+            Name = "Main Aisle"
+        };
+
+    private static List<Location> BuildLocations(Guid structureId)
+    {
+        var locations = new List<Location>();
+
+        for (var level = 1; level <= 2; level++)
+        {
+            for (var row = 1; row <= 2; row++)
+            {
+                for (var column = 1; column <= 3; column++)
+                {
+                    var code = $"L{level:00}-R{row:00}-C{column:00}";
+                    locations.Add(new Location
+                    {
+                        Id = Guid.NewGuid(),
+                        StructureId = structureId,
+                        Code = code,
+                        Barcode = $"BC-{code}",
+                        Level = level,
+                        Row = row,
+                        Column = column
+                    });
+                }
+            }
+        }
+
+        return locations;
+    }
+
+    private static (List<Product> Products, List<ProductUom> ProductUoms) BuildProducts(
+        Guid customerId,
+        Guid baseUomId,
+        Guid boxUomId,
+        int count)
+    {
+        var products = new List<Product>();
+        var productUoms = new List<ProductUom>();
+
+        for (var i = 1; i <= count; i++)
+        {
+            var product = new Product
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                Code = $"SKU-{i:000}",
+                Name = $"Sample Product {i:000}",
+                Description = $"Sample product {i:000} for demo visibility.",
+                Ean = $"789000000{i:000}",
+                ErpCode = $"ERP-{i:000}",
+                Category = "Demo",
+                Brand = "Devcraft",
+                BaseUomId = baseUomId,
+                WeightKg = 1.2m + i * 0.1m,
+                LengthCm = 20 + i,
+                WidthCm = 15 + i,
+                HeightCm = 10 + i,
+                VolumeCm3 = (20 + i) * (15 + i) * (10 + i)
+            };
+
+            products.Add(product);
+
+            productUoms.Add(new ProductUom
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                ProductId = product.Id,
+                UomId = baseUomId,
+                ConversionFactor = 1,
+                IsBase = true
+            });
+
+            productUoms.Add(new ProductUom
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                ProductId = product.Id,
+                UomId = boxUomId,
+                ConversionFactor = 10,
+                IsBase = false
+            });
+        }
+
+        return (products, productUoms);
+    }
+
+    private async Task<Warehouse> EnsureWarehouseAsync(string normalizedCode, CancellationToken cancellationToken)
+    {
+        var warehouse = await _dbContext.Warehouses
+            .Include(w => w.Addresses)
+            .Include(w => w.Contacts)
+            .Include(w => w.Capacities)
+            .FirstOrDefaultAsync(w => w.Code == normalizedCode, cancellationToken);
+
+        if (warehouse is not null)
+        {
+            return warehouse;
+        }
+
+        warehouse = BuildWarehouse(normalizedCode);
+        _dbContext.Warehouses.Add(warehouse);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return warehouse;
+    }
+
+    private async Task<Sector> EnsureSectorAsync(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var sector = await _dbContext.Sectors
+            .Include(s => s.CustomerAccesses)
+            .FirstOrDefaultAsync(s => s.WarehouseId == warehouseId && s.Code == "SEC-01", cancellationToken);
+
+        if (sector is not null)
+        {
+            return sector;
+        }
+
+        sector = BuildSector(warehouseId);
+        _dbContext.Sectors.Add(sector);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return sector;
+    }
+
+    private async Task<Section> EnsureSectionAsync(Guid sectorId, CancellationToken cancellationToken)
+    {
+        var section = await _dbContext.Sections
+            .Include(s => s.CustomerAccesses)
+            .FirstOrDefaultAsync(s => s.SectorId == sectorId && s.Code == "SEC-A", cancellationToken);
+
+        if (section is not null)
+        {
+            return section;
+        }
+
+        section = BuildSection(sectorId);
+        _dbContext.Sections.Add(section);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return section;
+    }
+
+    private async Task<Structure> EnsureStructureAsync(Guid sectionId, CancellationToken cancellationToken)
+    {
+        var structure = await _dbContext.Structures
+            .Include(s => s.CustomerAccesses)
+            .FirstOrDefaultAsync(s => s.SectionId == sectionId && s.Code == "STR-01", cancellationToken);
+
+        if (structure is not null)
+        {
+            return structure;
+        }
+
+        structure = BuildStructure(sectionId);
+        _dbContext.Structures.Add(structure);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return structure;
+    }
+
+    private async Task<Aisle> EnsureAisleAsync(Guid sectionId, CancellationToken cancellationToken)
+    {
+        var aisle = await _dbContext.Aisles
+            .Include(a => a.CustomerAccesses)
+            .FirstOrDefaultAsync(a => a.SectionId == sectionId && a.Code == "AIS-01", cancellationToken);
+
+        if (aisle is not null)
+        {
+            return aisle;
+        }
+
+        aisle = BuildAisle(sectionId);
+        _dbContext.Aisles.Add(aisle);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return aisle;
+    }
+
+    private async Task<List<Location>> EnsureLocationsAsync(Guid structureId, CancellationToken cancellationToken)
+    {
+        var expected = BuildLocations(structureId);
+        var existing = await _dbContext.Locations
+            .Include(l => l.CustomerAccesses)
+            .Where(l => l.StructureId == structureId)
+            .ToListAsync(cancellationToken);
+
+        var existingCodes = existing.Select(l => l.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = expected.Where(l => !existingCodes.Contains(l.Code)).ToList();
+
+        if (missing.Count > 0)
+        {
+            _dbContext.Locations.AddRange(missing);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            existing.AddRange(missing);
+        }
+
+        return existing;
+    }
+
+    private async Task EnsureSectorAccessAsync(Sector sector, Guid customerId, CancellationToken cancellationToken)
+    {
+        if (sector.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        {
+            return;
+        }
+
+        sector.CustomerAccesses.Add(new SectorCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureSectionAccessAsync(Section section, Guid customerId, CancellationToken cancellationToken)
+    {
+        if (section.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        {
+            return;
+        }
+
+        section.CustomerAccesses.Add(new SectionCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureStructureAccessAsync(Structure structure, Guid customerId, CancellationToken cancellationToken)
+    {
+        if (structure.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        {
+            return;
+        }
+
+        structure.CustomerAccesses.Add(new StructureCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureAisleAccessAsync(Aisle aisle, Guid customerId, CancellationToken cancellationToken)
+    {
+        if (aisle.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        {
+            return;
+        }
+
+        aisle.CustomerAccesses.Add(new AisleCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureLocationAccessAsync(IEnumerable<Location> locations, Guid customerId, CancellationToken cancellationToken)
+    {
+        var missing = locations
+            .Where(l => l.CustomerAccesses.All(a => a.CustomerId != customerId))
+            .ToList();
+
+        if (missing.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var location in missing)
+        {
+            location.CustomerAccesses.Add(new LocationCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureProductsAsync(
+        Guid customerId,
+        Guid baseUomId,
+        Guid boxUomId,
+        int count,
+        CancellationToken cancellationToken)
+    {
+        for (var i = 1; i <= count; i++)
+        {
+            var code = $"SKU-{i:000}";
+            var product = await _dbContext.Products
+                .FirstOrDefaultAsync(p => p.CustomerId == customerId && p.Code == code, cancellationToken);
+
+            if (product is null)
+            {
+                product = new Product
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    Code = code,
+                    Name = $"Sample Product {i:000}",
+                    Description = $"Sample product {i:000} for demo visibility.",
+                    Ean = $"789000000{i:000}",
+                    ErpCode = $"ERP-{i:000}",
+                    Category = "Demo",
+                    Brand = "Devcraft",
+                    BaseUomId = baseUomId,
+                    WeightKg = 1.2m + i * 0.1m,
+                    LengthCm = 20 + i,
+                    WidthCm = 15 + i,
+                    HeightCm = 10 + i,
+                    VolumeCm3 = (20 + i) * (15 + i) * (10 + i)
+                };
+                _dbContext.Products.Add(product);
+            }
+            else
+            {
+                if (product.BaseUomId == Guid.Empty)
+                {
+                    product.BaseUomId = baseUomId;
+                }
+            }
+
+            var hasBaseUom = await _dbContext.ProductUoms.AnyAsync(
+                pu => pu.CustomerId == customerId && pu.ProductId == product.Id && pu.UomId == baseUomId,
+                cancellationToken);
+
+            if (!hasBaseUom)
+            {
+                _dbContext.ProductUoms.Add(new ProductUom
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    ProductId = product.Id,
+                    UomId = baseUomId,
+                    ConversionFactor = 1,
+                    IsBase = true
+                });
+            }
+
+            var hasBoxUom = await _dbContext.ProductUoms.AnyAsync(
+                pu => pu.CustomerId == customerId && pu.ProductId == product.Id && pu.UomId == boxUomId,
+                cancellationToken);
+
+            if (!hasBoxUom)
+            {
+                _dbContext.ProductUoms.Add(new ProductUom
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    ProductId = product.Id,
+                    UomId = boxUomId,
+                    ConversionFactor = 10,
+                    IsBase = false
+                });
+            }
+        }
+    }
+}

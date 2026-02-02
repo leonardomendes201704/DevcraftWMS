@@ -7,7 +7,6 @@ namespace DevcraftWMS.Application.Features.Warehouses.Queries.ListWarehousesPage
 
 public sealed class ListWarehousesPagedQueryHandler : IRequestHandler<ListWarehousesPagedQuery, RequestResult<PagedResult<WarehouseListItemDto>>>
 {
-    private const int MaxPageSize = 100;
     private readonly IWarehouseRepository _warehouseRepository;
 
     public ListWarehousesPagedQueryHandler(IWarehouseRepository warehouseRepository)
@@ -17,8 +16,6 @@ public sealed class ListWarehousesPagedQueryHandler : IRequestHandler<ListWareho
 
     public async Task<RequestResult<PagedResult<WarehouseListItemDto>>> Handle(ListWarehousesPagedQuery request, CancellationToken cancellationToken)
     {
-        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
-        var pageSize = request.PageSize is < 1 or > MaxPageSize ? 20 : request.PageSize;
         var orderBy = string.IsNullOrWhiteSpace(request.OrderBy) ? "CreatedAtUtc" : request.OrderBy;
         var orderDir = string.Equals(request.OrderDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
 
@@ -38,8 +35,8 @@ public sealed class ListWarehousesPagedQueryHandler : IRequestHandler<ListWareho
             cancellationToken);
 
         var items = await _warehouseRepository.ListAsync(
-            pageNumber,
-            pageSize,
+            request.PageNumber,
+            request.PageSize,
             orderBy,
             orderDir,
             request.Search,
@@ -57,7 +54,7 @@ public sealed class ListWarehousesPagedQueryHandler : IRequestHandler<ListWareho
             cancellationToken);
 
         var dtos = items.Select(WarehouseMapping.MapListItem).ToList();
-        var result = new PagedResult<WarehouseListItemDto>(dtos, total, pageNumber, pageSize, orderBy, orderDir);
+        var result = new PagedResult<WarehouseListItemDto>(dtos, total, request.PageNumber, request.PageSize, orderBy, orderDir);
         return RequestResult<PagedResult<WarehouseListItemDto>>.Success(result);
     }
 }

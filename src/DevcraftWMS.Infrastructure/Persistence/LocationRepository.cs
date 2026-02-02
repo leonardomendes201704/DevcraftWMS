@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 
 namespace DevcraftWMS.Infrastructure.Persistence;
@@ -7,10 +8,12 @@ namespace DevcraftWMS.Infrastructure.Persistence;
 public sealed class LocationRepository : ILocationRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ICustomerContext _customerContext;
 
-    public LocationRepository(ApplicationDbContext dbContext)
+    public LocationRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
     {
         _dbContext = dbContext;
+        _customerContext = customerContext;
     }
 
     public async Task<bool> CodeExistsAsync(Guid structureId, string code, CancellationToken cancellationToken = default)
@@ -41,15 +44,17 @@ public sealed class LocationRepository : ILocationRepository
 
     public async Task<Location?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Locations
             .AsNoTracking()
-            .SingleOrDefaultAsync(l => l.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<Location?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Locations
-            .SingleOrDefaultAsync(l => l.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -92,7 +97,9 @@ public sealed class LocationRepository : ILocationRepository
         bool? isActive,
         bool includeInactive)
     {
-        var query = _dbContext.Locations.AsNoTracking().Where(l => l.StructureId == structureId);
+        var customerId = GetCustomerId();
+        var query = _dbContext.Locations.AsNoTracking()
+            .Where(l => l.StructureId == structureId && l.CustomerAccesses.Any(a => a.CustomerId == customerId));
 
         if (isActive.HasValue)
         {
@@ -114,6 +121,17 @@ public sealed class LocationRepository : ILocationRepository
         }
 
         return query;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            throw new InvalidOperationException("Customer context is required.");
+        }
+
+        return customerId.Value;
     }
 
     private static IQueryable<Location> ApplyOrdering(IQueryable<Location> query, string orderBy, string orderDir)

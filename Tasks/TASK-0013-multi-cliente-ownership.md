@@ -36,6 +36,7 @@ Hoje os cadastros nao possuem Owner, gerando conflito de SKUs e estoque.
 - - Unicidade de SKU/EAN por (CustomerId, Code/Ean).
 - - Endpoints exigem CustomerId (header/route).
 - - Listagens filtram por CustomerId.
+- - Entidades fisicas (setor, secao, estrutura, corredor, endereco) sao compartilhadas, com visibilidade controlada por mapeamentos *Customers.
 
 ## Requisitos Nao Funcionais
 - - Indices por CustomerId para performance.
@@ -47,6 +48,7 @@ Hoje os cadastros nao possuem Owner, gerando conflito de SKUs e estoque.
 
 ## Modelo de Dados / Migracoes
 - - Migracao AddCustomerOwnership.
+- - Migracao AddPhysicalVisibilityMappings (tabelas de acesso por cliente).
 
 ## Observabilidade / Logging
 - TransactionLogs para CRUD e mudancas de contexto.
@@ -62,4 +64,12 @@ Hoje os cadastros nao possuem Owner, gerando conflito de SKUs e estoque.
 - - Definir como selecionar cliente ativo no frontend.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
+
+## Progresso / Notas
+- Produtos e UoM seguem com CustomerId direto; armazem permanece compartilhado.
+- Entidades fisicas (setores, secoes, estruturas, corredores, enderecos) migraram para mapeamentos de visibilidade (*Customers) com FK para Customer.
+- Repositorios filtram por CustomerAccesses (CustomerId do contexto).
+- Indices por cliente aplicados onde necessario (SKU/EAN/ERP).
+- Migrations AddCustomerOwnership e AddPhysicalVisibilityMappings aplicadas no MainDb.
+- Testes atualizados com isolamento por cliente.

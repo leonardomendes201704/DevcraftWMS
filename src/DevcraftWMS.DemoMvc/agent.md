@@ -16,6 +16,7 @@
 - Address blocks must use the reusable Address component (CEP lookup + IBGE UF/city).
 - External endpoints must be configured via appsettings-bound Options with startup validation; no hardcoded URLs in DemoMvc.
 - Enums must include DisplayName for every member.
+- All user-facing error messages must be friendly, clear, and actionable (no raw exceptions).
 
 ## Forbidden actions
 - Direct references to Api/Application/Infrastructure projects.

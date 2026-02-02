@@ -24,8 +24,7 @@ public sealed class SectorConfiguration : IEntityTypeConfiguration<Sector>
         builder.Property(s => s.SectorType)
             .IsRequired();
 
-        builder.HasIndex(s => new { s.WarehouseId, s.Code })
-            .IsUnique();
+        builder.HasIndex(s => new { s.WarehouseId, s.Code }).IsUnique();
 
         builder.HasOne(s => s.Warehouse)
             .WithMany(w => w.Sectors)

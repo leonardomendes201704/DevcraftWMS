@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Sectors;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -13,7 +14,7 @@ public sealed class SectorServiceTests
     {
         var sectorRepository = new FakeSectorRepository();
         var warehouseRepository = new FakeWarehouseRepository(null);
-        var service = new SectorService(sectorRepository, warehouseRepository);
+        var service = new SectorService(sectorRepository, warehouseRepository, new FakeCustomerContext());
 
         var result = await service.CreateSectorAsync(
             Guid.NewGuid(),
@@ -33,7 +34,7 @@ public sealed class SectorServiceTests
         var warehouse = new Warehouse { Id = Guid.NewGuid(), Code = "WH-01", Name = "Main" };
         var sectorRepository = new FakeSectorRepository(codeExists: true);
         var warehouseRepository = new FakeWarehouseRepository(warehouse);
-        var service = new SectorService(sectorRepository, warehouseRepository);
+        var service = new SectorService(sectorRepository, warehouseRepository, new FakeCustomerContext());
 
         var result = await service.CreateSectorAsync(
             warehouse.Id,
@@ -61,7 +62,7 @@ public sealed class SectorServiceTests
 
         var sectorRepository = new FakeSectorRepository(sector: sector);
         var warehouseRepository = new FakeWarehouseRepository(new Warehouse { Id = Guid.NewGuid(), Code = "WH-01", Name = "Main" });
-        var service = new SectorService(sectorRepository, warehouseRepository);
+        var service = new SectorService(sectorRepository, warehouseRepository, new FakeCustomerContext());
 
         var result = await service.UpdateSectorAsync(
             sector.Id,
@@ -176,5 +177,10 @@ public sealed class SectorServiceTests
             bool? isPrimary,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Warehouse>>(Array.Empty<Warehouse>());
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

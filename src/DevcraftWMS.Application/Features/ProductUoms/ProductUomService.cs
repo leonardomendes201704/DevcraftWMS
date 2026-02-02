@@ -52,6 +52,7 @@ public sealed class ProductUomService : IProductUomService
         var productUom = new ProductUom
         {
             Id = Guid.NewGuid(),
+            CustomerId = product.CustomerId,
             ProductId = productId,
             UomId = uomId,
             ConversionFactor = conversionFactor,

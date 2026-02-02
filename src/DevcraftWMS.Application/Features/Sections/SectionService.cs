@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 
@@ -8,11 +9,13 @@ public sealed class SectionService : ISectionService
 {
     private readonly ISectionRepository _sectionRepository;
     private readonly ISectorRepository _sectorRepository;
+    private readonly ICustomerContext _customerContext;
 
-    public SectionService(ISectionRepository sectionRepository, ISectorRepository sectorRepository)
+    public SectionService(ISectionRepository sectionRepository, ISectorRepository sectorRepository, ICustomerContext customerContext)
     {
         _sectionRepository = sectionRepository;
         _sectorRepository = sectorRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<SectionDto>> CreateSectionAsync(
@@ -22,6 +25,12 @@ public sealed class SectionService : ISectionService
         string? description,
         CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<SectionDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var sector = await _sectorRepository.GetByIdAsync(sectorId, cancellationToken);
         if (sector is null)
         {
@@ -43,6 +52,12 @@ public sealed class SectionService : ISectionService
             Name = name.Trim(),
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim()
         };
+
+        section.CustomerAccesses.Add(new SectionCustomer
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId.Value
+        });
 
         await _sectionRepository.AddAsync(section, cancellationToken);
         return RequestResult<SectionDto>.Success(SectionMapping.Map(section));

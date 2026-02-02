@@ -5,17 +5,17 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Aisles;
 
 public sealed record AisleQuery(
-    Guid WarehouseId,
-    Guid SectorId,
-    Guid SectionId,
-    int PageNumber,
-    int PageSize,
-    string OrderBy,
-    string OrderDir,
-    string? Code,
-    string? Name,
-    bool? IsActive,
-    bool IncludeInactive);
+    Guid WarehouseId = default,
+    Guid SectorId = default,
+    Guid SectionId = default,
+    int PageNumber = 1,
+    int PageSize = 20,
+    string OrderBy = "CreatedAtUtc",
+    string OrderDir = "desc",
+    string? Code = null,
+    string? Name = null,
+    bool? IsActive = null,
+    bool IncludeInactive = false);
 
 public sealed record AisleListItemViewModel(
     Guid Id,

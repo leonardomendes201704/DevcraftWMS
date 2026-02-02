@@ -10,4 +10,5 @@ public sealed class Section : AuditableEntity
     public Sector? Sector { get; set; }
     public ICollection<Aisle> Aisles { get; set; } = new List<Aisle>();
     public ICollection<Structure> Structures { get; set; } = new List<Structure>();
+    public ICollection<SectionCustomer> CustomerAccesses { get; set; } = new List<SectionCustomer>();
 }

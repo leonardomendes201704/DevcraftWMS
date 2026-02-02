@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Sections;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -13,7 +14,8 @@ public sealed class SectionServiceTests
     {
         var sectionRepository = new FakeSectionRepository();
         var sectorRepository = new FakeSectorRepository(null);
-        var service = new SectionService(sectionRepository, sectorRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new SectionService(sectionRepository, sectorRepository, customerContext);
 
         var result = await service.CreateSectionAsync(
             Guid.NewGuid(),
@@ -32,7 +34,8 @@ public sealed class SectionServiceTests
         var sector = new Sector { Id = Guid.NewGuid(), WarehouseId = Guid.NewGuid(), Code = "S-01", Name = "Sector" };
         var sectionRepository = new FakeSectionRepository(codeExists: true);
         var sectorRepository = new FakeSectorRepository(sector);
-        var service = new SectionService(sectionRepository, sectorRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new SectionService(sectionRepository, sectorRepository, customerContext);
 
         var result = await service.CreateSectionAsync(
             sector.Id,
@@ -58,7 +61,8 @@ public sealed class SectionServiceTests
 
         var sectionRepository = new FakeSectionRepository(section: section);
         var sectorRepository = new FakeSectorRepository(new Sector { Id = Guid.NewGuid(), WarehouseId = Guid.NewGuid(), Code = "S-01", Name = "Sector" });
-        var service = new SectionService(sectionRepository, sectorRepository);
+        var customerContext = new FakeCustomerContext();
+        var service = new SectionService(sectionRepository, sectorRepository, customerContext);
 
         var result = await service.UpdateSectionAsync(
             section.Id,
@@ -158,5 +162,10 @@ public sealed class SectionServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Sector>>(Array.Empty<Sector>());
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

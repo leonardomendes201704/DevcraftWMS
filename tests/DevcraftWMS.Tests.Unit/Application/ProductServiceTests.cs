@@ -1,5 +1,6 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.Products;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -14,7 +15,7 @@ public sealed class ProductServiceTests
         var productRepository = new FakeProductRepository();
         var uomRepository = new FakeUomRepository(null);
         var productUomRepository = new FakeProductUomRepository();
-        var service = new ProductService(productRepository, uomRepository, productUomRepository);
+        var service = new ProductService(productRepository, uomRepository, productUomRepository, new FakeCustomerContext());
 
         var result = await service.CreateProductAsync(
             "SKU-01",
@@ -43,7 +44,7 @@ public sealed class ProductServiceTests
         var productRepository = new FakeProductRepository(codeExists: true);
         var uomRepository = new FakeUomRepository(uom);
         var productUomRepository = new FakeProductUomRepository();
-        var service = new ProductService(productRepository, uomRepository, productUomRepository);
+        var service = new ProductService(productRepository, uomRepository, productUomRepository, new FakeCustomerContext());
 
         var result = await service.CreateProductAsync(
             "SKU-01",
@@ -115,5 +116,10 @@ public sealed class ProductServiceTests
         public Task<ProductUom?> GetTrackedAsync(Guid productId, Guid uomId, CancellationToken cancellationToken = default) => Task.FromResult<ProductUom?>(null);
         public Task<IReadOnlyList<ProductUom>> ListByProductAsync(Guid productId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ProductUom>>(Array.Empty<ProductUom>());
         public Task<ProductUom?> GetBaseAsync(Guid productId, CancellationToken cancellationToken = default) => Task.FromResult<ProductUom?>(null);
+    }
+
+    private sealed class FakeCustomerContext : ICustomerContext
+    {
+        public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }

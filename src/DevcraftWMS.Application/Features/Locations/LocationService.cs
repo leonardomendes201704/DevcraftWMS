@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 
@@ -8,11 +9,13 @@ public sealed class LocationService : ILocationService
 {
     private readonly ILocationRepository _locationRepository;
     private readonly IStructureRepository _structureRepository;
+    private readonly ICustomerContext _customerContext;
 
-    public LocationService(ILocationRepository locationRepository, IStructureRepository structureRepository)
+    public LocationService(ILocationRepository locationRepository, IStructureRepository structureRepository, ICustomerContext customerContext)
     {
         _locationRepository = locationRepository;
         _structureRepository = structureRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<LocationDto>> CreateLocationAsync(
@@ -24,6 +27,12 @@ public sealed class LocationService : ILocationService
         int column,
         CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<LocationDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var structure = await _structureRepository.GetByIdAsync(structureId, cancellationToken);
         if (structure is null)
         {
@@ -47,6 +56,12 @@ public sealed class LocationService : ILocationService
             Row = row,
             Column = column
         };
+
+        location.CustomerAccesses.Add(new LocationCustomer
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId.Value
+        });
 
         await _locationRepository.AddAsync(location, cancellationToken);
         return RequestResult<LocationDto>.Success(LocationMapping.Map(location));

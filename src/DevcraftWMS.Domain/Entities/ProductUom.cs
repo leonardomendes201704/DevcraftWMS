@@ -2,6 +2,7 @@ namespace DevcraftWMS.Domain.Entities;
 
 public sealed class ProductUom : AuditableEntity
 {
+    public Guid CustomerId { get; set; }
     public Guid ProductId { get; set; }
     public Guid UomId { get; set; }
     public decimal ConversionFactor { get; set; }

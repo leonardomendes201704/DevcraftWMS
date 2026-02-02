@@ -39,7 +39,7 @@ public sealed class CustomerSelectorViewComponent : ViewComponent
         var query = new CustomerListQuery
         {
             PageNumber = 1,
-            PageSize = 200,
+            PageSize = 100,
             OrderBy = "Name",
             OrderDir = "asc",
             IncludeInactive = false

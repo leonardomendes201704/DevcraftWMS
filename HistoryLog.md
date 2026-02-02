@@ -1,6 +1,20 @@
 # History Log
 
 ## 2026-02-02
+- Fix - Dependent dropdowns use valid page size.
+  - Key changes: reduced page size to 100 for warehouse/sector/section/structure option loaders to avoid API validation errors.
+- Guideline - DemoMvc friendly error messages.
+  - Key changes: added rule requiring friendly, actionable user-facing errors in DemoMvc.
+- Fix - Customer selector loads with valid pagination.
+  - Key changes: reduced customer selector page size to comply with API validation (max 100).
+- TASK-0017 - Pagination validation without fallbacks.
+  - Key changes: added validators for all paged queries, removed pagination fallbacks in handlers, and set DemoMvc defaults to avoid zero values.
+- TASK-0016 - Demo seed for warehouse and products.
+  - Key changes: added configurable SampleDataSeeder, seed options in appsettings, demo data creation for warehouse hierarchy + products, and completion logic when data already exists.
+- TASK-0013 - Multi-client ownership (shared physical visibility) updated.
+  - Key changes: removed CustomerId from physical entities, added *Customers visibility tables, updated services/repositories, seeded default customer in tests, and migration AddPhysicalVisibilityMappings.
+- TASK-0013 - Multi-client ownership completed.
+  - Key changes: added CustomerId to core entities (excluding shared Warehouse), enforced repository filtering, updated ownership indexes, and migrations AddCustomerOwnership/AdjustWarehouseOwnership.
 - TASK-0014 - Customer context (UI + API) completed.
   - Key changes: added DemoMvc customer selector + session context, API customer context middleware, settings docs, and integration test coverage.
 - TASK-0015 - Dependency feedback for dependent registrations completed.

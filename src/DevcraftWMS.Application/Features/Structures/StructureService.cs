@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -9,11 +10,13 @@ public sealed class StructureService : IStructureService
 {
     private readonly IStructureRepository _structureRepository;
     private readonly ISectionRepository _sectionRepository;
+    private readonly ICustomerContext _customerContext;
 
-    public StructureService(IStructureRepository structureRepository, ISectionRepository sectionRepository)
+    public StructureService(IStructureRepository structureRepository, ISectionRepository sectionRepository, ICustomerContext customerContext)
     {
         _structureRepository = structureRepository;
         _sectionRepository = sectionRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<StructureDto>> CreateStructureAsync(
@@ -24,6 +27,12 @@ public sealed class StructureService : IStructureService
         int levels,
         CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<StructureDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var section = await _sectionRepository.GetByIdAsync(sectionId, cancellationToken);
         if (section is null)
         {
@@ -46,6 +55,12 @@ public sealed class StructureService : IStructureService
             StructureType = structureType,
             Levels = levels
         };
+
+        structure.CustomerAccesses.Add(new StructureCustomer
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId.Value
+        });
 
         await _structureRepository.AddAsync(structure, cancellationToken);
         return RequestResult<StructureDto>.Success(StructureMapping.Map(structure));

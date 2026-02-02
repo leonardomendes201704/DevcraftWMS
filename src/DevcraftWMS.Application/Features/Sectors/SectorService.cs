@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -9,11 +10,13 @@ public sealed class SectorService : ISectorService
 {
     private readonly ISectorRepository _sectorRepository;
     private readonly IWarehouseRepository _warehouseRepository;
+    private readonly ICustomerContext _customerContext;
 
-    public SectorService(ISectorRepository sectorRepository, IWarehouseRepository warehouseRepository)
+    public SectorService(ISectorRepository sectorRepository, IWarehouseRepository warehouseRepository, ICustomerContext customerContext)
     {
         _sectorRepository = sectorRepository;
         _warehouseRepository = warehouseRepository;
+        _customerContext = customerContext;
     }
 
     public async Task<RequestResult<SectorDto>> CreateSectorAsync(
@@ -24,6 +27,12 @@ public sealed class SectorService : ISectorService
         SectorType sectorType,
         CancellationToken cancellationToken)
     {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            return RequestResult<SectorDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
         var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, cancellationToken);
         if (warehouse is null)
         {
@@ -46,6 +55,12 @@ public sealed class SectorService : ISectorService
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
             SectorType = sectorType
         };
+
+        sector.CustomerAccesses.Add(new SectorCustomer
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId.Value
+        });
 
         await _sectorRepository.AddAsync(sector, cancellationToken);
         return RequestResult<SectorDto>.Success(SectorMapping.Map(sector));

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 
@@ -8,10 +9,12 @@ namespace DevcraftWMS.Infrastructure.Persistence;
 public sealed class StructureRepository : IStructureRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ICustomerContext _customerContext;
 
-    public StructureRepository(ApplicationDbContext dbContext)
+    public StructureRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
     {
         _dbContext = dbContext;
+        _customerContext = customerContext;
     }
 
     public async Task<bool> CodeExistsAsync(Guid sectionId, string code, CancellationToken cancellationToken = default)
@@ -42,15 +45,17 @@ public sealed class StructureRepository : IStructureRepository
 
     public async Task<Structure?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Structures
             .AsNoTracking()
-            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == id && s.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<Structure?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Structures
-            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == id && s.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -96,7 +101,9 @@ public sealed class StructureRepository : IStructureRepository
         bool? isActive,
         bool includeInactive)
     {
-        var query = _dbContext.Structures.AsNoTracking().Where(s => s.SectionId == sectionId);
+        var customerId = GetCustomerId();
+        var query = _dbContext.Structures.AsNoTracking()
+            .Where(s => s.SectionId == sectionId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
 
         if (isActive.HasValue)
         {
@@ -123,6 +130,17 @@ public sealed class StructureRepository : IStructureRepository
         }
 
         return query;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            throw new InvalidOperationException("Customer context is required.");
+        }
+
+        return customerId.Value;
     }
 
     private static IQueryable<Structure> ApplyOrdering(IQueryable<Structure> query, string orderBy, string orderDir)

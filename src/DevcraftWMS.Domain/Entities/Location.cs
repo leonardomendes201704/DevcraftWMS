@@ -10,4 +10,5 @@ public sealed class Location : AuditableEntity
     public int Column { get; set; }
 
     public Structure? Structure { get; set; }
+    public ICollection<LocationCustomer> CustomerAccesses { get; set; } = new List<LocationCustomer>();
 }

@@ -1,0 +1,12 @@
+namespace DevcraftWMS.Infrastructure.Seeding;
+
+public sealed class SampleDataOptions
+{
+    public bool Enabled { get; set; }
+    public Guid CustomerId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerEmail { get; set; } = string.Empty;
+    public string WarehouseCode { get; set; } = string.Empty;
+    public string WarehouseName { get; set; } = string.Empty;
+    public int ProductCount { get; set; } = 10;
+}

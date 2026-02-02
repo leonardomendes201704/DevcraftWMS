@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 
@@ -8,10 +9,12 @@ namespace DevcraftWMS.Infrastructure.Persistence;
 public sealed class SectorRepository : ISectorRepository
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ICustomerContext _customerContext;
 
-    public SectorRepository(ApplicationDbContext dbContext)
+    public SectorRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
     {
         _dbContext = dbContext;
+        _customerContext = customerContext;
     }
 
     public async Task<bool> CodeExistsAsync(Guid warehouseId, string code, CancellationToken cancellationToken = default)
@@ -42,15 +45,17 @@ public sealed class SectorRepository : ISectorRepository
 
     public async Task<Sector?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Sectors
             .AsNoTracking()
-            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == id && s.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<Sector?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var customerId = GetCustomerId();
         return await _dbContext.Sectors
-            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == id && s.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -96,7 +101,9 @@ public sealed class SectorRepository : ISectorRepository
         bool? isActive,
         bool includeInactive)
     {
-        var query = _dbContext.Sectors.AsNoTracking().Where(s => s.WarehouseId == warehouseId);
+        var customerId = GetCustomerId();
+        var query = _dbContext.Sectors.AsNoTracking()
+            .Where(s => s.WarehouseId == warehouseId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
 
         if (isActive.HasValue)
         {
@@ -123,6 +130,17 @@ public sealed class SectorRepository : ISectorRepository
         }
 
         return query;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var customerId = _customerContext.CustomerId;
+        if (!customerId.HasValue)
+        {
+            throw new InvalidOperationException("Customer context is required.");
+        }
+
+        return customerId.Value;
     }
 
     private static IQueryable<Sector> ApplyOrdering(IQueryable<Sector> query, string orderBy, string orderDir)

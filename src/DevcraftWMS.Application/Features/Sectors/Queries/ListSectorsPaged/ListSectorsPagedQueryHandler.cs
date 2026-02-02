@@ -7,7 +7,6 @@ namespace DevcraftWMS.Application.Features.Sectors.Queries.ListSectorsPaged;
 
 public sealed class ListSectorsPagedQueryHandler : IRequestHandler<ListSectorsPagedQuery, RequestResult<PagedResult<SectorListItemDto>>>
 {
-    private const int MaxPageSize = 100;
     private readonly ISectorRepository _sectorRepository;
 
     public ListSectorsPagedQueryHandler(ISectorRepository sectorRepository)
@@ -17,8 +16,6 @@ public sealed class ListSectorsPagedQueryHandler : IRequestHandler<ListSectorsPa
 
     public async Task<RequestResult<PagedResult<SectorListItemDto>>> Handle(ListSectorsPagedQuery request, CancellationToken cancellationToken)
     {
-        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
-        var pageSize = request.PageSize is < 1 or > MaxPageSize ? 20 : request.PageSize;
         var orderBy = string.IsNullOrWhiteSpace(request.OrderBy) ? "CreatedAtUtc" : request.OrderBy;
         var orderDir = string.Equals(request.OrderDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
 
@@ -33,8 +30,8 @@ public sealed class ListSectorsPagedQueryHandler : IRequestHandler<ListSectorsPa
 
         var items = await _sectorRepository.ListAsync(
             request.WarehouseId,
-            pageNumber,
-            pageSize,
+            request.PageNumber,
+            request.PageSize,
             orderBy,
             orderDir,
             request.Code,
@@ -45,7 +42,7 @@ public sealed class ListSectorsPagedQueryHandler : IRequestHandler<ListSectorsPa
             cancellationToken);
 
         var dtos = items.Select(SectorMapping.MapListItem).ToList();
-        var result = new PagedResult<SectorListItemDto>(dtos, total, pageNumber, pageSize, orderBy, orderDir);
+        var result = new PagedResult<SectorListItemDto>(dtos, total, request.PageNumber, request.PageSize, orderBy, orderDir);
         return RequestResult<PagedResult<SectorListItemDto>>.Success(result);
     }
 }
