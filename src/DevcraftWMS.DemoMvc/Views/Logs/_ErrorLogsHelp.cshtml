@@ -1,0 +1,52 @@
+<div class="modal fade" id="errorLogsHelp" tabindex="-1" aria-labelledby="errorLogsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorLogsHelpLabel">Error Logs Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>Error logs capture unhandled exceptions and critical events from the API and telemetry.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Index (List)</h6>
+                    <ul class="mb-0">
+                        <li>Filter by exception type and date range.</li>
+                        <li>Review source, event type, severity, and status.</li>
+                        <li>Open Details for full payloads and correlation IDs.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Details</h6>
+                    <ul class="mb-0">
+                        <li>Use correlationId/requestId to trace related Request/Transaction logs.</li>
+                        <li>Review message, stack trace, and client context when available.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Auto-refresh</h6>
+                    <ul class="mb-0">
+                        <li>Enable Auto-refresh to receive new error logs via SignalR.</li>
+                        <li>Use the SignalR status badge to verify connection.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>No logs:</strong> ensure logging is enabled and errors are occurring.</li>
+                        <li><strong>SignalR disconnected:</strong> reload the page and check API base URL.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

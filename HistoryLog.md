@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0033 - Error Logs Help manual added.
+  - Key changes: added Help button and modal manual for Error Logs (filters, details, SignalR).
 - TASK-0032 - Request Logs Help manual added.
   - Key changes: added Help button and modal manual for Request Logs (filters + SignalR).
 - TASK-0031 - Inventory Balances Help manual added.
