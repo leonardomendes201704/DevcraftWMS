@@ -1,0 +1,69 @@
+<div class="modal fade" id="lotsHelp" tabindex="-1" aria-labelledby="lotsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lotsHelpLabel">Lots Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>Lots track product batches and expiration dates for FEFO/FIFO operations and compliance.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Index (List)</h6>
+                    <ul class="mb-0">
+                        <li>Select a product to list its lots.</li>
+                        <li>Filter by code, status, or expiration range.</li>
+                        <li>Sort columns and use pagination as needed.</li>
+                        <li>Inactive lots are hidden unless explicitly included.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Create</h6>
+                    <ul class="mb-0">
+                        <li>Click <strong>New Lot</strong> to register a batch for the selected product.</li>
+                        <li>Required: Lot code. Optional: manufacture/expiration dates and status.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Details</h6>
+                    <ul class="mb-0">
+                        <li>Review lot attributes and status.</li>
+                        <li>Use this view to confirm expiration data before operations.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Edit</h6>
+                    <ul class="mb-0">
+                        <li>Update code, status, or expiration data.</li>
+                        <li>Keep dates consistent with regulatory requirements.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Deactivate</h6>
+                    <ul class="mb-0">
+                        <li>Deactivate a lot if it should no longer be used.</li>
+                        <li>Use filters to include inactive lots when needed.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>Duplicate code:</strong> lot codes must be unique per product.</li>
+                        <li><strong>Invalid dates:</strong> expiration cannot precede manufacture date.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
