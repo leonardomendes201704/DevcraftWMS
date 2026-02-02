@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0021 - Customers Help manual added.
+  - Key changes: added Help button and modal manual covering Customers Index + CRUD screens.
+- Guidelines - DemoMvc Help manuals per screen.
+  - Key changes: added tasks for Help manuals and updated DemoMvc agent guidelines to require Help on Index + CRUD screens.
 - TASK-0009 - Inventory balances per location completed.
   - Key changes: added InventoryBalance entity/service/repository, API endpoints, DemoMvc screens, tests, and migration AddInventoryBalances.
 - UI - Adjusted Aisles menu icon to a visible Bootstrap icon.

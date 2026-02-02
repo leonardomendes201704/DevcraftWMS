@@ -12,6 +12,8 @@
 - No SPA frameworks; minimal JS (only Bootstrap behaviors).
 - UI must use shared partials and GridBuilder for list screens.
 - UI components must be documented/visible in the UI Showcase.
+- Every Index screen must include a Help button that renders a versioned HTML manual for the module.
+- The Help manual must include instructions for the Index screen and its related CRUD screens (Create/Edit/Details/Delete) within the same context.
 - All form fields must use Bootstrap input groups with left icons.
 - Address blocks must use the reusable Address component (CEP lookup + IBGE UF/city).
 - External endpoints must be configured via appsettings-bound Options with startup validation; no hardcoded URLs in DemoMvc.
@@ -27,5 +29,6 @@
 - Uses shared partials (grid, filters, alerts, etc.).
 - Forms use validation and PRG.
 - UI Showcase updated when components change.
+- Help manual added/updated for the screen (Index + related CRUD screens).
 - EN-US for all UI labels and code identifiers.
 
