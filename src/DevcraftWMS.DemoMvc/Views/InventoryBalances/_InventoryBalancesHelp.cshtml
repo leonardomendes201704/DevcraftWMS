@@ -1,0 +1,68 @@
+<div class="modal fade" id="inventoryBalancesHelp" tabindex="-1" aria-labelledby="inventoryBalancesHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventoryBalancesHelpLabel">Inventory Balances Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>Inventory balances track quantity on hand, reserved, and available per location and product.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Index (List)</h6>
+                    <ul class="mb-0">
+                        <li>Use warehouse/sector/section/structure filters to scope locations.</li>
+                        <li>Filter by product, lot, and status.</li>
+                        <li>Sort and paginate for large inventories.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Create</h6>
+                    <ul class="mb-0">
+                        <li>Click <strong>New Balance</strong> to register stock.</li>
+                        <li>Required: Location, Product, Quantity On Hand.</li>
+                        <li>Reserved cannot exceed On Hand.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Details</h6>
+                    <ul class="mb-0">
+                        <li>Review quantities and status for a specific balance.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Edit</h6>
+                    <ul class="mb-0">
+                        <li>Update quantities or status.</li>
+                        <li>Keep Reserved <= On Hand.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Deactivate</h6>
+                    <ul class="mb-0">
+                        <li>Deactivate balances that should no longer be used.</li>
+                        <li>Inactive balances can be included via filters.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Common Issues</h6>
+                    <ul class="mb-0">
+                        <li><strong>Missing dependencies:</strong> ensure locations and products exist.</li>
+                        <li><strong>Invalid quantities:</strong> reserved cannot exceed on hand.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

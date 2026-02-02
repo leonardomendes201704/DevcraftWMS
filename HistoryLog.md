@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-02
+- TASK-0031 - Inventory Balances Help manual added.
+  - Key changes: added Help button and modal manual covering Inventory Balances Index + CRUD screens.
 - TASK-0030 - Locations Help manual added.
   - Key changes: added Help button and modal manual covering Locations Index + CRUD screens.
 - TASK-0029 - Aisles Help manual added.
