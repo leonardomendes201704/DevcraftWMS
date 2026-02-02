@@ -164,9 +164,15 @@ public sealed class ReceiptService : IReceiptService
             return RequestResult<ReceiptItemDto>.Failure("receipts.product.not_found", "Product not found.");
         }
 
+        if (product.TrackingMode != TrackingMode.None && !lotId.HasValue)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.lot.required", "Lot is required for the selected product.");
+        }
+
+        Lot? lot = null;
         if (lotId.HasValue)
         {
-            var lot = await _lotRepository.GetByIdAsync(lotId.Value, cancellationToken);
+            lot = await _lotRepository.GetByIdAsync(lotId.Value, cancellationToken);
             if (lot is null)
             {
                 return RequestResult<ReceiptItemDto>.Failure("receipts.lot.not_found", "Lot not found.");
@@ -175,6 +181,25 @@ public sealed class ReceiptService : IReceiptService
             if (lot.ProductId != productId)
             {
                 return RequestResult<ReceiptItemDto>.Failure("receipts.lot.mismatch", "Lot does not belong to the selected product.");
+            }
+
+            if (product.TrackingMode == TrackingMode.LotAndExpiry && !lot.ExpirationDate.HasValue)
+            {
+                return RequestResult<ReceiptItemDto>.Failure("receipts.lot.expiration_required", "Lot expiration date is required for the selected product.");
+            }
+
+            if (product.MinimumShelfLifeDays.HasValue && lot.ExpirationDate.HasValue)
+            {
+                var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
+                var remainingDays = lot.ExpirationDate.Value.DayNumber - today.DayNumber;
+                if (remainingDays < product.MinimumShelfLifeDays.Value)
+                {
+                    if (lot.Status != LotStatus.Quarantined)
+                    {
+                        lot.Status = LotStatus.Quarantined;
+                        await _lotRepository.UpdateAsync(lot, cancellationToken);
+                    }
+                }
             }
         }
 
@@ -209,7 +234,7 @@ public sealed class ReceiptService : IReceiptService
 
         await _receiptRepository.AddItemAsync(item, cancellationToken);
         item.Product = product;
-        item.Lot = lotId.HasValue ? await _lotRepository.GetByIdAsync(lotId.Value, cancellationToken) : null;
+        item.Lot = lot;
         item.Location = location;
         item.Uom = uom;
 
@@ -237,6 +262,17 @@ public sealed class ReceiptService : IReceiptService
         foreach (var item in receipt.Items)
         {
             var balance = await _balanceRepository.GetTrackedByKeyAsync(item.LocationId, item.ProductId, item.LotId, cancellationToken);
+            InventoryBalanceStatus status = InventoryBalanceStatus.Available;
+
+            if (item.LotId.HasValue)
+            {
+                var lot = await _lotRepository.GetByIdAsync(item.LotId.Value, cancellationToken);
+                if (lot?.Status == LotStatus.Quarantined)
+                {
+                    status = InventoryBalanceStatus.Blocked;
+                }
+            }
+
             if (balance is null)
             {
                 var newBalance = new InventoryBalance
@@ -247,7 +283,7 @@ public sealed class ReceiptService : IReceiptService
                     LotId = item.LotId,
                     QuantityOnHand = item.Quantity,
                     QuantityReserved = 0,
-                    Status = InventoryBalanceStatus.Available
+                    Status = status
                 };
 
                 await _balanceRepository.AddAsync(newBalance, cancellationToken);
@@ -255,6 +291,10 @@ public sealed class ReceiptService : IReceiptService
             else
             {
                 balance.QuantityOnHand += item.Quantity;
+                if (status == InventoryBalanceStatus.Blocked && balance.Status != InventoryBalanceStatus.Blocked)
+                {
+                    balance.Status = InventoryBalanceStatus.Blocked;
+                }
                 await _balanceRepository.UpdateAsync(balance, cancellationToken);
             }
         }

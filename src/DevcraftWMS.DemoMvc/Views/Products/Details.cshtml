@@ -18,6 +18,7 @@
             new() { Label = "Category", Value = string.IsNullOrWhiteSpace(Model.Product.Category) ? "-" : Model.Product.Category },
             new() { Label = "Brand", Value = string.IsNullOrWhiteSpace(Model.Product.Brand) ? "-" : Model.Product.Brand },
             new() { Label = "Tracking", Value = Model.Product.TrackingMode.GetDisplayName() },
+            new() { Label = "Minimum Shelf Life (days)", Value = Model.Product.MinimumShelfLifeDays?.ToString() ?? "-" },
             new() { Label = "Status", Value = Model.Product.IsActive ? "Active" : "Inactive", BadgeText = Model.Product.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.Product.IsActive ? "text-bg-success" : "text-bg-secondary" },
             new() { Label = "Created", Value = Model.Product.CreatedAtUtc.ToLocalTime().ToString("g") }
         }

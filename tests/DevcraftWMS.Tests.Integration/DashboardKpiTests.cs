@@ -63,6 +63,7 @@ public sealed class DashboardKpiTests : IClassFixture<CustomWebApplicationFactor
             brand = "Devcraft",
             baseUomId,
             trackingMode = 2,
+            minimumShelfLifeDays = 30,
             weightKg = 1.1,
             lengthCm = 10,
             widthCm = 5,

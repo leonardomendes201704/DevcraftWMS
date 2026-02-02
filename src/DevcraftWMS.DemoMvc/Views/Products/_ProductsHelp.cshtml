@@ -27,6 +27,7 @@
                         <li>Click <strong>New Product</strong> to create a SKU.</li>
                         <li>Required fields: Code, Name, Base UoM, Tracking Mode.</li>
                         <li>Tracking Mode defines whether lots and expiry are enforced.</li>
+                        <li>Minimum Shelf Life defines the minimum days until expiration required for receipts.</li>
                         <li>Optional fields: Description, EAN, ERP code, category, brand, dimensions, weight.</li>
                     </ul>
                 </section>
@@ -62,6 +63,7 @@
                     <ul class="mb-0">
                         <li><strong>Code/EAN/ERP already used:</strong> each must be unique per customer.</li>
                         <li><strong>Tracking mismatch:</strong> lots require Tracking Mode Lot or Lot and expiry.</li>
+                        <li><strong>Quarantine on receipt:</strong> lots with less remaining shelf life than the product rule will be quarantined.</li>
                         <li><strong>Invalid dimensions:</strong> values must be positive when provided.</li>
                         <li><strong>Missing Base UoM:</strong> create the unit first in UoM.</li>
                     </ul>

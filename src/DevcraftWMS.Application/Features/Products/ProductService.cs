@@ -34,6 +34,7 @@ public sealed class ProductService : IProductService
         string? brand,
         Guid baseUomId,
         DevcraftWMS.Domain.Enums.TrackingMode trackingMode,
+        int? minimumShelfLifeDays,
         decimal? weightKg,
         decimal? lengthCm,
         decimal? widthCm,
@@ -90,6 +91,7 @@ public sealed class ProductService : IProductService
             Brand = string.IsNullOrWhiteSpace(brand) ? null : brand.Trim(),
             BaseUomId = baseUomId,
             TrackingMode = trackingMode,
+            MinimumShelfLifeDays = minimumShelfLifeDays,
             WeightKg = weightKg,
             LengthCm = lengthCm,
             WidthCm = widthCm,
@@ -125,6 +127,7 @@ public sealed class ProductService : IProductService
         string? brand,
         Guid baseUomId,
         DevcraftWMS.Domain.Enums.TrackingMode trackingMode,
+        int? minimumShelfLifeDays,
         decimal? weightKg,
         decimal? lengthCm,
         decimal? widthCm,
@@ -184,6 +187,7 @@ public sealed class ProductService : IProductService
         product.Brand = string.IsNullOrWhiteSpace(brand) ? null : brand.Trim();
         product.BaseUomId = baseUomId;
         product.TrackingMode = trackingMode;
+        product.MinimumShelfLifeDays = minimumShelfLifeDays;
         product.WeightKg = weightKg;
         product.LengthCm = lengthCm;
         product.WidthCm = widthCm;

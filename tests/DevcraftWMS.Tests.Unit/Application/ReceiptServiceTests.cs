@@ -65,6 +65,151 @@ public sealed class ReceiptServiceTests
     }
 
     [Fact]
+    public async Task AddItem_Should_Return_Failure_When_Lot_Required()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-004",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            TrackingMode = TrackingMode.Lot
+        };
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeProductRepository(product),
+            new FakeLotRepository(null),
+            new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
+            new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.AddItemAsync(receipt.Id, productId, null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("receipts.lot.required");
+    }
+
+    [Fact]
+    public async Task AddItem_Should_Quarantine_Lot_When_Shelf_Life_Is_Too_Short()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-005",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            TrackingMode = TrackingMode.LotAndExpiry,
+            MinimumShelfLifeDays = 10
+        };
+
+        var lot = new Lot
+        {
+            Id = Guid.NewGuid(),
+            ProductId = productId,
+            Code = "LOT-001",
+            ExpirationDate = new DateOnly(2026, 2, 7),
+            Status = LotStatus.Available
+        };
+
+        var locationId = Guid.NewGuid();
+        var uomId = Guid.NewGuid();
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeProductRepository(product),
+            new FakeLotRepository(lot),
+            new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
+            new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.AddItemAsync(receipt.Id, productId, lot.Id, locationId, uomId, 1, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        lot.Status.Should().Be(LotStatus.Quarantined);
+    }
+
+    [Fact]
+    public async Task CompleteReceipt_Should_Block_Balance_For_Quarantined_Lot()
+    {
+        var lotId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        var locationId = Guid.NewGuid();
+
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-006",
+            Status = ReceiptStatus.InProgress
+        };
+
+        receipt.Items.Add(new ReceiptItem
+        {
+            Id = Guid.NewGuid(),
+            ReceiptId = receipt.Id,
+            ProductId = productId,
+            LotId = lotId,
+            LocationId = locationId,
+            UomId = Guid.NewGuid(),
+            Quantity = 5
+        });
+
+        var lot = new Lot
+        {
+            Id = lotId,
+            ProductId = productId,
+            Code = "LOT-002",
+            Status = LotStatus.Quarantined
+        };
+
+        var balanceRepository = new FakeInventoryBalanceRepository();
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeProductRepository(new Product { Id = productId, CustomerId = Guid.NewGuid(), Code = "SKU", Name = "Item" }),
+            new FakeLotRepository(lot),
+            new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
+            new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
+            balanceRepository,
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.CompleteAsync(receipt.Id, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        balanceRepository.AddedBalances.Should().ContainSingle();
+        balanceRepository.AddedBalances[0].Status.Should().Be(InventoryBalanceStatus.Blocked);
+    }
+
+    [Fact]
     public async Task CompleteReceipt_Should_Return_Failure_When_No_Items()
     {
         var receipt = new Receipt
@@ -224,9 +369,15 @@ public sealed class ReceiptServiceTests
 
     private sealed class FakeInventoryBalanceRepository : IInventoryBalanceRepository
     {
+        public List<InventoryBalance> AddedBalances { get; } = new();
+
         public Task<bool> ExistsAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> ExistsAsync(Guid locationId, Guid productId, Guid? lotId, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
-        public Task AddAsync(InventoryBalance balance, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task AddAsync(InventoryBalance balance, CancellationToken cancellationToken = default)
+        {
+            AddedBalances.Add(balance);
+            return Task.CompletedTask;
+        }
         public Task UpdateAsync(InventoryBalance balance, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<InventoryBalance?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<InventoryBalance?>(null);
         public Task<InventoryBalance?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<InventoryBalance?>(null);

@@ -32,6 +32,7 @@ public sealed class ProductServiceTests
             null,
             null,
             null,
+            null,
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
@@ -57,6 +58,7 @@ public sealed class ProductServiceTests
             null,
             uom.Id,
             TrackingMode.None,
+            null,
             null,
             null,
             null,

@@ -24,6 +24,7 @@ public sealed class UpdateProductCommandHandler : IRequestHandler<UpdateProductC
             request.Brand,
             request.BaseUomId,
             request.TrackingMode,
+            request.MinimumShelfLifeDays,
             request.WeightKg,
             request.LengthCm,
             request.WidthCm,

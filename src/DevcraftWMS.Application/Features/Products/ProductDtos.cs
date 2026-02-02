@@ -13,6 +13,7 @@ public sealed record ProductDto(
     string? Brand,
     Guid BaseUomId,
     TrackingMode TrackingMode,
+    int? MinimumShelfLifeDays,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,
@@ -29,5 +30,6 @@ public sealed record ProductListItemDto(
     string? Brand,
     string? Ean,
     TrackingMode TrackingMode,
+    int? MinimumShelfLifeDays,
     bool IsActive,
     DateTime CreatedAtUtc);

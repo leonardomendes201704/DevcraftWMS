@@ -16,6 +16,7 @@ public static class ProductMapping
             product.Brand,
             product.BaseUomId,
             product.TrackingMode,
+            product.MinimumShelfLifeDays,
             product.WeightKg,
             product.LengthCm,
             product.WidthCm,
@@ -33,6 +34,7 @@ public static class ProductMapping
             product.Brand,
             product.Ean,
             product.TrackingMode,
+            product.MinimumShelfLifeDays,
             product.IsActive,
             product.CreatedAtUtc);
 }

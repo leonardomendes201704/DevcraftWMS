@@ -184,6 +184,7 @@ public sealed class ProductsController : Controller
             Brand = result.Data.Brand,
             BaseUomId = result.Data.BaseUomId,
             TrackingMode = result.Data.TrackingMode,
+            MinimumShelfLifeDays = result.Data.MinimumShelfLifeDays,
             WeightKg = result.Data.WeightKg,
             LengthCm = result.Data.LengthCm,
             WidthCm = result.Data.WidthCm,

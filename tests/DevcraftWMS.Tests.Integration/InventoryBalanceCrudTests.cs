@@ -236,7 +236,8 @@ public sealed class InventoryBalanceCrudTests : IClassFixture<CustomWebApplicati
             code = $"SKU-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
             name = "Sample Product",
             baseUomId = uomId,
-            trackingMode = 2
+            trackingMode = 2,
+            minimumShelfLifeDays = 30
         });
 
         var response = await client.PostAsync("/api/products", new StringContent(payload, Encoding.UTF8, "application/json"));

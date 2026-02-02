@@ -12,6 +12,7 @@ public sealed class Product : AuditableEntity
     public string? Brand { get; set; }
     public Guid BaseUomId { get; set; }
     public Enums.TrackingMode TrackingMode { get; set; } = Enums.TrackingMode.None;
+    public int? MinimumShelfLifeDays { get; set; }
     public decimal? WeightKg { get; set; }
     public decimal? LengthCm { get; set; }
     public decimal? WidthCm { get; set; }

@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-02
+- TASK-0048 - Minimum shelf-life per SKU completed.
+  - Key changes: added MinimumShelfLifeDays to products, enforced lot requirement and quarantine on receipt, blocked balances for quarantined lots, updated UI and tests, and added migration AddProductMinimumShelfLifeDays.
 - TASK-0047 - SKU Tracking Mode completed.
   - Key changes: added TrackingMode enum to products, API/UI support, lot validation rules, and migration AddProductTrackingMode.
 - TASK-0046 - Portaria (projeto web) completed.

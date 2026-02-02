@@ -13,6 +13,7 @@ public sealed record CreateProductCommand(
     string? Brand,
     Guid BaseUomId,
     DevcraftWMS.Domain.Enums.TrackingMode TrackingMode,
+    int? MinimumShelfLifeDays,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,

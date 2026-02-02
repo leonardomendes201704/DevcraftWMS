@@ -23,6 +23,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
             request.Brand,
             request.BaseUomId,
             request.TrackingMode,
+            request.MinimumShelfLifeDays,
             request.WeightKg,
             request.LengthCm,
             request.WidthCm,

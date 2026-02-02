@@ -40,6 +40,7 @@ public sealed record ProductDetailViewModel(
     string? Brand,
     Guid BaseUomId,
     TrackingMode TrackingMode,
+    int? MinimumShelfLifeDays,
     decimal? WeightKg,
     decimal? LengthCm,
     decimal? WidthCm,
@@ -80,6 +81,9 @@ public sealed class ProductFormViewModel
 
     [Required]
     public TrackingMode? TrackingMode { get; set; }
+
+    [Range(1, 3650)]
+    public int? MinimumShelfLifeDays { get; set; }
 
     [Range(0, double.MaxValue)]
     public decimal? WeightKg { get; set; }
