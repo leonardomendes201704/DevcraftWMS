@@ -56,4 +56,10 @@ Nao existe mecanismo de selecao de cliente ativo na UI.
 - - Definir estrategia quando cliente nao selecionado.
 
 ## Status
-Aberta (TODO)
+Concluida (DONE)
+
+## Progresso / Notas
+- Implementado seletor de cliente no topo do DemoMvc com persistencia em session.
+- ApiClient passou a enviar o header X-Customer-Id quando selecionado.
+- API valida contexto de cliente via middleware e rejeita chamadas sem header.
+- Ajustado settings da API e testes de integracao para o novo requisito.

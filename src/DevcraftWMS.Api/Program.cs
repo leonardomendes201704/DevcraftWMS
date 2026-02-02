@@ -61,10 +61,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<DevcraftWMS.Application.Abstractions.Auth.ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection("Logging"));
 builder.Services.Configure<TelemetryOptions>(builder.Configuration.GetSection("Telemetry"));
+builder.Services.AddOptions<CustomerContextOptions>()
+    .Bind(builder.Configuration.GetSection("CustomerContext"))
+    .Validate(options => !string.IsNullOrWhiteSpace(options.HeaderName), "CustomerContext:HeaderName is required.")
+    .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingOptions>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOptions>>().Value);
 builder.Services.AddSingleton<IAppSettingsReader, ApiSettingsReader>();
 builder.Services.AddScoped<ICorrelationContext, CorrelationContext>();
+builder.Services.AddScoped<DevcraftWMS.Application.Abstractions.Customers.ICustomerContext, CustomerContext>();
 
 // --------------------------
 // DI (Application + Infrastructure)
@@ -250,6 +255,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("DemoCors");
+app.UseMiddleware<CustomerContextMiddleware>();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

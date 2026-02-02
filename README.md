@@ -1,4 +1,4 @@
-# DevcraftWMS
+﻿# DevcraftWMS
 
 Production-ready .NET 9 API starter using Clean Architecture + CQRS (MediatR), FluentValidation, EF Core (SQLite), Serilog, Swagger, and ProblemDetails.
 
@@ -18,6 +18,21 @@ Run the demo UI (server-rendered MVC) that exercises API features:
 ```
 
 By default it calls the API at `https://localhost:7263`. Update the base URL from the **Settings** screen or set `ApiBaseUrl` in `src/DevcraftWMS.DemoMvc/appsettings.json`.
+
+## Customer context (multi-client)
+This template supports an active customer context for multi-client scenarios:
+- DemoMvc provides a customer selector in the topbar (stored in session).
+- All API calls include `X-Customer-Id` when selected.
+- The API rejects requests without a customer context for most `/api` endpoints.
+
+Configuration:
+```json
+"CustomerContext": {
+  "HeaderName": "X-Customer-Id",
+  "ExcludedPaths": [ "/swagger", "/health", "/api/auth", "/api/customers", "/api/telemetry", "/api/settings" ]
+}
+```
+
 
 ### GridBuilder example
 Use `GridBuilder<T>` to build reusable list grids with filters, sorting, and actions:
@@ -224,7 +239,7 @@ GET /api/customers?orderBy=CreatedAtUtc&orderDir=desc&pageSize=50&cursor=2026-02
 ```
 
 Notes:
-- Cursor should include the last item�s ordered fields (e.g., `CreatedAtUtc|Id`) to keep ordering stable.
+- Cursor should include the last item’s ordered fields (e.g., `CreatedAtUtc|Id`) to keep ordering stable.
 - Only use OFFSET pagination when you truly need page numbers; otherwise, default to keyset.
 
 ## ENVs
@@ -263,6 +278,8 @@ Logging:Enrichment:UserIdClaim        -> Claim used for user id
 Logging:Enrichment:TenantHeader       -> Header used for tenant id
 Logging:Queue:Capacity                -> In-memory log queue capacity
 Logging:RequestIdHeader               -> Request id header name
+CustomerContext:HeaderName            -> Header name for active customer context
+CustomerContext:ExcludedPaths         -> Paths that do not require customer context
 Cors:AllowedOrigins                   -> Allowed origins for CORS (SignalR + API)
 Telemetry:Enabled                     -> Enable telemetry endpoint
 Telemetry:RequireAuth                 -> Require auth for telemetry endpoint
@@ -336,3 +353,6 @@ Run the no-hardcoded-URLs check:
 ```
 pwsh tools/check-no-hardcoded-urls.ps1
 ```
+
+
+

@@ -106,6 +106,15 @@ public abstract class ApiClientBase
         }
     }
 
+    private void AddCustomerContextHeader(HttpRequestMessage request)
+    {
+        var customerId = _httpContextAccessor.HttpContext?.Session.GetStringValue(SessionKeys.CustomerId);
+        if (!string.IsNullOrWhiteSpace(customerId))
+        {
+            request.Headers.TryAddWithoutValidation("X-Customer-Id", customerId);
+        }
+    }
+
     private void AddTelemetryHeaders(HttpRequestMessage request, string apiRequestId)
     {
         request.Headers.TryAddWithoutValidation(ClientCorrelationContext.CorrelationHeader, _correlationContext.CorrelationId);
@@ -121,6 +130,7 @@ public abstract class ApiClientBase
     {
         var apiRequestId = Guid.NewGuid().ToString("N");
         AddAuthHeader(request);
+        AddCustomerContextHeader(request);
         AddTelemetryHeaders(request, apiRequestId);
 
         var stopwatch = Stopwatch.StartNew();

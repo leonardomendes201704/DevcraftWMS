@@ -1,4 +1,4 @@
-# AGENTS.md - DevcraftWMS
+﻿# AGENTS.md - DevcraftWMS
 
 ## Architecture overview
 - Clean Architecture with four layers:
@@ -40,6 +40,8 @@
   - Features live under `Application/Features/<FeatureName>/Commands` and `/Queries`
   - Each command/query has its own folder: `<ActionName>/`
 - API base route: `/api`.
+- Customer context: most /api endpoints require X-Customer-Id (see CustomerContext settings); allow only the documented excluded paths.
+- DemoMvc must send the active customer header on every API call once a customer is selected.
 - Use async/await for I/O and MediatR handlers.
 - Keep domain entities free of infrastructure concerns.
 - All entities must inherit from a base auditable entity with: CreatedAtUtc, UpdatedAtUtc, CreatedByUserId, UpdatedByUserId (nullable where appropriate).

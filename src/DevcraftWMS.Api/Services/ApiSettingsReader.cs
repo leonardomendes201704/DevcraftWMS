@@ -22,6 +22,7 @@ public sealed class ApiSettingsReader : IAppSettingsReader
             BuildOutbox(),
             BuildLogging(),
             BuildTelemetry(),
+            BuildCustomerContext(),
             BuildEmail(),
             BuildExternalAuth(),
             BuildAdminUser()
@@ -101,6 +102,15 @@ public sealed class ApiSettingsReader : IAppSettingsReader
             Item("Telemetry:MaxPayloadBytes", "Max telemetry payload size in bytes."),
             ItemArray("Telemetry:Masking:HeaderDenyList", "Headers to mask in telemetry payload."),
             ItemArray("Telemetry:Masking:JsonKeys", "JSON keys to mask in telemetry payload.")
+        });
+    }
+
+    private ApiSettingsSectionDto BuildCustomerContext()
+    {
+        return new ApiSettingsSectionDto("CustomerContext", new List<ApiSettingItemDto>
+        {
+            Item("CustomerContext:HeaderName", "Header name used to pass the active customer context."),
+            ItemArray("CustomerContext:ExcludedPaths", "Paths that do not require a customer context header.")
         });
     }
 

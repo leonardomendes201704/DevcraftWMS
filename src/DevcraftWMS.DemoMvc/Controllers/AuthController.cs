@@ -63,6 +63,7 @@ public sealed class AuthController : Controller
     public IActionResult Logout()
     {
         HttpContext.Session.Remove(SessionKeys.JwtToken);
+        HttpContext.Session.Remove(SessionKeys.CustomerId);
         TempData["Success"] = "Logged out.";
         return RedirectToAction("Login", "Auth");
     }

@@ -1,0 +1,38 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Shared.CustomerSelectorViewModel
+@using DevcraftWMS.DemoMvc.Infrastructure
+
+@if (!Model.IsAuthenticated)
+{
+    return;
+}
+
+<div class="customer-selector">
+    <form asp-controller="CustomerContext" asp-action="SetCustomer" method="post" class="d-flex align-items-center gap-2">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+        <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+            <select class="form-select form-select-sm" name="customerId">
+                <option value="">Select customer...</option>
+                @foreach (var customer in Model.Customers)
+                {
+                    <option value="@customer.Id" selected="@(Model.SelectedCustomerId == customer.Id)">
+                        @customer.Name
+                    </option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Set</button>
+        <a class="btn btn-sm btn-light border" asp-controller="Customers" asp-action="Create">
+            New
+        </a>
+    </form>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="text-danger small mt-1">@Model.ErrorMessage</div>
+    }
+    else if (Model.Customers.Count == 0)
+    {
+        <div class="text-muted small mt-1">No customers available.</div>
+    }
+</div>

@@ -107,6 +107,12 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             _logsConnection.Dispose();
         }
     }
+
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        client.DefaultRequestHeaders.Add("X-Customer-Id", "00000000-0000-0000-0000-000000000001");
+    }
 }
 
 internal sealed class FakeExternalAuthService : IExternalAuthService
