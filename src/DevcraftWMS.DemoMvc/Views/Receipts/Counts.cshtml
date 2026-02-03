@@ -167,6 +167,98 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Register Divergence</h5>
+        <form asp-controller="Receipts" asp-action="RegisterDivergence" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="NewDivergence.ReceiptId" />
+            <div asp-validation-summary="All" class="text-danger small mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Inbound Order Item</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <select asp-for="NewDivergence.InboundOrderItemId" class="form-select" asp-items="Model.NewDivergence.Items"></select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
+                        <select asp-for="NewDivergence.Type" class="form-select">
+                            @foreach (var type in Enum.GetValues<ReceiptDivergenceType>())
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Evidence (photo)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-camera"></i></span>
+                        <input asp-for="NewDivergence.EvidenceFile" type="file" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Notes</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                        <input asp-for="NewDivergence.Notes" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Register Divergence</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Divergences</h5>
+        @if (!Model.Divergences.Any())
+        {
+            <div class="alert alert-secondary">No divergences registered yet.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Notes</th>
+                            <th>Evidence</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var divergence in Model.Divergences)
+                        {
+                            var evidenceBadge = divergence.EvidenceCount > 0
+                                ? "<span class=\"badge text-bg-success\">Yes</span>"
+                                : divergence.RequiresEvidence
+                                    ? "<span class=\"badge text-bg-danger\">Required</span>"
+                                    : "<span class=\"badge text-bg-secondary\">No</span>";
+                            <tr>
+                                <td>@HtmlEncoder.Default.Encode($"{divergence.ProductCode ?? "-"} - {divergence.ProductName ?? "-"}")</td>
+                                <td>@divergence.Type</td>
+                                <td>@HtmlEncoder.Default.Encode(divergence.Notes ?? "-")</td>
+                                <td>@Html.Raw(evidenceBadge)</td>
+                                <td>@divergence.CreatedAtUtc.ToLocalTime().ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
 <partial name="_ReceiptCountsHelp" />
 
 @section Scripts {

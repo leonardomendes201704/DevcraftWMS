@@ -8,6 +8,7 @@ using DevcraftWMS.Application.Features.InboundOrders.Commands.UpdateInboundOrder
 using DevcraftWMS.Application.Features.InboundOrders.Commands.CancelInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.ListInboundOrders;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrder;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListInboundOrderDivergences;
 using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -72,6 +73,13 @@ public sealed class InboundOrdersController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetInboundOrderQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("inbound-orders/{id:guid}/divergences")]
+    public async Task<IActionResult> ListDivergences(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListInboundOrderDivergencesQuery(id), cancellationToken);
         return this.ToActionResult(result);
     }
 

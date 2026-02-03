@@ -27,6 +27,7 @@ using DevcraftWMS.Application.Features.InboundOrders;
 using DevcraftWMS.Application.Features.GateCheckins;
 using DevcraftWMS.Application.Features.UnitLoads;
 using DevcraftWMS.Application.Features.ReceiptCounts;
+using DevcraftWMS.Application.Features.ReceiptDivergences;
 
 namespace DevcraftWMS.Application;
 
@@ -60,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<IGateCheckinService, GateCheckinService>();
         services.AddScoped<IUnitLoadService, UnitLoadService>();
         services.AddScoped<IReceiptCountService, ReceiptCountService>();
+        services.AddScoped<IReceiptDivergenceService, ReceiptDivergenceService>();
 
         return services;
     }

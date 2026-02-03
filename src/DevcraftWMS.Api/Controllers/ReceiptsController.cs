@@ -15,6 +15,12 @@ using DevcraftWMS.Application.Features.Receipts.Queries.ListReceiptItemsPaged;
 using DevcraftWMS.Application.Features.ReceiptCounts.Commands.RegisterReceiptCount;
 using DevcraftWMS.Application.Features.ReceiptCounts.Queries.ListReceiptExpectedItems;
 using DevcraftWMS.Application.Features.ReceiptCounts.Queries.ListReceiptCounts;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Commands.RegisterReceiptDivergence;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Commands.AddReceiptDivergenceEvidence;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListReceiptDivergences;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListReceiptDivergenceEvidence;
+using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.GetReceiptDivergenceEvidence;
+using DevcraftWMS.Application.Features.ReceiptDivergences;
 using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -175,6 +181,81 @@ public sealed class ReceiptsController : ControllerBase
             cancellationToken);
 
         return this.ToActionResult(result);
+    }
+
+    [HttpGet("receipts/{id:guid}/divergences")]
+    public async Task<IActionResult> ListDivergences(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListReceiptDivergencesQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("receipts/{id:guid}/divergences")]
+    [RequestSizeLimit(10_000_000)]
+    public async Task<IActionResult> RegisterDivergence(Guid id, [FromForm] RegisterReceiptDivergenceRequest request, CancellationToken cancellationToken)
+    {
+        ReceiptDivergenceEvidenceInput? evidence = null;
+        if (request.EvidenceFile is not null && request.EvidenceFile.Length > 0)
+        {
+            await using var stream = new MemoryStream();
+            await request.EvidenceFile.CopyToAsync(stream, cancellationToken);
+            evidence = new ReceiptDivergenceEvidenceInput(
+                request.EvidenceFile.FileName,
+                request.EvidenceFile.ContentType ?? "application/octet-stream",
+                request.EvidenceFile.Length,
+                stream.ToArray());
+        }
+
+        var result = await _mediator.Send(
+            new RegisterReceiptDivergenceCommand(
+                id,
+                request.InboundOrderItemId,
+                request.Type,
+                request.Notes,
+                evidence),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("receipts/{id:guid}/divergences/{divergenceId:guid}/evidence")]
+    public async Task<IActionResult> ListDivergenceEvidence(Guid id, Guid divergenceId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListReceiptDivergenceEvidenceQuery(divergenceId), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("receipts/{id:guid}/divergences/{divergenceId:guid}/evidence")]
+    [RequestSizeLimit(10_000_000)]
+    public async Task<IActionResult> AddDivergenceEvidence(Guid id, Guid divergenceId, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest(new { message = "Evidence file is required." });
+        }
+
+        await using var stream = new MemoryStream();
+        await file.CopyToAsync(stream, cancellationToken);
+        var evidence = new ReceiptDivergenceEvidenceInput(
+            file.FileName,
+            file.ContentType ?? "application/octet-stream",
+            file.Length,
+            stream.ToArray());
+
+        var result = await _mediator.Send(new AddReceiptDivergenceEvidenceCommand(divergenceId, evidence), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("receipts/{id:guid}/divergences/{divergenceId:guid}/evidence/{evidenceId:guid}")]
+    public async Task<IActionResult> DownloadDivergenceEvidence(Guid id, Guid divergenceId, Guid evidenceId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetReceiptDivergenceEvidenceQuery(divergenceId, evidenceId), cancellationToken);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
     }
 
     [HttpGet("receipts/{id:guid}/items")]

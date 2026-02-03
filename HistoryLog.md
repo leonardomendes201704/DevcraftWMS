@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-03
+- Fix - Receipt counts form binding for Save Count.
+  - Key changes: bind ReceiptCount form using NewCount prefix to avoid missing ReceiptId.
+- TASK-0069 - Receipt divergences with evidence completed.
+  - Key changes: added divergence entities, evidence upload, API endpoints, DemoMvc counts UI, options config, and integration tests.
 - TASK-0068 - Recebimento conferencia cega/assistida completed.
   - Key changes: added ReceiptCount entity/mode, API endpoints for expected items and counts, DemoMvc counts screen with help, unit/integration tests, and migration AddReceiptCounts.
 - TASK-0067 - Unit load SSCC model and label printing completed.

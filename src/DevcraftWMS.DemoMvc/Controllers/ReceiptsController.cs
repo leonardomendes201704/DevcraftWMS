@@ -237,7 +237,7 @@ public sealed class ReceiptsController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> RegisterCount(ReceiptCountFormViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> RegisterCount([Bind(Prefix = "NewCount")] ReceiptCountFormViewModel model, CancellationToken cancellationToken)
     {
         var receiptResult = await _receiptsClient.GetByIdAsync(model.ReceiptId, cancellationToken);
         if (!receiptResult.IsSuccess || receiptResult.Data is null)
@@ -262,6 +262,48 @@ public sealed class ReceiptsController : Controller
 
         TempData["Success"] = "Count registered successfully.";
         return RedirectToAction(nameof(Counts), new { id = model.ReceiptId, mode = model.Mode });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RegisterDivergence([Bind(Prefix = "NewDivergence")] ReceiptDivergenceFormViewModel model, CancellationToken cancellationToken)
+    {
+        var receiptResult = await _receiptsClient.GetByIdAsync(model.ReceiptId, cancellationToken);
+        if (!receiptResult.IsSuccess || receiptResult.Data is null)
+        {
+            TempData["Error"] = receiptResult.Error ?? "Receipt not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var countsModel = await BuildCountsViewModelAsync(receiptResult.Data, new ReceiptCountFormViewModel
+            {
+                ReceiptId = model.ReceiptId,
+                Mode = ReceiptCountMode.Blind
+            }, ReceiptCountMode.Blind, cancellationToken);
+            model.Items = countsModel.NewDivergence.Items;
+            var updatedModel = new ReceiptCountsPageViewModel
+            {
+                Receipt = countsModel.Receipt,
+                ExpectedItems = countsModel.ExpectedItems,
+                Counts = countsModel.Counts,
+                NewCount = countsModel.NewCount,
+                Mode = countsModel.Mode,
+                Divergences = countsModel.Divergences,
+                NewDivergence = model
+            };
+            return View("Counts", updatedModel);
+        }
+
+        var result = await _receiptsClient.RegisterDivergenceAsync(model.ReceiptId, model, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Failed to register divergence.";
+            return RedirectToAction(nameof(Counts), new { id = model.ReceiptId });
+        }
+
+        TempData["Success"] = "Divergence registered successfully.";
+        return RedirectToAction(nameof(Counts), new { id = model.ReceiptId });
     }
 
     [HttpPost]
@@ -494,8 +536,15 @@ public sealed class ReceiptsController : Controller
             TempData["Error"] = countsResult.Error ?? "Failed to load counts.";
         }
 
+        var divergencesResult = await _receiptsClient.ListDivergencesAsync(receipt.Id, cancellationToken);
+        if (!divergencesResult.IsSuccess)
+        {
+            TempData["Error"] = divergencesResult.Error ?? "Failed to load divergences.";
+        }
+
         var expectedItems = expectedResult.Data ?? Array.Empty<ReceiptExpectedItemViewModel>();
         var counts = countsResult.Data ?? Array.Empty<ReceiptCountListItemViewModel>();
+        var divergences = divergencesResult.Data ?? Array.Empty<ReceiptDivergenceListItemViewModel>();
 
         if (newCount.InboundOrderItemId == Guid.Empty && expectedItems.Count == 1)
         {
@@ -506,13 +555,21 @@ public sealed class ReceiptsController : Controller
         newCount.Mode = mode;
         newCount.ReceiptId = receipt.Id;
 
+        var divergenceForm = new ReceiptDivergenceFormViewModel
+        {
+            ReceiptId = receipt.Id,
+            Items = BuildExpectedItemOptions(expectedItems, Guid.Empty)
+        };
+
         return new ReceiptCountsPageViewModel
         {
             Receipt = receipt,
             ExpectedItems = expectedItems,
             Counts = counts,
             NewCount = newCount,
-            Mode = mode
+            Mode = mode,
+            Divergences = divergences,
+            NewDivergence = divergenceForm
         };
     }
 

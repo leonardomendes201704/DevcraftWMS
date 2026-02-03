@@ -375,6 +375,8 @@ Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back f
 Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
+ReceiptDivergences:EvidenceRequiredTypes -> Divergence types that require evidence photo
+ReceiptDivergences:MaxEvidenceBytes     -> Max evidence file size (bytes)
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path
 Telemetry:BatchSize                 -> Demo MVC telemetry batch size

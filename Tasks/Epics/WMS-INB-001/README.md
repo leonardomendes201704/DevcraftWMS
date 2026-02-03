@@ -38,8 +38,8 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [TASK-0065] Portaria: atribuicao de doca e status | Prioridade: P0 | Dependencias: TASK-0063 | Estimativa: 4h
 - [TASK-0066] Recebimento: sessao (romaneio) vinculada a OE | Prioridade: P0 | Dependencias: TASK-0058 | Estimativa: 6h
 - [TASK-0067] UL/SSCC: modelo + etiqueta interna | Prioridade: P0 | Dependencias: TASK-0066 | Estimativa: 6h
-- [TASK-0068] Recebimento: conferencia cega/assistida | Prioridade: P0 | Dependencias: TASK-0066,TASK-0060 | Estimativa: 6h
-- [TASK-0069] Divergencias: ocorrencias + evidencias (foto) | Prioridade: P1 | Dependencias: TASK-0068 | Estimativa: 6h
+- [DONE-TASK-0068] Recebimento: conferencia cega/assistida | Prioridade: P0 | Dependencias: TASK-0066,TASK-0060 | Estimativa: 6h
+- [DONE-TASK-0069] Divergencias: ocorrencias + evidencias (foto) | Prioridade: P1 | Dependencias: TASK-0068 | Estimativa: 6h
 - [TASK-0070] Recebimento: captura lote/validade | Prioridade: P0 | Dependencias: TASK-0047,TASK-0068 | Estimativa: 6h
 - [TASK-0071] Validade minima: quarentena automatica | Prioridade: P0 | Dependencias: TASK-0048,TASK-0070 | Estimativa: 4h
 - [TASK-0072] Qualidade: fila de inspecao | Prioridade: P1 | Dependencias: TASK-0068 | Estimativa: 5h

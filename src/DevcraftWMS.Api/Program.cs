@@ -71,6 +71,10 @@ builder.Services.AddOptions<DashboardOptions>()
     .Bind(builder.Configuration.GetSection("Dashboard"))
     .Validate(options => options.ExpiringLotsDays > 0, "Dashboard:ExpiringLotsDays must be greater than zero.")
     .ValidateOnStart();
+builder.Services.AddOptions<DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions>()
+    .Bind(builder.Configuration.GetSection(DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions.SectionName))
+    .Validate(options => options.MaxEvidenceBytes > 0, "ReceiptDivergences:MaxEvidenceBytes must be greater than zero.")
+    .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingOptions>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOptions>>().Value);
 builder.Services.AddSingleton<IAppSettingsReader, ApiSettingsReader>();

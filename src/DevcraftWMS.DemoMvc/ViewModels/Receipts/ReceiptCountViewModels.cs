@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
 using DevcraftWMS.DemoMvc.Enums;
 
 namespace DevcraftWMS.DemoMvc.ViewModels.Receipts;
@@ -47,6 +48,45 @@ public sealed class ReceiptCountFormViewModel
     public IReadOnlyList<SelectListItem> Items { get; set; } = Array.Empty<SelectListItem>();
 }
 
+public sealed record ReceiptDivergenceListItemViewModel(
+    Guid Id,
+    Guid ReceiptId,
+    Guid? InboundOrderId,
+    Guid? InboundOrderItemId,
+    string? ProductCode,
+    string? ProductName,
+    ReceiptDivergenceType Type,
+    string? Notes,
+    bool RequiresEvidence,
+    int EvidenceCount,
+    DateTime CreatedAtUtc);
+
+public sealed record ReceiptDivergenceEvidenceViewModel(
+    Guid Id,
+    Guid ReceiptDivergenceId,
+    string FileName,
+    string ContentType,
+    long SizeBytes,
+    DateTime CreatedAtUtc);
+
+public sealed class ReceiptDivergenceFormViewModel
+{
+    [Required]
+    public Guid ReceiptId { get; set; }
+
+    public Guid? InboundOrderItemId { get; set; }
+
+    [Required]
+    public ReceiptDivergenceType Type { get; set; } = ReceiptDivergenceType.QuantityMismatch;
+
+    [MaxLength(500)]
+    public string? Notes { get; set; }
+
+    public IFormFile? EvidenceFile { get; set; }
+
+    public IReadOnlyList<SelectListItem> Items { get; set; } = Array.Empty<SelectListItem>();
+}
+
 public sealed class ReceiptCountsPageViewModel
 {
     public ReceiptDetailViewModel Receipt { get; init; } = default!;
@@ -54,4 +94,7 @@ public sealed class ReceiptCountsPageViewModel
     public IReadOnlyList<ReceiptCountListItemViewModel> Counts { get; init; } = Array.Empty<ReceiptCountListItemViewModel>();
     public ReceiptCountFormViewModel NewCount { get; init; } = new();
     public ReceiptCountMode Mode { get; init; } = ReceiptCountMode.Blind;
+    public IReadOnlyList<ReceiptDivergenceListItemViewModel> Divergences { get; init; } = Array.Empty<ReceiptDivergenceListItemViewModel>();
+    public ReceiptDivergenceFormViewModel NewDivergence { get; init; } = new();
+    public IReadOnlyList<ReceiptDivergenceEvidenceViewModel> Evidence { get; init; } = Array.Empty<ReceiptDivergenceEvidenceViewModel>();
 }

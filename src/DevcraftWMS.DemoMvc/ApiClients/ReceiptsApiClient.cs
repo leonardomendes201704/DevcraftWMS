@@ -110,6 +110,34 @@ public sealed class ReceiptsApiClient : ApiClientBase
             payload.CountedQuantity,
             payload.Mode,
             payload.Notes), cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<ReceiptDivergenceListItemViewModel>>> ListDivergencesAsync(Guid receiptId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<ReceiptDivergenceListItemViewModel>>($"/api/receipts/{receiptId}/divergences", cancellationToken);
+
+    public async Task<ApiResult<ReceiptDivergenceListItemViewModel>> RegisterDivergenceAsync(Guid receiptId, ReceiptDivergenceFormViewModel payload, CancellationToken cancellationToken)
+    {
+        using var content = new MultipartFormDataContent();
+        if (payload.InboundOrderItemId.HasValue)
+        {
+            content.Add(new StringContent(payload.InboundOrderItemId.Value.ToString()), "InboundOrderItemId");
+        }
+
+        content.Add(new StringContent(payload.Type.ToString()), "Type");
+        if (!string.IsNullOrWhiteSpace(payload.Notes))
+        {
+            content.Add(new StringContent(payload.Notes), "Notes");
+        }
+
+        if (payload.EvidenceFile is not null && payload.EvidenceFile.Length > 0)
+        {
+            await using var stream = payload.EvidenceFile.OpenReadStream();
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(payload.EvidenceFile.ContentType ?? "application/octet-stream");
+            content.Add(fileContent, "EvidenceFile", payload.EvidenceFile.FileName);
+        }
+
+        return await PostMultipartAsync<ReceiptDivergenceListItemViewModel>($"/api/receipts/{receiptId}/divergences", content, cancellationToken);
+    }
 }
 
 public sealed record CreateReceiptRequest(
