@@ -11,6 +11,8 @@ public sealed record GateCheckinListItemDto(
     string DriverName,
     string? CarrierName,
     DateTime ArrivalAtUtc,
+    string? DockCode,
+    DateTime? DockAssignedAtUtc,
     GateCheckinStatus Status,
     DateTime CreatedAtUtc,
     bool IsActive);
@@ -24,6 +26,8 @@ public sealed record GateCheckinDetailDto(
     string DriverName,
     string? CarrierName,
     DateTime ArrivalAtUtc,
+    string? DockCode,
+    DateTime? DockAssignedAtUtc,
     string? Notes,
     GateCheckinStatus Status,
     DateTime CreatedAtUtc,

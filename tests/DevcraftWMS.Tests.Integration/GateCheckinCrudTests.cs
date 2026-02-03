@@ -64,6 +64,11 @@ public sealed class GateCheckinCrudTests : IClassFixture<CustomWebApplicationFac
         var listBody = await listResponse.Content.ReadAsStringAsync();
         listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
 
+        var assignPayload = JsonSerializer.Serialize(new { dockCode = "D-01" });
+        var assignResponse = await client.PostAsync($"/api/gate/checkins/{checkinId}/assign-dock", new StringContent(assignPayload, Encoding.UTF8, "application/json"));
+        var assignBody = await assignResponse.Content.ReadAsStringAsync();
+        assignResponse.IsSuccessStatusCode.Should().BeTrue(assignBody);
+
         var deleteResponse = await client.DeleteAsync($"/api/gate/checkins/{checkinId}");
         var deleteBody = await deleteResponse.Content.ReadAsStringAsync();
         deleteResponse.IsSuccessStatusCode.Should().BeTrue(deleteBody);

@@ -421,6 +421,18 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status404NotFound
             },
+            "gate_checkins.checkin.status_locked" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "gate_checkins.inbound_order.status_locked" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
             "emails.inbox.invalid_status" => new ProblemDetails
             {
                 Title = "Bad Request",

@@ -11,6 +11,8 @@ public sealed class GateCheckin : AuditableEntity
     public string DriverName { get; set; } = string.Empty;
     public string? CarrierName { get; set; }
     public DateTime ArrivalAtUtc { get; set; }
+    public string? DockCode { get; set; }
+    public DateTime? DockAssignedAtUtc { get; set; }
     public GateCheckinStatus Status { get; set; } = GateCheckinStatus.CheckedIn;
     public string? Notes { get; set; }
 

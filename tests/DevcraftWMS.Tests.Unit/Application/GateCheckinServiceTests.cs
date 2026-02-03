@@ -72,15 +72,68 @@ public sealed class GateCheckinServiceTests
         result.Value.Status.Should().Be(GateCheckinStatus.CheckedIn);
     }
 
+    [Fact]
+    public async Task AssignDock_Should_Update_Checkin_And_InboundOrder()
+    {
+        var customerId = Guid.NewGuid();
+        var inboundOrder = new InboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            AsnId = Guid.NewGuid(),
+            OrderNumber = "OE-2026-010",
+            DocumentNumber = "DOC-010",
+            Status = InboundOrderStatus.Issued
+        };
+
+        var checkin = new GateCheckin
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            InboundOrderId = inboundOrder.Id,
+            DocumentNumber = inboundOrder.DocumentNumber,
+            VehiclePlate = "ABC1D23",
+            DriverName = "Driver",
+            ArrivalAtUtc = new DateTime(2026, 2, 3, 9, 0, 0, DateTimeKind.Utc),
+            Status = GateCheckinStatus.WaitingDock
+        };
+
+        var gateRepository = new FakeGateCheckinRepository(checkin);
+        var inboundOrderRepository = new FakeInboundOrderRepository(inboundOrder);
+        var customerContext = new FakeCustomerContext(customerId);
+        var now = new DateTime(2026, 2, 3, 10, 0, 0, DateTimeKind.Utc);
+        var dateTimeProvider = new FakeDateTimeProvider(now);
+        var service = new GateCheckinService(gateRepository, inboundOrderRepository, customerContext, dateTimeProvider);
+
+        var result = await service.AssignDockAsync(checkin.Id, "D-01", CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.DockCode.Should().Be("D-01");
+        result.Value.DockAssignedAtUtc.Should().Be(now);
+        result.Value.Status.Should().Be(GateCheckinStatus.AtDock);
+        inboundOrder.Status.Should().Be(InboundOrderStatus.InProgress);
+        inboundOrder.SuggestedDock.Should().Be("D-01");
+    }
+
     private sealed class FakeGateCheckinRepository : IGateCheckinRepository
     {
+        private readonly GateCheckin? _checkin;
+
+        public FakeGateCheckinRepository(GateCheckin? checkin = null)
+        {
+            _checkin = checkin;
+        }
+
         public Task AddAsync(GateCheckin checkin, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task UpdateAsync(GateCheckin checkin, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public Task<GateCheckin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<GateCheckin?>(null);
+        public Task<GateCheckin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_checkin?.Id == id ? _checkin : null);
 
-        public Task<GateCheckin?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<GateCheckin?>(null);
+        public Task<GateCheckin?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_checkin?.Id == id ? _checkin : null);
 
         public Task<int> CountAsync(
             Guid? inboundOrderId,

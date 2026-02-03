@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-03
+- TASK-0065 - Portaria dock assignment completed.
+  - Key changes: added dock assignment endpoint, status/timestamp updates, Portaria assign dock screen, and migration AddGateCheckinDockAssignment.
 - TASK-0064 - Portaria check-in UI completed.
   - Key changes: added Portaria gate check-in screens, queue list with triage actions, new API clients, and help manual.
 - Fix - Sample data access seeding concurrency.

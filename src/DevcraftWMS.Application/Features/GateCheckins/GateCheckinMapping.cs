@@ -14,6 +14,8 @@ public static class GateCheckinMapping
             checkin.DriverName,
             checkin.CarrierName,
             checkin.ArrivalAtUtc,
+            checkin.DockCode,
+            checkin.DockAssignedAtUtc,
             checkin.Status,
             checkin.CreatedAtUtc,
             checkin.IsActive);
@@ -28,6 +30,8 @@ public static class GateCheckinMapping
             checkin.DriverName,
             checkin.CarrierName,
             checkin.ArrivalAtUtc,
+            checkin.DockCode,
+            checkin.DockAssignedAtUtc,
             checkin.Notes,
             checkin.Status,
             checkin.CreatedAtUtc,

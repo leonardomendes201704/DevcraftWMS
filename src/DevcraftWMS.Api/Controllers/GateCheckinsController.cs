@@ -6,6 +6,7 @@ using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.GateCheckins.Commands.CreateGateCheckin;
 using DevcraftWMS.Application.Features.GateCheckins.Commands.UpdateGateCheckin;
 using DevcraftWMS.Application.Features.GateCheckins.Commands.DeactivateGateCheckin;
+using DevcraftWMS.Application.Features.GateCheckins.Commands.AssignDock;
 using DevcraftWMS.Application.Features.GateCheckins.Queries.GetGateCheckin;
 using DevcraftWMS.Application.Features.GateCheckins.Queries.ListGateCheckins;
 using DevcraftWMS.Domain.Enums;
@@ -108,6 +109,13 @@ public sealed class GateCheckinsController : ControllerBase
                 request.Notes),
             cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/assign-dock")]
+    public async Task<IActionResult> AssignDock(Guid id, [FromBody] AssignGateDockRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new AssignGateDockCommand(id, request.DockCode), cancellationToken);
         return this.ToActionResult(result);
     }
 

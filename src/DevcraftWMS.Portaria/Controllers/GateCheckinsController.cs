@@ -149,6 +149,55 @@ public sealed class GateCheckinsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> AssignDock(Guid id, CancellationToken cancellationToken)
+    {
+        var detailResult = await _gateCheckinsApiClient.GetByIdAsync(id, cancellationToken);
+        if (!detailResult.IsSuccess || detailResult.Data is null)
+        {
+            TempData["Error"] = detailResult.Error ?? "Unable to load the check-in.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData["Title"] = "Assign Dock";
+        ViewData["Subtitle"] = "Assign a dock and move the vehicle to the dock status.";
+        ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "Assign Dock");
+
+        var model = new GateCheckinAssignDockViewModel
+        {
+            Id = detailResult.Data.Id,
+            DockCode = detailResult.Data.DockCode ?? string.Empty,
+            VehiclePlate = detailResult.Data.VehiclePlate,
+            InboundOrderNumber = detailResult.Data.InboundOrderNumber,
+            ArrivalAtUtc = detailResult.Data.ArrivalAtUtc
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AssignDock(GateCheckinAssignDockViewModel model, CancellationToken cancellationToken)
+    {
+        ViewData["Title"] = "Assign Dock";
+        ViewData["Subtitle"] = "Assign a dock and move the vehicle to the dock status.";
+        ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "Assign Dock");
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result = await _gateCheckinsApiClient.AssignDockAsync(model.Id, model.DockCode.Trim(), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(string.Empty, result.Error ?? "Unable to assign the dock.");
+            return View(model);
+        }
+
+        TempData["Success"] = "Dock assigned successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpPost]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {

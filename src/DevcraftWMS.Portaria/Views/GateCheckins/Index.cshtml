@@ -76,6 +76,9 @@
                                                     <i class="bi bi-arrow-right-circle"></i> Send to queue
                                                 </button>
                                             </form>
+                                            <a class="btn btn-sm btn-outline-success" asp-action="AssignDock" asp-route-id="@item.Id">
+                                                <i class="bi bi-door-open"></i> Assign dock
+                                            </a>
                                             <form asp-action="Cancel" method="post" class="d-inline">
                                                 <input type="hidden" name="id" value="@item.Id" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -126,6 +129,9 @@
                                             <span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span>
                                         </td>
                                         <td class="text-end">
+                                            <a class="btn btn-sm btn-outline-success" asp-action="AssignDock" asp-route-id="@item.Id">
+                                                <i class="bi bi-door-open"></i> Assign dock
+                                            </a>
                                             <form asp-action="Cancel" method="post" class="d-inline">
                                                 <input type="hidden" name="id" value="@item.Id" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">

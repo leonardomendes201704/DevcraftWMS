@@ -43,6 +43,9 @@ public sealed class GateCheckinsApiClient : ApiClientBase
     public Task<ApiResult<GateCheckinDetailDto>> UpdateAsync(Guid id, GateCheckinUpdateRequest request, CancellationToken cancellationToken)
         => PutAsync<GateCheckinDetailDto>($"/api/gate/checkins/{id}", request, cancellationToken);
 
+    public Task<ApiResult<GateCheckinDetailDto>> AssignDockAsync(Guid id, string dockCode, CancellationToken cancellationToken)
+        => PostAsync<GateCheckinDetailDto>($"/api/gate/checkins/{id}/assign-dock", new { dockCode }, cancellationToken);
+
     public Task<ApiResult<GateCheckinDetailDto>> DeactivateAsync(Guid id, CancellationToken cancellationToken)
         => DeleteAsync<GateCheckinDetailDto>($"/api/gate/checkins/{id}", cancellationToken);
 }

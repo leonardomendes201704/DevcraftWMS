@@ -11,6 +11,8 @@ public sealed record GateCheckinListItemDto(
     string DriverName,
     string? CarrierName,
     DateTime ArrivalAtUtc,
+    string? DockCode,
+    DateTime? DockAssignedAtUtc,
     GateCheckinStatus Status,
     DateTime CreatedAtUtc,
     bool IsActive);
@@ -24,6 +26,8 @@ public sealed record GateCheckinDetailDto(
     string DriverName,
     string? CarrierName,
     DateTime ArrivalAtUtc,
+    string? DockCode,
+    DateTime? DockAssignedAtUtc,
     string? Notes,
     GateCheckinStatus Status,
     DateTime CreatedAtUtc,
@@ -82,6 +86,20 @@ public sealed class GateCheckinCreateViewModel
     [Display(Name = "Notes")]
     [StringLength(500)]
     public string? Notes { get; set; }
+}
+
+public sealed class GateCheckinAssignDockViewModel
+{
+    public Guid Id { get; set; }
+
+    [Required]
+    [Display(Name = "Dock Code")]
+    [StringLength(20)]
+    public string DockCode { get; set; } = string.Empty;
+
+    public string VehiclePlate { get; set; } = string.Empty;
+    public string? InboundOrderNumber { get; set; }
+    public DateTime ArrivalAtUtc { get; set; }
 }
 
 public enum GateCheckinStatus

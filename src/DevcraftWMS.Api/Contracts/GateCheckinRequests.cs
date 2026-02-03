@@ -18,3 +18,5 @@ public sealed record UpdateGateCheckinRequest(
     DateTime ArrivalAtUtc,
     int Status,
     string? Notes);
+
+public sealed record AssignGateDockRequest(string DockCode);

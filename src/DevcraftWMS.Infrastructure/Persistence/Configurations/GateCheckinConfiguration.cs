@@ -25,6 +25,9 @@ public sealed class GateCheckinConfiguration : AuditableEntityConfiguration<Gate
             .HasMaxLength(120);
         builder.Property(gc => gc.ArrivalAtUtc)
             .IsRequired();
+        builder.Property(gc => gc.DockCode)
+            .HasMaxLength(20);
+        builder.Property(gc => gc.DockAssignedAtUtc);
         builder.Property(gc => gc.Status)
             .IsRequired();
         builder.Property(gc => gc.Notes)
@@ -39,6 +42,7 @@ public sealed class GateCheckinConfiguration : AuditableEntityConfiguration<Gate
         builder.HasIndex(gc => gc.InboundOrderId);
         builder.HasIndex(gc => gc.DocumentNumber);
         builder.HasIndex(gc => gc.VehiclePlate);
+        builder.HasIndex(gc => gc.DockCode);
         builder.HasIndex(gc => gc.Status);
         builder.HasIndex(gc => gc.ArrivalAtUtc);
     }

@@ -1,0 +1,62 @@
+@model DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinAssignDockViewModel
+@{
+    ViewData["Title"] ??= "Assign Dock";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">Assign Dock</h4>
+        <div class="text-muted small">Move the vehicle to the dock and update the inbound order status.</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-7 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <div class="text-muted small">Vehicle</div>
+                    <div class="fw-semibold">@Model.VehiclePlate</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.InboundOrderNumber))
+                    {
+                        <div class="text-muted small">Inbound Order</div>
+                        <div class="fw-semibold">@Model.InboundOrderNumber</div>
+                    }
+                    <div class="text-muted small">Arrival (UTC)</div>
+                    <div class="fw-semibold">@Model.ArrivalAtUtc.ToString("yyyy-MM-dd HH:mm")</div>
+                </div>
+
+                <form asp-action="AssignDock" method="post" class="d-grid gap-3">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="VehiclePlate" />
+                    <input type="hidden" asp-for="InboundOrderNumber" />
+                    <input type="hidden" asp-for="ArrivalAtUtc" />
+
+                    <div>
+                        <label class="form-label">Dock Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-door-open"></i></span>
+                            <input asp-for="DockCode" class="form-control" placeholder="D-01" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="DockCode"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Assign dock
+                        </button>
+                        <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+                    </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

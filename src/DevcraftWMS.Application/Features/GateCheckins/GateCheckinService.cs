@@ -135,6 +135,48 @@ public sealed class GateCheckinService : IGateCheckinService
         return RequestResult<GateCheckinDetailDto>.Success(GateCheckinMapping.MapDetail(checkin));
     }
 
+    public async Task<RequestResult<GateCheckinDetailDto>> AssignDockAsync(
+        Guid id,
+        string dockCode,
+        CancellationToken cancellationToken)
+    {
+        var checkin = await _gateCheckinRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (checkin is null)
+        {
+            return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.checkin.not_found", "Gate check-in not found.");
+        }
+
+        if (checkin.Status == GateCheckinStatus.Canceled)
+        {
+            return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.checkin.status_locked", "Canceled check-ins cannot be assigned to a dock.");
+        }
+
+        checkin.DockCode = dockCode.Trim();
+        checkin.DockAssignedAtUtc = _dateTimeProvider.UtcNow;
+        checkin.Status = GateCheckinStatus.AtDock;
+
+        if (checkin.InboundOrderId.HasValue)
+        {
+            var inboundOrder = await _inboundOrderRepository.GetTrackedByIdAsync(checkin.InboundOrderId.Value, cancellationToken);
+            if (inboundOrder is null)
+            {
+                return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.inbound_order.not_found", "Inbound order not found.");
+            }
+
+            if (inboundOrder.Status is InboundOrderStatus.Completed or InboundOrderStatus.Canceled)
+            {
+                return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.inbound_order.status_locked", "Inbound order status does not allow dock assignment.");
+            }
+
+            inboundOrder.SuggestedDock = checkin.DockCode;
+            inboundOrder.Status = InboundOrderStatus.InProgress;
+            await _inboundOrderRepository.UpdateAsync(inboundOrder, cancellationToken);
+        }
+
+        await _gateCheckinRepository.UpdateAsync(checkin, cancellationToken);
+        return RequestResult<GateCheckinDetailDto>.Success(GateCheckinMapping.MapDetail(checkin));
+    }
+
     public async Task<RequestResult<GateCheckinDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var checkin = await _gateCheckinRepository.GetByIdAsync(id, cancellationToken);

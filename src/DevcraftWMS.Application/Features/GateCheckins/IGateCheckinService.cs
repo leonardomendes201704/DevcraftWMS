@@ -30,6 +30,11 @@ public interface IGateCheckinService
 
     Task<RequestResult<GateCheckinDetailDto>> DeactivateAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<RequestResult<GateCheckinDetailDto>> AssignDockAsync(
+        Guid id,
+        string dockCode,
+        CancellationToken cancellationToken);
+
     Task<RequestResult<GateCheckinDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<RequestResult<PagedResult<GateCheckinListItemDto>>> ListAsync(
