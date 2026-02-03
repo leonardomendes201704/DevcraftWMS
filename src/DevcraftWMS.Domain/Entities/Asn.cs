@@ -16,4 +16,5 @@ public sealed class Asn : AuditableEntity
     public Warehouse? Warehouse { get; set; }
     public ICollection<AsnItem> Items { get; set; } = new List<AsnItem>();
     public ICollection<AsnAttachment> Attachments { get; set; } = new List<AsnAttachment>();
+    public ICollection<AsnStatusEvent> StatusEvents { get; set; } = new List<AsnStatusEvent>();
 }

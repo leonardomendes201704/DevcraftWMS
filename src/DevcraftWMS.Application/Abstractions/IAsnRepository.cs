@@ -9,6 +9,8 @@ public interface IAsnRepository
     Task<bool> AsnNumberExistsAsync(string asnNumber, Guid excludeId, CancellationToken cancellationToken = default);
     Task AddAsync(Asn asn, CancellationToken cancellationToken = default);
     Task UpdateAsync(Asn asn, CancellationToken cancellationToken = default);
+    Task<bool> UpdateStatusAsync(Guid asnId, AsnStatus status, CancellationToken cancellationToken = default);
+    Task AddStatusEventAsync(AsnStatusEvent statusEvent, CancellationToken cancellationToken = default);
     Task<Asn?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Asn?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);

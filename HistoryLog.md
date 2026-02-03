@@ -1,6 +1,14 @@
 ﻿# History Log
 
+## 2026-02-03
+- TASK-0057 - ASN status update fix.
+  - Key changes: updated ASN status persistence to avoid concurrency errors and aligned unit tests.
+
 ## 2026-02-02
+- TASK-0057 - ASN status workflow completed.
+  - Key changes: added status transitions, status history events, API endpoints, and Portal history UI.
+- TASK-0056 - ASN tracking validations completed.
+  - Key changes: added ASN items, tracking mode validations for lot/expiry, and Portal item entry UI.
 - Tasking - Added ASN real storage tasks.
   - Key changes: created TASK-0092..0094 for storage abstraction, API download, and Portal preview.
 - TASK-0055 - ASN attachments completed.

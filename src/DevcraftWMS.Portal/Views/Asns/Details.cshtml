@@ -4,9 +4,9 @@
     string StatusLabel(int status) => status switch
     {
         0 => "Registered",
-        1 => "Arrived",
-        2 => "Receiving",
-        3 => "Completed",
+        1 => "Pending",
+        2 => "Approved",
+        3 => "Converted",
         4 => "Canceled",
         _ => $"Status {status}"
     };
@@ -63,6 +63,124 @@ else
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Items</h2>
+                    <div class="text-muted">Add products and required tracking info (lot/expiry).</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <form asp-action="Submit" asp-route-id="@Model.Asn.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="notes" value="Submitted via Portal" />
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-send"></i> Submit
+                        </button>
+                    </form>
+                    <form asp-action="Cancel" asp-route-id="@Model.Asn.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="notes" value="Canceled via Portal" />
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <form asp-action="AddItem" asp-route-id="@Model.Asn.Id" method="post" class="row g-3 mb-3">
+                @Html.AntiForgeryToken()
+                <div class="col-12 col-lg-4">
+                    <label class="form-label">Product</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+                        <select class="form-select" name="ProductId">
+                            <option value="">Select...</option>
+                            @foreach (var product in Model.NewItem.Products)
+                            {
+                                <option value="@product.Id">@product.Code - @product.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <label class="form-label">UoM</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                        <select class="form-select" name="UomId">
+                            <option value="">Select...</option>
+                            @foreach (var uom in Model.NewItem.Uoms)
+                            {
+                                <option value="@uom.Id">@uom.Code</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <label class="form-label">Quantity</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-123"></i></span>
+                        <input class="form-control" name="Quantity" type="number" step="0.001" min="0" />
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <label class="form-label">Lot Code</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <input class="form-control" name="LotCode" />
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <label class="form-label">Expiration</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                        <input class="form-control" type="date" name="ExpirationDate" />
+                    </div>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add Item
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>UoM</th>
+                            <th>Quantity</th>
+                            <th>Lot</th>
+                            <th>Expiration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No items registered.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>@item.ProductCode - @item.ProductName</td>
+                                    <td>@item.UomCode</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.LotCode</td>
+                                    <td>@item.ExpirationDate?.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -114,6 +232,49 @@ else
                                     <td>@attachment.ContentType</td>
                                     <td>@($"{attachment.SizeBytes / 1024.0:F1} KB")</td>
                                     <td>@attachment.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Status History</h2>
+                    <div class="text-muted">Track ASN workflow transitions.</div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Notes</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.StatusEvents.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No status events recorded.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var evt in Model.StatusEvents)
+                            {
+                                <tr>
+                                    <td>@StatusLabel(evt.FromStatus)</td>
+                                    <td>@StatusLabel(evt.ToStatus)</td>
+                                    <td>@evt.Notes</td>
+                                    <td>@evt.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
                                 </tr>
                             }
                         }

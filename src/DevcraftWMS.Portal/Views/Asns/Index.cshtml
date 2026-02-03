@@ -5,9 +5,9 @@
     string StatusLabel(int status) => status switch
     {
         0 => "Registered",
-        1 => "Arrived",
-        2 => "Receiving",
-        3 => "Completed",
+        1 => "Pending",
+        2 => "Approved",
+        3 => "Converted",
         4 => "Canceled",
         _ => $"Status {status}"
     };

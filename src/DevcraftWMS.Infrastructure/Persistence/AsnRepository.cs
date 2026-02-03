@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -10,11 +11,16 @@ public sealed class AsnRepository : IAsnRepository
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ICustomerContext _customerContext;
+    private readonly ICurrentUserService? _currentUserService;
 
-    public AsnRepository(ApplicationDbContext dbContext, ICustomerContext customerContext)
+    public AsnRepository(
+        ApplicationDbContext dbContext,
+        ICustomerContext customerContext,
+        ICurrentUserService? currentUserService = null)
     {
         _dbContext = dbContext;
         _customerContext = customerContext;
+        _currentUserService = currentUserService;
     }
 
     public async Task<bool> AsnNumberExistsAsync(string asnNumber, CancellationToken cancellationToken = default)
@@ -41,7 +47,35 @@ public sealed class AsnRepository : IAsnRepository
 
     public async Task UpdateAsync(Asn asn, CancellationToken cancellationToken = default)
     {
-        _dbContext.Asns.Update(asn);
+        var entry = _dbContext.Entry(asn);
+        if (entry.State == EntityState.Detached)
+        {
+            _dbContext.Asns.Attach(asn);
+            entry.State = EntityState.Modified;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> UpdateStatusAsync(Guid asnId, AsnStatus status, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        var now = DateTime.UtcNow;
+        var userId = _currentUserService?.UserId;
+
+        var updated = await _dbContext.Asns
+            .Where(a => a.CustomerId == customerId && a.Id == asnId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(a => a.Status, status)
+                .SetProperty(a => a.UpdatedAtUtc, now)
+                .SetProperty(a => a.UpdatedByUserId, userId), cancellationToken);
+
+        return updated > 0;
+    }
+
+    public async Task AddStatusEventAsync(AsnStatusEvent statusEvent, CancellationToken cancellationToken = default)
+    {
+        _dbContext.AsnStatusEvents.Add(statusEvent);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -56,6 +90,7 @@ public sealed class AsnRepository : IAsnRepository
             .Include(a => a.Items)
                 .ThenInclude(i => i.Uom)
             .Include(a => a.Attachments)
+            .Include(a => a.StatusEvents)
             .SingleOrDefaultAsync(a => a.CustomerId == customerId && a.Id == id, cancellationToken);
     }
 
@@ -66,6 +101,7 @@ public sealed class AsnRepository : IAsnRepository
             .Include(a => a.Warehouse)
             .Include(a => a.Items)
             .Include(a => a.Attachments)
+            .Include(a => a.StatusEvents)
             .SingleOrDefaultAsync(a => a.CustomerId == customerId && a.Id == id, cancellationToken);
     }
 

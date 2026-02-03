@@ -68,6 +68,34 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         using var attachmentsDoc = JsonDocument.Parse(listAttachmentsBody);
         attachmentsDoc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
         attachmentsDoc.RootElement.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+
+        var uomId = await CreateUomAsync(client);
+        var productId = await CreateProductAsync(client, uomId);
+
+        var itemPayload = JsonSerializer.Serialize(new
+        {
+            productId,
+            uomId,
+            quantity = 5m,
+            lotCode = (string?)null,
+            expirationDate = (DateOnly?)null
+        });
+
+        var addItemResponse = await client.PostAsync($"/api/asns/{asnId}/items", new StringContent(itemPayload, Encoding.UTF8, "application/json"));
+        var addItemBody = await addItemResponse.Content.ReadAsStringAsync();
+        addItemResponse.IsSuccessStatusCode.Should().BeTrue(addItemBody);
+
+        var submitResponse = await client.PostAsync($"/api/asns/{asnId}/submit", new StringContent("{\"notes\":\"submit\"}", Encoding.UTF8, "application/json"));
+        var submitBody = await submitResponse.Content.ReadAsStringAsync();
+        submitResponse.IsSuccessStatusCode.Should().BeTrue(submitBody);
+
+        var statusResponse = await client.GetAsync($"/api/asns/{asnId}/status-events");
+        var statusBody = await statusResponse.Content.ReadAsStringAsync();
+        statusResponse.IsSuccessStatusCode.Should().BeTrue(statusBody);
+
+        using var statusDoc = JsonDocument.Parse(statusBody);
+        statusDoc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
+        statusDoc.RootElement.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
     }
 
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
@@ -106,6 +134,54 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         });
 
         var response = await client.PostAsync("/api/warehouses", new StringContent(payload, Encoding.UTF8, "application/json"));
+        var body = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.Should().BeTrue(body);
+
+        using var doc = JsonDocument.Parse(body);
+        return doc.RootElement.GetProperty("id").GetGuid();
+    }
+
+    private static async Task<Guid> CreateUomAsync(HttpClient client)
+    {
+        var code = $"UM{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant();
+        var payload = JsonSerializer.Serialize(new
+        {
+            code,
+            name = "Unit",
+            type = 0
+        });
+
+        var response = await client.PostAsync("/api/uoms", new StringContent(payload, Encoding.UTF8, "application/json"));
+        var body = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.Should().BeTrue(body);
+
+        using var doc = JsonDocument.Parse(body);
+        return doc.RootElement.GetProperty("id").GetGuid();
+    }
+
+    private static async Task<Guid> CreateProductAsync(HttpClient client, Guid baseUomId)
+    {
+        var code = $"SKU-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var payload = JsonSerializer.Serialize(new
+        {
+            code,
+            name = "ASN Product",
+            description = "Inbound",
+            ean = "789000000124",
+            erpCode = "ERP-ASN",
+            category = "Inbound",
+            brand = "Devcraft",
+            baseUomId,
+            trackingMode = 0,
+            minimumShelfLifeDays = (int?)null,
+            weightKg = 1.1,
+            lengthCm = 10,
+            widthCm = 5,
+            heightCm = 3,
+            volumeCm3 = 150
+        });
+
+        var response = await client.PostAsync("/api/products", new StringContent(payload, Encoding.UTF8, "application/json"));
         var body = await response.Content.ReadAsStringAsync();
         response.IsSuccessStatusCode.Should().BeTrue(body);
 

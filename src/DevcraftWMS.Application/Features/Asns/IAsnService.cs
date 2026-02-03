@@ -42,4 +42,21 @@ public interface IAsnService
         long sizeBytes,
         byte[] content,
         CancellationToken cancellationToken);
+
+    Task<RequestResult<AsnItemDto>> AddItemAsync(
+        Guid asnId,
+        Guid productId,
+        Guid uomId,
+        decimal quantity,
+        string? lotCode,
+        DateOnly? expirationDate,
+        CancellationToken cancellationToken);
+
+    Task<RequestResult<IReadOnlyList<AsnItemDto>>> ListItemsAsync(Guid asnId, CancellationToken cancellationToken);
+
+    Task<RequestResult<AsnDetailDto>> SubmitAsync(Guid asnId, string? notes, CancellationToken cancellationToken);
+    Task<RequestResult<AsnDetailDto>> ApproveAsync(Guid asnId, string? notes, CancellationToken cancellationToken);
+    Task<RequestResult<AsnDetailDto>> ConvertAsync(Guid asnId, string? notes, CancellationToken cancellationToken);
+    Task<RequestResult<AsnDetailDto>> CancelAsync(Guid asnId, string? notes, CancellationToken cancellationToken);
+    Task<RequestResult<IReadOnlyList<AsnStatusEventDto>>> ListStatusEventsAsync(Guid asnId, CancellationToken cancellationToken);
 }

@@ -9,11 +9,19 @@ public sealed class AsnsController : Controller
 {
     private readonly AsnsApiClient _asnsClient;
     private readonly WarehousesApiClient _warehousesClient;
+    private readonly ProductsApiClient _productsClient;
+    private readonly UomsApiClient _uomsClient;
 
-    public AsnsController(AsnsApiClient asnsClient, WarehousesApiClient warehousesClient)
+    public AsnsController(
+        AsnsApiClient asnsClient,
+        WarehousesApiClient warehousesClient,
+        ProductsApiClient productsClient,
+        UomsApiClient uomsClient)
     {
         _asnsClient = asnsClient;
         _warehousesClient = warehousesClient;
+        _productsClient = productsClient;
+        _uomsClient = uomsClient;
     }
 
     [HttpGet]
@@ -116,11 +124,33 @@ public sealed class AsnsController : Controller
             TempData["Warning"] = attachmentsResult.Error ?? "Unable to load attachments.";
         }
 
+        var itemsResult = await _asnsClient.ListItemsAsync(id, cancellationToken);
+        if (!itemsResult.IsSuccess)
+        {
+            TempData["Warning"] = itemsResult.Error ?? "Unable to load items.";
+        }
+
+        var statusEventsResult = await _asnsClient.ListStatusEventsAsync(id, cancellationToken);
+        if (!statusEventsResult.IsSuccess)
+        {
+            TempData["Warning"] = statusEventsResult.Error ?? "Unable to load status history.";
+        }
+
+        var products = await LoadProductsAsync(cancellationToken);
+        var uoms = await LoadUomsAsync(cancellationToken);
+
         ViewData["Title"] = $"ASN {result.Data.AsnNumber}";
         return View(new AsnDetailViewModel
         {
             Asn = result.Data,
-            Attachments = attachmentsResult.Data ?? Array.Empty<AsnAttachmentDto>()
+            Attachments = attachmentsResult.Data ?? Array.Empty<AsnAttachmentDto>(),
+            Items = itemsResult.Data ?? Array.Empty<AsnItemDto>(),
+            StatusEvents = statusEventsResult.Data ?? Array.Empty<AsnStatusEventDto>(),
+            NewItem = new AsnItemCreateViewModel
+            {
+                Products = products,
+                Uoms = uoms
+            }
         });
     }
 
@@ -145,6 +175,72 @@ public sealed class AsnsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddItem(Guid id, AsnItemCreateViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Please correct the item fields and try again.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (!model.ProductId.HasValue || !model.UomId.HasValue || !model.Quantity.HasValue)
+        {
+            TempData["Error"] = "Product, UoM, and quantity are required.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var payload = new
+        {
+            productId = model.ProductId.Value,
+            uomId = model.UomId.Value,
+            quantity = model.Quantity.Value,
+            lotCode = model.LotCode,
+            expirationDate = model.ExpirationDate
+        };
+
+        var result = await _asnsClient.AddItemAsync(id, payload, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to add ASN item.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "Item added successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Submit(Guid id, string? notes, CancellationToken cancellationToken)
+    {
+        var result = await _asnsClient.SubmitAsync(id, notes, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to submit ASN.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "ASN submitted successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(Guid id, string? notes, CancellationToken cancellationToken)
+    {
+        var result = await _asnsClient.CancelAsync(id, notes, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to cancel ASN.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "ASN canceled.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
     private async Task<IReadOnlyList<WarehouseOptionDto>> LoadWarehousesAsync(CancellationToken cancellationToken)
     {
         var result = await _warehousesClient.ListAsync(100, cancellationToken);
@@ -152,6 +248,30 @@ public sealed class AsnsController : Controller
         {
             TempData["Error"] = result.Error ?? "Unable to load warehouses.";
             return Array.Empty<WarehouseOptionDto>();
+        }
+
+        return result.Data.Items;
+    }
+
+    private async Task<IReadOnlyList<ProductOptionDto>> LoadProductsAsync(CancellationToken cancellationToken)
+    {
+        var result = await _productsClient.ListAsync(100, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Unable to load products.";
+            return Array.Empty<ProductOptionDto>();
+        }
+
+        return result.Data.Items;
+    }
+
+    private async Task<IReadOnlyList<UomOptionDto>> LoadUomsAsync(CancellationToken cancellationToken)
+    {
+        var result = await _uomsClient.ListAsync(100, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Unable to load UoMs.";
+            return Array.Empty<UomOptionDto>();
         }
 
         return result.Data.Items;

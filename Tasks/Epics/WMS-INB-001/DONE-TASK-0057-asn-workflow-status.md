@@ -29,4 +29,4 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - UI mostra historico
 
 ## Status
-PENDENTE
+DONE

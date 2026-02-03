@@ -3,11 +3,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
+using DevcraftWMS.Application.Features.Asns.Commands.AddAsnItem;
 using DevcraftWMS.Application.Features.Asns.Commands.CreateAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.AddAsnAttachment;
+using DevcraftWMS.Application.Features.Asns.Commands.SubmitAsn;
+using DevcraftWMS.Application.Features.Asns.Commands.ApproveAsn;
+using DevcraftWMS.Application.Features.Asns.Commands.ConvertAsn;
+using DevcraftWMS.Application.Features.Asns.Commands.CancelAsn;
 using DevcraftWMS.Application.Features.Asns.Queries.GetAsnById;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnAttachments;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnsPaged;
+using DevcraftWMS.Application.Features.Asns.Queries.ListAsnItems;
+using DevcraftWMS.Application.Features.Asns.Queries.ListAsnStatusEvents;
 using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -117,6 +124,64 @@ public sealed class AsnsController : ControllerBase
                 stream.ToArray()),
             cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("asns/{id:guid}/items")]
+    public async Task<IActionResult> ListItems(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListAsnItemsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/items")]
+    public async Task<IActionResult> AddItem(Guid id, [FromBody] AddAsnItemRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new AddAsnItemCommand(
+                id,
+                request.ProductId,
+                request.UomId,
+                request.Quantity,
+                request.LotCode,
+                request.ExpirationDate),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("asns/{id:guid}/status-events")]
+    public async Task<IActionResult> ListStatusEvents(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListAsnStatusEventsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/submit")]
+    public async Task<IActionResult> Submit(Guid id, [FromBody] AsnStatusChangeRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new SubmitAsnCommand(id, request.Notes), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/approve")]
+    public async Task<IActionResult> Approve(Guid id, [FromBody] AsnStatusChangeRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ApproveAsnCommand(id, request.Notes), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/convert")]
+    public async Task<IActionResult> Convert(Guid id, [FromBody] AsnStatusChangeRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ConvertAsnCommand(id, request.Notes), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id, [FromBody] AsnStatusChangeRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new CancelAsnCommand(id, request.Notes), cancellationToken);
         return this.ToActionResult(result);
     }
 }

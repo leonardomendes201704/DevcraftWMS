@@ -7,3 +7,12 @@ public sealed record CreateAsnRequest(
     string? SupplierName,
     DateOnly? ExpectedArrivalDate,
     string? Notes);
+
+public sealed record AddAsnItemRequest(
+    Guid ProductId,
+    Guid UomId,
+    decimal Quantity,
+    string? LotCode,
+    DateOnly? ExpirationDate);
+
+public sealed record AsnStatusChangeRequest(string? Notes);

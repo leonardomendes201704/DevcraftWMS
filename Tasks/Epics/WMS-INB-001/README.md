@@ -26,8 +26,8 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0053] ASN: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 6h
 - [DONE-TASK-0054] Portal Cliente: UI criar ASN | Prioridade: P0 | Dependencias: TASK-0045,TASK-0053 | Estimativa: 6h
 - [DONE-TASK-0055] ASN: anexos (XML/PDF/imagem) | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 6h
-- [TASK-0056] ASN: validacoes por TrackingMode | Prioridade: P0 | Dependencias: TASK-0047,TASK-0053 | Estimativa: 4h
-- [TASK-0057] ASN: workflow de status + auditoria | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 4h
+- [DONE-TASK-0056] ASN: validacoes por TrackingMode | Prioridade: P0 | Dependencias: TASK-0047,TASK-0053 | Estimativa: 4h
+- [DONE-TASK-0057] ASN: workflow de status + auditoria | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 4h
 - [TASK-0058] OE: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 5h
 - [TASK-0059] OE: converter ASN -> OE | Prioridade: P0 | Dependencias: TASK-0058,TASK-0053 | Estimativa: 5h
 - [TASK-0060] OE: parametros de conferencia/prioridade/doca sugerida | Prioridade: P1 | Dependencias: TASK-0058 | Estimativa: 5h

@@ -43,3 +43,24 @@ public sealed record AsnAttachmentDto(
     string ContentType,
     long SizeBytes,
     DateTime CreatedAtUtc);
+
+public sealed record AsnItemDto(
+    Guid Id,
+    Guid ProductId,
+    string ProductCode,
+    string ProductName,
+    Guid UomId,
+    string UomCode,
+    decimal Quantity,
+    string? LotCode,
+    DateOnly? ExpirationDate,
+    bool IsActive,
+    DateTime CreatedAtUtc);
+
+public sealed record AsnStatusEventDto(
+    Guid Id,
+    Guid AsnId,
+    int FromStatus,
+    int ToStatus,
+    string? Notes,
+    DateTime CreatedAtUtc);

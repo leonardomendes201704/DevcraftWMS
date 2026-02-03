@@ -55,4 +55,19 @@ public sealed class AsnsApiClient : ApiClientBase
         content.Add(fileContent, "file", file.FileName);
         return await PostMultipartAsync<AsnAttachmentDto>($"/api/asns/{asnId}/attachments", content, cancellationToken);
     }
+
+    public Task<ApiResult<IReadOnlyList<AsnItemDto>>> ListItemsAsync(Guid asnId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<AsnItemDto>>($"/api/asns/{asnId}/items", cancellationToken);
+
+    public Task<ApiResult<AsnItemDto>> AddItemAsync(Guid asnId, object payload, CancellationToken cancellationToken)
+        => PostAsync<AsnItemDto>($"/api/asns/{asnId}/items", payload, cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<AsnStatusEventDto>>> ListStatusEventsAsync(Guid asnId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<AsnStatusEventDto>>($"/api/asns/{asnId}/status-events", cancellationToken);
+
+    public Task<ApiResult<AsnDetailDto>> SubmitAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
+        => PostAsync<AsnDetailDto>($"/api/asns/{asnId}/submit", new { notes }, cancellationToken);
+
+    public Task<ApiResult<AsnDetailDto>> CancelAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
+        => PostAsync<AsnDetailDto>($"/api/asns/{asnId}/cancel", new { notes }, cancellationToken);
 }
