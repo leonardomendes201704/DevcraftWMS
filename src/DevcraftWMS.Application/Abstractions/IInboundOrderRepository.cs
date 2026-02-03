@@ -11,6 +11,7 @@ public interface IInboundOrderRepository
     Task<bool> ExistsByAsnAsync(Guid asnId, CancellationToken cancellationToken = default);
     Task<bool> OrderNumberExistsAsync(string orderNumber, CancellationToken cancellationToken = default);
     Task<InboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<InboundOrder?> GetByDocumentNumberAsync(string documentNumber, CancellationToken cancellationToken = default);
     Task<InboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? warehouseId,

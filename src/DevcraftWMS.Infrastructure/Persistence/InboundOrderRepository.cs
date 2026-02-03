@@ -73,6 +73,16 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
             .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
     }
 
+    public async Task<InboundOrder?> GetByDocumentNumberAsync(string documentNumber, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.InboundOrders
+            .AsNoTracking()
+            .Include(o => o.Warehouse)
+            .Include(o => o.Asn)
+            .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.DocumentNumber == documentNumber, cancellationToken);
+    }
+
     public async Task<InboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var customerId = GetCustomerId();

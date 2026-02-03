@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-03
+- TASK-0063 - Portaria check-in API completed.
+  - Key changes: added GateCheckin entity/status, CQRS/service/repository, API CRUD endpoints, migration AddGateCheckins, and unit/integration tests.
 - Fix - Portal ASN approve action and UI button.
   - Key changes: added Approve API call + controller action and enabled approve button when status is Pending.
 - Fix - Inbound Orders list view grid rendering.

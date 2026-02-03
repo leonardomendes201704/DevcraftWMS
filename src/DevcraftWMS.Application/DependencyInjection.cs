@@ -24,6 +24,7 @@ using DevcraftWMS.Application.Features.InventoryMovements;
 using DevcraftWMS.Application.Features.Zones;
 using DevcraftWMS.Application.Features.Asns;
 using DevcraftWMS.Application.Features.InboundOrders;
+using DevcraftWMS.Application.Features.GateCheckins;
 
 namespace DevcraftWMS.Application;
 
@@ -54,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IZoneService, ZoneService>();
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();
+        services.AddScoped<IGateCheckinService, GateCheckinService>();
 
         return services;
     }
