@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-03
+- TASK-0066 - Recebimento session linked to inbound order completed.
+  - Key changes: added Receipt link to inbound order with start/finish endpoints, OE status updates on start/complete, DemoMvc start action + receipt display, unit/integration tests, and migration AddReceiptInboundOrderSession.
 - TASK-0065 - Portaria dock assignment completed.
   - Key changes: added dock assignment endpoint, status/timestamp updates, Portaria assign dock screen, and migration AddGateCheckinDockAssignment.
 - TASK-0064 - Portaria check-in UI completed.

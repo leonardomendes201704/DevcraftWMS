@@ -52,6 +52,9 @@ public sealed class ReceiptsApiClient : ApiClientBase
             payload.SupplierName,
             payload.Notes), cancellationToken);
 
+    public Task<ApiResult<ReceiptDetailViewModel>> StartFromInboundOrderAsync(Guid inboundOrderId, CancellationToken cancellationToken)
+        => PostAsync<ReceiptDetailViewModel>($"/api/inbound-orders/{inboundOrderId}/receipts/start", new { }, cancellationToken);
+
     public Task<ApiResult<ReceiptDetailViewModel>> UpdateAsync(Guid id, ReceiptFormViewModel payload, CancellationToken cancellationToken)
         => PutAsync<ReceiptDetailViewModel>($"/api/receipts/{id}", new UpdateReceiptRequest(
             payload.WarehouseId,

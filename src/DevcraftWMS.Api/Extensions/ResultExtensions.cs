@@ -433,6 +433,24 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status400BadRequest
             },
+            "receipts.inbound_order.not_found" => new ProblemDetails
+            {
+                Title = "Not Found",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status404NotFound
+            },
+            "receipts.inbound_order.status_locked" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "receipts.inbound_order.already_started" => new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status409Conflict
+            },
             "emails.inbox.invalid_status" => new ProblemDetails
             {
                 Title = "Bad Request",

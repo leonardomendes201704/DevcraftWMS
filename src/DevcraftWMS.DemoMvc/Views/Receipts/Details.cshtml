@@ -73,12 +73,20 @@
                 <div class="fw-semibold">@Model.Receipt.WarehouseName</div>
             </div>
             <div class="col-md-3">
+                <div class="text-muted small">Inbound Order</div>
+                <div class="fw-semibold">@(Model.Receipt.InboundOrderNumber ?? "-")</div>
+            </div>
+            <div class="col-md-3">
                 <div class="text-muted small">Document</div>
                 <div class="fw-semibold">@(Model.Receipt.DocumentNumber ?? "-")</div>
             </div>
             <div class="col-md-3">
                 <div class="text-muted small">Supplier</div>
                 <div class="fw-semibold">@(Model.Receipt.SupplierName ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Started At</div>
+                <div class="fw-semibold">@(Model.Receipt.StartedAtUtc?.ToLocalTime().ToString("g") ?? "-")</div>
             </div>
             <div class="col-md-3">
                 <div class="text-muted small">Received At</div>

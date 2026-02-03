@@ -132,6 +132,11 @@
         }), "Priority")
         .AddColumn("Expected", item => new HtmlString(item.ExpectedArrivalDate?.ToString("yyyy-MM-dd") ?? "-"), "ExpectedArrivalDate")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction(
+            "Start Receipt",
+            item => item.Status is 3 or 4 ? null : Url.Action("StartReceipt", "InboundOrders", new { id = item.Id }),
+            "btn btn-sm btn-outline-success",
+            "bi bi-box-arrow-in-right")
         .Build();
 }
 
@@ -160,6 +165,7 @@
                 <ul>
                     <li><strong>Status and Priority</strong>: focus on urgent inbound operations first.</li>
                     <li><strong>Warehouse</strong>: see orders by site.</li>
+                    <li><strong>Start Receipt</strong>: open a receiving session linked to the selected inbound order.</li>
                 </ul>
                 <p>Subscreens:</p>
                 <ul>

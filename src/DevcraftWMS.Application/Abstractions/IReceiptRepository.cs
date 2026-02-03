@@ -9,6 +9,7 @@ public interface IReceiptRepository
     Task UpdateAsync(Receipt receipt, CancellationToken cancellationToken = default);
     Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Receipt?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? warehouseId,
         string? receiptNumber,

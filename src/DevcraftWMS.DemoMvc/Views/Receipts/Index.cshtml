@@ -134,6 +134,7 @@
         .WithQueryOptions(queryOptions)
         .WithFilters(filters)
         .AddColumn("Number", item => new HtmlString(HtmlEncoder.Default.Encode(item.ReceiptNumber)), "ReceiptNumber")
+        .AddColumn("Inbound Order", item => new HtmlString(HtmlEncoder.Default.Encode(item.InboundOrderNumber ?? "-")), "InboundOrderNumber")
         .AddColumn("Document", item => new HtmlString(HtmlEncoder.Default.Encode(item.DocumentNumber ?? "-")), "DocumentNumber")
         .AddColumn("Supplier", item => new HtmlString(HtmlEncoder.Default.Encode(item.SupplierName ?? "-")), "SupplierName")
         .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")

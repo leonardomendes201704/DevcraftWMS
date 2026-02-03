@@ -35,6 +35,7 @@ public sealed class ReceiptRepository : IReceiptRepository
         return await _dbContext.Receipts
             .AsNoTracking()
             .Include(r => r.Warehouse)
+            .Include(r => r.InboundOrder)
             .Include(r => r.Items)
             .Where(r => r.CustomerId == customerId)
             .SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
@@ -45,8 +46,21 @@ public sealed class ReceiptRepository : IReceiptRepository
         var customerId = GetCustomerId();
         return await _dbContext.Receipts
             .Include(r => r.Items)
+            .Include(r => r.InboundOrder)
             .Where(r => r.CustomerId == customerId)
             .SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.Receipts
+            .AsNoTracking()
+            .Include(r => r.Warehouse)
+            .Include(r => r.InboundOrder)
+            .Include(r => r.Items)
+            .Where(r => r.CustomerId == customerId)
+            .SingleOrDefaultAsync(r => r.InboundOrderId == inboundOrderId, cancellationToken);
     }
 
     public async Task<int> CountAsync(
@@ -83,6 +97,7 @@ public sealed class ReceiptRepository : IReceiptRepository
     {
         IQueryable<Receipt> query = BuildQuery(warehouseId, receiptNumber, documentNumber, supplierName, status, receivedFromUtc, receivedToUtc, isActive, includeInactive)
             .Include(r => r.Warehouse)
+            .Include(r => r.InboundOrder)
             .Include(r => r.Items);
 
         query = ApplyOrdering(query, orderBy, orderDir);

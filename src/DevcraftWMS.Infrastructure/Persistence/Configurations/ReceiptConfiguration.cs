@@ -13,6 +13,7 @@ public sealed class ReceiptConfiguration : AuditableEntityConfiguration<Receipt>
 
         builder.Property(r => r.CustomerId).IsRequired();
         builder.Property(r => r.WarehouseId).IsRequired();
+        builder.Property(r => r.InboundOrderId);
         builder.Property(r => r.ReceiptNumber)
             .HasMaxLength(50)
             .IsRequired();
@@ -22,6 +23,7 @@ public sealed class ReceiptConfiguration : AuditableEntityConfiguration<Receipt>
             .HasMaxLength(120);
         builder.Property(r => r.Status)
             .IsRequired();
+        builder.Property(r => r.StartedAtUtc);
         builder.Property(r => r.ReceivedAtUtc);
         builder.Property(r => r.Notes)
             .HasMaxLength(500);
@@ -31,6 +33,11 @@ public sealed class ReceiptConfiguration : AuditableEntityConfiguration<Receipt>
             .HasForeignKey(r => r.WarehouseId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(r => r.InboundOrder)
+            .WithMany()
+            .HasForeignKey(r => r.InboundOrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(r => r.Items)
             .WithOne(i => i.Receipt)
             .HasForeignKey(i => i.ReceiptId)
@@ -38,8 +45,10 @@ public sealed class ReceiptConfiguration : AuditableEntityConfiguration<Receipt>
 
         builder.HasIndex(r => r.CustomerId);
         builder.HasIndex(r => r.WarehouseId);
+        builder.HasIndex(r => r.InboundOrderId);
         builder.HasIndex(r => r.ReceiptNumber);
         builder.HasIndex(r => r.Status);
+        builder.HasIndex(r => r.StartedAtUtc);
         builder.HasIndex(r => r.ReceivedAtUtc);
     }
 }

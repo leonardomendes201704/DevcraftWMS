@@ -11,13 +11,16 @@ namespace DevcraftWMS.DemoMvc.Controllers;
 public sealed class InboundOrdersController : Controller
 {
     private readonly InboundOrdersApiClient _ordersClient;
+    private readonly ReceiptsApiClient _receiptsClient;
     private readonly WarehousesApiClient _warehousesClient;
 
     public InboundOrdersController(
         InboundOrdersApiClient ordersClient,
+        ReceiptsApiClient receiptsClient,
         WarehousesApiClient warehousesClient)
     {
         _ordersClient = ordersClient;
+        _receiptsClient = receiptsClient;
         _warehousesClient = warehousesClient;
     }
 
@@ -82,6 +85,26 @@ public sealed class InboundOrdersController : Controller
         };
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> StartReceipt(Guid id, CancellationToken cancellationToken)
+    {
+        if (!HasCustomerContext())
+        {
+            TempData["Warning"] = "Select a customer to start receipts.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await _receiptsClient.StartFromInboundOrderAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Failed to start receipt session.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["Success"] = "Receipt session started.";
+        return RedirectToAction("Details", "Receipts", new { id = result.Data.Id });
     }
 
     private bool HasCustomerContext()

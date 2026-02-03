@@ -10,6 +10,7 @@ public sealed class ReceiptService : IReceiptService
 {
     private readonly IReceiptRepository _receiptRepository;
     private readonly IWarehouseRepository _warehouseRepository;
+    private readonly IInboundOrderRepository _inboundOrderRepository;
     private readonly IProductRepository _productRepository;
     private readonly ILotRepository _lotRepository;
     private readonly ILocationRepository _locationRepository;
@@ -21,6 +22,7 @@ public sealed class ReceiptService : IReceiptService
     public ReceiptService(
         IReceiptRepository receiptRepository,
         IWarehouseRepository warehouseRepository,
+        IInboundOrderRepository inboundOrderRepository,
         IProductRepository productRepository,
         ILotRepository lotRepository,
         ILocationRepository locationRepository,
@@ -31,6 +33,7 @@ public sealed class ReceiptService : IReceiptService
     {
         _receiptRepository = receiptRepository;
         _warehouseRepository = warehouseRepository;
+        _inboundOrderRepository = inboundOrderRepository;
         _productRepository = productRepository;
         _lotRepository = lotRepository;
         _locationRepository = locationRepository;
@@ -247,6 +250,62 @@ public sealed class ReceiptService : IReceiptService
         return RequestResult<ReceiptItemDto>.Success(ReceiptMapping.MapItem(item));
     }
 
+    public async Task<RequestResult<ReceiptDetailDto>> StartFromInboundOrderAsync(Guid inboundOrderId, CancellationToken cancellationToken)
+    {
+        if (!_customerContext.CustomerId.HasValue)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
+        var inboundOrder = await _inboundOrderRepository.GetTrackedByIdAsync(inboundOrderId, cancellationToken);
+        if (inboundOrder is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.not_found", "Inbound order not found.");
+        }
+
+        if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.status_locked", "Inbound order status does not allow receipt start.");
+        }
+
+        var existing = await _receiptRepository.GetByInboundOrderIdAsync(inboundOrderId, cancellationToken);
+        if (existing is not null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.already_started", "Receipt session already exists for the inbound order.");
+        }
+
+        var warehouse = await _warehouseRepository.GetByIdAsync(inboundOrder.WarehouseId, cancellationToken);
+        if (warehouse is null)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.warehouse.not_found", "Warehouse not found.");
+        }
+
+        var receiptNumber = BuildReceiptNumber(inboundOrder.OrderNumber);
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = _customerContext.CustomerId.Value,
+            WarehouseId = inboundOrder.WarehouseId,
+            InboundOrderId = inboundOrder.Id,
+            ReceiptNumber = receiptNumber,
+            DocumentNumber = inboundOrder.DocumentNumber,
+            SupplierName = inboundOrder.SupplierName,
+            Notes = inboundOrder.Notes,
+            Status = ReceiptStatus.InProgress,
+            StartedAtUtc = _dateTimeProvider.UtcNow
+        };
+
+        await _receiptRepository.AddAsync(receipt, cancellationToken);
+
+        inboundOrder.Status = InboundOrderStatus.InProgress;
+        await _inboundOrderRepository.UpdateAsync(inboundOrder, cancellationToken);
+
+        receipt.Warehouse = warehouse;
+        receipt.InboundOrder = inboundOrder;
+
+        return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
     public async Task<RequestResult<ReceiptDetailDto>> CompleteAsync(Guid receiptId, CancellationToken cancellationToken)
     {
         var receipt = await _receiptRepository.GetTrackedByIdAsync(receiptId, cancellationToken);
@@ -263,6 +322,21 @@ public sealed class ReceiptService : IReceiptService
         if (receipt.Items.Count == 0)
         {
             return RequestResult<ReceiptDetailDto>.Failure("receipts.receipt.no_items", "Receipt must have at least one item.");
+        }
+
+        InboundOrder? inboundOrder = null;
+        if (receipt.InboundOrderId.HasValue)
+        {
+            inboundOrder = await _inboundOrderRepository.GetTrackedByIdAsync(receipt.InboundOrderId.Value, cancellationToken);
+            if (inboundOrder is null)
+            {
+                return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.not_found", "Inbound order not found.");
+            }
+
+            if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed)
+            {
+                return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.status_locked", "Inbound order status does not allow receipt completion.");
+            }
         }
 
         foreach (var item in receipt.Items)
@@ -309,7 +383,27 @@ public sealed class ReceiptService : IReceiptService
         receipt.ReceivedAtUtc = _dateTimeProvider.UtcNow;
         await _receiptRepository.UpdateAsync(receipt, cancellationToken);
 
+        if (inboundOrder is not null)
+        {
+            inboundOrder.Status = InboundOrderStatus.Completed;
+            await _inboundOrderRepository.UpdateAsync(inboundOrder, cancellationToken);
+        }
+
         return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
+    }
+
+    private static string BuildReceiptNumber(string orderNumber)
+    {
+        var candidate = $"RCV-{orderNumber}";
+        if (candidate.Length <= 50)
+        {
+            return candidate;
+        }
+
+        var suffix = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        var trimmedOrder = orderNumber.Length > 30 ? orderNumber[..30] : orderNumber;
+        var fallback = $"RCV-{trimmedOrder}-{suffix}";
+        return fallback.Length <= 50 ? fallback : fallback[..50];
     }
 
     private static RequestResult<ReceiptItemDto>? ValidateLocationCompatibility(Location location, Product product, decimal quantity)

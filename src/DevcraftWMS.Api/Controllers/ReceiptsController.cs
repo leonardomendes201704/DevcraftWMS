@@ -7,6 +7,7 @@ using DevcraftWMS.Application.Features.Receipts.Commands.CreateReceipt;
 using DevcraftWMS.Application.Features.Receipts.Commands.UpdateReceipt;
 using DevcraftWMS.Application.Features.Receipts.Commands.DeactivateReceipt;
 using DevcraftWMS.Application.Features.Receipts.Commands.CompleteReceipt;
+using DevcraftWMS.Application.Features.Receipts.Commands.StartReceiptFromInboundOrder;
 using DevcraftWMS.Application.Features.Receipts.Commands.AddReceiptItem;
 using DevcraftWMS.Application.Features.Receipts.Queries.GetReceiptById;
 using DevcraftWMS.Application.Features.Receipts.Queries.ListReceiptsPaged;
@@ -38,6 +39,19 @@ public sealed class ReceiptsController : ControllerBase
                 request.SupplierName,
                 request.Notes),
             cancellationToken);
+
+        if (result.IsSuccess && result.Value is not null)
+        {
+            return CreatedAtAction(nameof(GetReceiptById), new { id = result.Value.Id }, result.Value);
+        }
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("inbound-orders/{id:guid}/receipts/start")]
+    public async Task<IActionResult> StartFromInboundOrder(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new StartReceiptFromInboundOrderCommand(id), cancellationToken);
 
         if (result.IsSuccess && result.Value is not null)
         {
@@ -164,6 +178,13 @@ public sealed class ReceiptsController : ControllerBase
 
     [HttpPost("receipts/{id:guid}/complete")]
     public async Task<IActionResult> CompleteReceipt(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new CompleteReceiptCommand(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("receipts/{id:guid}/finish")]
+    public async Task<IActionResult> FinishReceipt(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CompleteReceiptCommand(id), cancellationToken);
         return this.ToActionResult(result);

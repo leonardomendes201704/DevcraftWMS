@@ -29,5 +29,6 @@ public interface IReceiptService
         decimal quantity,
         decimal? unitCost,
         CancellationToken cancellationToken);
+    Task<RequestResult<ReceiptDetailDto>> StartFromInboundOrderAsync(Guid inboundOrderId, CancellationToken cancellationToken);
     Task<RequestResult<ReceiptDetailDto>> CompleteAsync(Guid receiptId, CancellationToken cancellationToken);
 }

@@ -29,4 +29,11 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Auditoria registrada
 
 ## Status
-PENDENTE
+DONE
+
+## Implementacao
+- Vinculo de Receipt com OE (InboundOrderId) + StartedAtUtc.
+- Endpoint para iniciar sessao por OE e alias para finish.
+- Atualizacao de status da OE ao iniciar/finalizar.
+- UI DemoMvc com acao Start Receipt e exibicao do vinculo.
+- Tests unitarios e integracao cobrindo start + status.

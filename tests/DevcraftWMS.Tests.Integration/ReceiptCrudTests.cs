@@ -72,6 +72,78 @@ public sealed class ReceiptCrudTests : IClassFixture<CustomWebApplicationFactory
         balance!.QuantityOnHand.Should().Be(10.5m);
     }
 
+    [Fact]
+    public async Task StartReceipt_FromInboundOrder_Should_Update_InboundOrder_Status()
+    {
+        var client = _factory.CreateClient();
+        var orderId = await CreateInboundOrderAsync(client);
+
+        var startResponse = await client.PostAsync($"/api/inbound-orders/{orderId}/receipts/start", new StringContent("{}", Encoding.UTF8, "application/json"));
+        var startBody = await startResponse.Content.ReadAsStringAsync();
+        startResponse.IsSuccessStatusCode.Should().BeTrue(startBody);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var inboundOrder = await db.InboundOrders.AsNoTracking().SingleAsync(o => o.Id == orderId);
+        inboundOrder.Status.Should().Be((Domain.Enums.InboundOrderStatus)2);
+    }
+
+    private static async Task<Guid> CreateInboundOrderAsync(HttpClient client)
+    {
+        var warehouseId = await CreateWarehouseAsync(client);
+
+        var asnNumber = $"ASN-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var documentNumber = "DOC-REC-200";
+        var asnPayload = JsonSerializer.Serialize(new
+        {
+            warehouseId,
+            asnNumber,
+            documentNumber,
+            supplierName = "Inbound Supplier",
+            expectedArrivalDate = new DateOnly(2026, 2, 10),
+            notes = "Receipt ASN"
+        });
+
+        var asnResponse = await client.PostAsync("/api/asns", new StringContent(asnPayload, Encoding.UTF8, "application/json"));
+        var asnBody = await asnResponse.Content.ReadAsStringAsync();
+        asnResponse.IsSuccessStatusCode.Should().BeTrue(asnBody);
+
+        using var asnDoc = JsonDocument.Parse(asnBody);
+        var asnId = asnDoc.RootElement.GetProperty("id").GetGuid();
+
+        var uomId = await CreateUomAsync(client);
+        var productId = await CreateProductAsync(client, uomId);
+
+        var itemPayload = JsonSerializer.Serialize(new
+        {
+            productId,
+            uomId,
+            quantity = 5m,
+            lotCode = (string?)null,
+            expirationDate = (DateOnly?)null
+        });
+
+        var addItemResponse = await client.PostAsync($"/api/asns/{asnId}/items", new StringContent(itemPayload, Encoding.UTF8, "application/json"));
+        var addItemBody = await addItemResponse.Content.ReadAsStringAsync();
+        addItemResponse.IsSuccessStatusCode.Should().BeTrue(addItemBody);
+
+        var submitResponse = await client.PostAsync($"/api/asns/{asnId}/submit", new StringContent("{\"notes\":\"submit\"}", Encoding.UTF8, "application/json"));
+        var submitBody = await submitResponse.Content.ReadAsStringAsync();
+        submitResponse.IsSuccessStatusCode.Should().BeTrue(submitBody);
+
+        var approveResponse = await client.PostAsync($"/api/asns/{asnId}/approve", new StringContent("{\"notes\":\"approve\"}", Encoding.UTF8, "application/json"));
+        var approveBody = await approveResponse.Content.ReadAsStringAsync();
+        approveResponse.IsSuccessStatusCode.Should().BeTrue(approveBody);
+
+        var convertPayload = JsonSerializer.Serialize(new { asnId, notes = "Convert to OE" });
+        var convertResponse = await client.PostAsync("/api/inbound-orders/from-asn", new StringContent(convertPayload, Encoding.UTF8, "application/json"));
+        var convertBody = await convertResponse.Content.ReadAsStringAsync();
+        convertResponse.IsSuccessStatusCode.Should().BeTrue(convertBody);
+
+        using var orderDoc = JsonDocument.Parse(convertBody);
+        return orderDoc.RootElement.GetProperty("id").GetGuid();
+    }
+
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
         var code = $"WH-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
@@ -212,13 +284,15 @@ public sealed class ReceiptCrudTests : IClassFixture<CustomWebApplicationFactory
     private static async Task<Guid> CreateProductAsync(HttpClient client, Guid baseUomId)
     {
         var code = $"SKU-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var ean = $"789{Random.Shared.Next(1000000000, 1999999999)}";
+        var erpCode = $"ERP-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
         var payload = JsonSerializer.Serialize(new
         {
             code,
             name = "Receipt Product",
             description = "Inbound",
-            ean = "789000000123",
-            erpCode = "ERP-REC",
+            ean,
+            erpCode,
             category = "Inbound",
             brand = "Devcraft",
             baseUomId,

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
@@ -16,6 +16,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(),
             new FakeWarehouseRepository(null),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(null),
             new FakeLotRepository(null),
             new FakeLocationRepository(null),
@@ -51,6 +52,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(new Product { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid(), Code = "SKU", Name = "Item" }),
             new FakeLotRepository(null),
             new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
@@ -89,6 +91,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(product),
             new FakeLotRepository(null),
             new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
@@ -147,6 +150,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(product),
             new FakeLotRepository(lot),
             new FakeLocationRepository(location),
@@ -199,6 +203,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(product),
             new FakeLotRepository(lot),
             new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
@@ -252,6 +257,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(new Product { Id = productId, CustomerId = Guid.NewGuid(), Code = "SKU", Name = "Item" }),
             new FakeLotRepository(lot),
             new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
@@ -282,6 +288,7 @@ public sealed class ReceiptServiceTests
         var service = new ReceiptService(
             new FakeReceiptRepository(receipt),
             new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
             new FakeProductRepository(null),
             new FakeLotRepository(null),
             new FakeLocationRepository(null),
@@ -293,6 +300,64 @@ public sealed class ReceiptServiceTests
         var result = await service.CompleteAsync(receipt.Id, CancellationToken.None);
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.receipt.no_items");
+    }
+
+    [Fact]
+    public async Task StartFromInboundOrder_Should_Return_NotFound_When_Order_Missing()
+    {
+        var service = new ReceiptService(
+            new FakeReceiptRepository(),
+            new FakeWarehouseRepository(null),
+            new FakeInboundOrderRepository(null),
+            new FakeProductRepository(null),
+            new FakeLotRepository(null),
+            new FakeLocationRepository(null),
+            new FakeUomRepository(null),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.StartFromInboundOrderAsync(Guid.NewGuid(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("receipts.inbound_order.not_found");
+    }
+
+    [Fact]
+    public async Task StartFromInboundOrder_Should_Create_Receipt_And_Update_Status()
+    {
+        var orderId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var inboundOrder = new InboundOrder
+        {
+            Id = orderId,
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            AsnId = Guid.NewGuid(),
+            OrderNumber = "OE-100",
+            DocumentNumber = "DOC-100",
+            SupplierName = "Supplier",
+            Status = InboundOrderStatus.Issued
+        };
+
+        var inboundOrderRepository = new FakeInboundOrderRepository(inboundOrder);
+        var service = new ReceiptService(
+            new FakeReceiptRepository(),
+            new FakeWarehouseRepository(new Warehouse { Id = warehouseId, Name = "WH" }),
+            inboundOrderRepository,
+            new FakeProductRepository(null),
+            new FakeLotRepository(null),
+            new FakeLocationRepository(null),
+            new FakeUomRepository(null),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.StartFromInboundOrderAsync(orderId, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        inboundOrderRepository.InboundOrder!.Status.Should().Be(InboundOrderStatus.InProgress);
     }
 
     private sealed class FakeReceiptRepository : IReceiptRepository
@@ -308,6 +373,8 @@ public sealed class ReceiptServiceTests
         public Task UpdateAsync(Receipt receipt, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_receipt?.Id == id ? _receipt : null);
         public Task<Receipt?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_receipt?.Id == id ? _receipt : null);
+        public Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_receipt?.InboundOrderId == inboundOrderId ? _receipt : null);
         public Task<int> CountAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Receipt>> ListAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Receipt>>(Array.Empty<Receipt>());
@@ -320,6 +387,40 @@ public sealed class ReceiptServiceTests
             => Task.FromResult(0);
         public Task<IReadOnlyList<ReceiptItem>> ListItemsAsync(Guid receiptId, Guid? productId, Guid? locationId, Guid? lotId, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<ReceiptItem>>(Array.Empty<ReceiptItem>());
+    }
+
+    private sealed class FakeInboundOrderRepository : IInboundOrderRepository
+    {
+        public InboundOrder? InboundOrder { get; private set; }
+
+        public FakeInboundOrderRepository(InboundOrder? inboundOrder)
+        {
+            InboundOrder = inboundOrder;
+        }
+
+        public Task AddAsync(InboundOrder order, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(InboundOrder order, CancellationToken cancellationToken = default)
+        {
+            InboundOrder = order;
+            return Task.CompletedTask;
+        }
+        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(InboundOrder is not null && InboundOrder.Id == id);
+        public Task<bool> ExistsByAsnAsync(Guid asnId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> OrderNumberExistsAsync(string orderNumber, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<InboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(InboundOrder is not null && InboundOrder.Id == id ? InboundOrder : null);
+        public Task<InboundOrder?> GetByDocumentNumberAsync(string documentNumber, CancellationToken cancellationToken = default)
+            => Task.FromResult(InboundOrder is not null && InboundOrder.DocumentNumber == documentNumber ? InboundOrder : null);
+        public Task<InboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(InboundOrder is not null && InboundOrder.Id == id ? InboundOrder : null);
+        public Task<int> CountAsync(Guid? warehouseId, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+        public Task<IReadOnlyList<InboundOrder>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InboundOrder>>(Array.Empty<InboundOrder>());
+        public Task AddItemAsync(InboundOrderItem item, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<InboundOrderItem>> ListItemsAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InboundOrderItem>>(Array.Empty<InboundOrderItem>());
     }
 
     private sealed class FakeWarehouseRepository : IWarehouseRepository
@@ -456,3 +557,5 @@ public sealed class ReceiptServiceTests
         public DateTime UtcNow => new DateTime(2026, 2, 2, 12, 0, 0, DateTimeKind.Utc);
     }
 }
+
+
