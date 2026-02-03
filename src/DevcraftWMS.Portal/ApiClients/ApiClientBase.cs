@@ -37,6 +37,15 @@ public abstract class ApiClientBase
         return await SendAsync<T>(request, cancellationToken);
     }
 
+    protected async Task<ApiResult<T>> PostMultipartAsync<T>(string path, MultipartFormDataContent content, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, BuildUri(path))
+        {
+            Content = content
+        };
+        return await SendAsync<T>(request, cancellationToken);
+    }
+
     private Uri BuildUri(string path)
     {
         var baseUrl = _urlProvider.GetBaseUrl().TrimEnd('/');

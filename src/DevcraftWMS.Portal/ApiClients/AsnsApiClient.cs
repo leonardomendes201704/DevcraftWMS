@@ -1,4 +1,5 @@
 using DevcraftWMS.Portal.ViewModels.Asns;
+using Microsoft.AspNetCore.Http;
 
 namespace DevcraftWMS.Portal.ApiClients;
 
@@ -41,4 +42,17 @@ public sealed class AsnsApiClient : ApiClientBase
 
     public Task<ApiResult<AsnDetailDto>> CreateAsync(AsnCreateRequest request, CancellationToken cancellationToken)
         => PostAsync<AsnDetailDto>("/api/asns", request, cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<AsnAttachmentDto>>> ListAttachmentsAsync(Guid asnId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<AsnAttachmentDto>>($"/api/asns/{asnId}/attachments", cancellationToken);
+
+    public async Task<ApiResult<AsnAttachmentDto>> UploadAttachmentAsync(Guid asnId, IFormFile file, CancellationToken cancellationToken)
+    {
+        await using var stream = file.OpenReadStream();
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+        content.Add(fileContent, "file", file.FileName);
+        return await PostMultipartAsync<AsnAttachmentDto>($"/api/asns/{asnId}/attachments", content, cancellationToken);
+    }
 }

@@ -25,7 +25,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0052] ASN: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0047 | Estimativa: 5h
 - [DONE-TASK-0053] ASN: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 6h
 - [DONE-TASK-0054] Portal Cliente: UI criar ASN | Prioridade: P0 | Dependencias: TASK-0045,TASK-0053 | Estimativa: 6h
-- [TASK-0055] ASN: anexos (XML/PDF/imagem) | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 6h
+- [DONE-TASK-0055] ASN: anexos (XML/PDF/imagem) | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 6h
 - [TASK-0056] ASN: validacoes por TrackingMode | Prioridade: P0 | Dependencias: TASK-0047,TASK-0053 | Estimativa: 4h
 - [TASK-0057] ASN: workflow de status + auditoria | Prioridade: P1 | Dependencias: TASK-0053 | Estimativa: 4h
 - [TASK-0058] OE: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0052 | Estimativa: 5h
@@ -62,3 +62,6 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [TASK-0089] RBAC: modelo de perfis e permissoes (API) | Prioridade: P1 | Dependencias: DONE-TASK-0051 | Estimativa: 6h
 - [TASK-0090] RBAC: gestao de usuarios e perfis (API) | Prioridade: P1 | Dependencias: TASK-0089 | Estimativa: 6h
 - [TASK-0091] RBAC: gestao de perfis e usuarios (UI Backoffice) | Prioridade: P1 | Dependencias: TASK-0090 | Estimativa: 6h
+- [TASK-0092] ASN anexos: storage real (abstracao + config) | Prioridade: P1 | Dependencias: DONE-TASK-0055 | Estimativa: 6h
+- [TASK-0093] ASN anexos: API upload/download real | Prioridade: P1 | Dependencias: TASK-0092 | Estimativa: 6h
+- [TASK-0094] ASN anexos: Portal download/preview | Prioridade: P2 | Dependencias: TASK-0093 | Estimativa: 4h

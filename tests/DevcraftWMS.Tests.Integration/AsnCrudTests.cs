@@ -50,6 +50,24 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
 
         using var getDoc = JsonDocument.Parse(getBody);
         getDoc.RootElement.GetProperty("asnNumber").GetString().Should().Be("ASN-TEST-001");
+
+        using var form = new MultipartFormDataContent();
+        var fileBytes = Encoding.UTF8.GetBytes("demo attachment");
+        var fileContent = new ByteArrayContent(fileBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+        form.Add(fileContent, "file", "asn-demo.txt");
+
+        var uploadResponse = await client.PostAsync($"/api/asns/{asnId}/attachments", form);
+        var uploadBody = await uploadResponse.Content.ReadAsStringAsync();
+        uploadResponse.IsSuccessStatusCode.Should().BeTrue(uploadBody);
+
+        var listAttachmentsResponse = await client.GetAsync($"/api/asns/{asnId}/attachments");
+        var listAttachmentsBody = await listAttachmentsResponse.Content.ReadAsStringAsync();
+        listAttachmentsResponse.IsSuccessStatusCode.Should().BeTrue(listAttachmentsBody);
+
+        using var attachmentsDoc = JsonDocument.Parse(listAttachmentsBody);
+        attachmentsDoc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
+        attachmentsDoc.RootElement.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
     }
 
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)

@@ -110,8 +110,39 @@ public sealed class AsnsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var attachmentsResult = await _asnsClient.ListAttachmentsAsync(id, cancellationToken);
+        if (!attachmentsResult.IsSuccess)
+        {
+            TempData["Warning"] = attachmentsResult.Error ?? "Unable to load attachments.";
+        }
+
         ViewData["Title"] = $"ASN {result.Data.AsnNumber}";
-        return View(new AsnDetailViewModel { Asn = result.Data });
+        return View(new AsnDetailViewModel
+        {
+            Asn = result.Data,
+            Attachments = attachmentsResult.Data ?? Array.Empty<AsnAttachmentDto>()
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadAttachment(Guid id, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            TempData["Error"] = "Attachment file is required.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var result = await _asnsClient.UploadAttachmentAsync(id, file, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to upload attachment.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "Attachment uploaded successfully.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     private async Task<IReadOnlyList<WarehouseOptionDto>> LoadWarehousesAsync(CancellationToken cancellationToken)

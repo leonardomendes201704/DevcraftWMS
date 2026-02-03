@@ -32,4 +32,14 @@ public interface IAsnService
         string orderBy,
         string orderDir,
         CancellationToken cancellationToken);
+
+    Task<RequestResult<IReadOnlyList<AsnAttachmentDto>>> ListAttachmentsAsync(Guid asnId, CancellationToken cancellationToken);
+
+    Task<RequestResult<AsnAttachmentDto>> AddAttachmentAsync(
+        Guid asnId,
+        string fileName,
+        string contentType,
+        long sizeBytes,
+        byte[] content,
+        CancellationToken cancellationToken);
 }

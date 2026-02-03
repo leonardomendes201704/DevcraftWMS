@@ -47,4 +47,13 @@ public static class AsnMapping
             item.ExpirationDate,
             item.IsActive,
             item.CreatedAtUtc);
+
+    public static AsnAttachmentDto MapAttachment(AsnAttachment attachment)
+        => new(
+            attachment.Id,
+            attachment.AsnId,
+            attachment.FileName,
+            attachment.ContentType,
+            attachment.SizeBytes,
+            attachment.CreatedAtUtc);
 }

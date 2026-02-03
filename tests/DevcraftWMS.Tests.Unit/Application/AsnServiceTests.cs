@@ -14,6 +14,7 @@ public sealed class AsnServiceTests
     {
         var service = new AsnService(
             new FakeAsnRepository(),
+            new FakeAsnAttachmentRepository(),
             new FakeWarehouseRepository(new Warehouse { Id = Guid.NewGuid(), Name = "WH" }),
             new FakeCustomerContext(null));
 
@@ -35,6 +36,7 @@ public sealed class AsnServiceTests
     {
         var service = new AsnService(
             new FakeAsnRepository(),
+            new FakeAsnAttachmentRepository(),
             new FakeWarehouseRepository(null),
             new FakeCustomerContext(Guid.NewGuid()));
 
@@ -57,6 +59,7 @@ public sealed class AsnServiceTests
         var warehouseId = Guid.NewGuid();
         var service = new AsnService(
             new FakeAsnRepository(asnNumberExists: true),
+            new FakeAsnAttachmentRepository(),
             new FakeWarehouseRepository(new Warehouse { Id = warehouseId, Name = "WH" }),
             new FakeCustomerContext(Guid.NewGuid()));
 
@@ -88,8 +91,16 @@ public sealed class AsnServiceTests
         public Task UpdateAsync(Asn asn, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<Asn?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Asn?>(null);
         public Task<Asn?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Asn?>(null);
+        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<int> CountAsync(Guid? warehouseId, string? asnNumber, string? supplierName, string? documentNumber, AsnStatus? status, DateOnly? expectedFrom, DateOnly? expectedTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Asn>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? asnNumber, string? supplierName, string? documentNumber, AsnStatus? status, DateOnly? expectedFrom, DateOnly? expectedTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Asn>>(Array.Empty<Asn>());
+    }
+
+    private sealed class FakeAsnAttachmentRepository : IAsnAttachmentRepository
+    {
+        public Task AddAsync(AsnAttachment attachment, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<AsnAttachment>> ListByAsnAsync(Guid asnId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<AsnAttachment>>(Array.Empty<AsnAttachment>());
     }
 
     private sealed class FakeWarehouseRepository : IWarehouseRepository

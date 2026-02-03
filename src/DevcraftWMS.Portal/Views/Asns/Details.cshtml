@@ -28,7 +28,7 @@
 }
 else
 {
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-12 col-lg-4">
@@ -59,6 +59,66 @@ else
                     <div class="text-muted small">Notes</div>
                     <div>@Model.Asn.Notes</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Attachments</h2>
+                    <div class="text-muted">Upload XML, PDF, or image files related to this ASN.</div>
+                </div>
+            </div>
+
+            <form asp-action="UploadAttachment" asp-route-id="@Model.Asn.Id" method="post" enctype="multipart/form-data" class="row g-3 mb-3">
+                @Html.AntiForgeryToken()
+                <div class="col-12 col-lg-8">
+                    <label class="form-label">File</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-paperclip"></i></span>
+                        <input class="form-control" type="file" name="file" />
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Attachments.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No attachments uploaded yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var attachment in Model.Attachments)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@attachment.FileName</td>
+                                    <td>@attachment.ContentType</td>
+                                    <td>@($"{attachment.SizeBytes / 1024.0:F1} KB")</td>
+                                    <td>@attachment.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

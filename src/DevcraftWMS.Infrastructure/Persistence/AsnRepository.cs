@@ -55,6 +55,7 @@ public sealed class AsnRepository : IAsnRepository
                 .ThenInclude(i => i.Product)
             .Include(a => a.Items)
                 .ThenInclude(i => i.Uom)
+            .Include(a => a.Attachments)
             .SingleOrDefaultAsync(a => a.CustomerId == customerId && a.Id == id, cancellationToken);
     }
 
@@ -64,7 +65,16 @@ public sealed class AsnRepository : IAsnRepository
         return await _dbContext.Asns
             .Include(a => a.Warehouse)
             .Include(a => a.Items)
+            .Include(a => a.Attachments)
             .SingleOrDefaultAsync(a => a.CustomerId == customerId && a.Id == id, cancellationToken);
+    }
+
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.Asns
+            .AsNoTracking()
+            .AnyAsync(a => a.CustomerId == customerId && a.Id == id, cancellationToken);
     }
 
     public async Task<int> CountAsync(

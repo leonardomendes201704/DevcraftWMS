@@ -35,3 +35,11 @@ public sealed record AsnCreateRequest(
     string? SupplierName,
     DateOnly? ExpectedArrivalDate,
     string? Notes);
+
+public sealed record AsnAttachmentDto(
+    Guid Id,
+    Guid AsnId,
+    string FileName,
+    string ContentType,
+    long SizeBytes,
+    DateTime CreatedAtUtc);

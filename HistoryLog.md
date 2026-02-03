@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-02
+- Tasking - Added ASN real storage tasks.
+  - Key changes: created TASK-0092..0094 for storage abstraction, API download, and Portal preview.
+- TASK-0055 - ASN attachments completed.
+  - Key changes: added AsnAttachment entity/table, API upload/list endpoints, Portal upload/list UI, and tests.
 - UX - Portal customer context error message.
   - Key changes: friendly message when X-Customer-Id is missing in Portal API calls.
 - Fix - Seed zone customer access concurrency.

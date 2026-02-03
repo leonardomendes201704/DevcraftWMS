@@ -10,15 +10,18 @@ namespace DevcraftWMS.Application.Features.Asns;
 public sealed class AsnService : IAsnService
 {
     private readonly IAsnRepository _asnRepository;
+    private readonly IAsnAttachmentRepository _attachmentRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly ICustomerContext _customerContext;
 
     public AsnService(
         IAsnRepository asnRepository,
+        IAsnAttachmentRepository attachmentRepository,
         IWarehouseRepository warehouseRepository,
         ICustomerContext customerContext)
     {
         _asnRepository = asnRepository;
+        _attachmentRepository = attachmentRepository;
         _warehouseRepository = warehouseRepository;
         _customerContext = customerContext;
     }
@@ -130,5 +133,56 @@ public sealed class AsnService : IAsnService
         var mapped = items.Select(AsnMapping.MapListItem).ToList();
         var result = new PagedResult<AsnListItemDto>(mapped, total, pageNumber, pageSize, orderBy, orderDir);
         return RequestResult<PagedResult<AsnListItemDto>>.Success(result);
+    }
+
+    public async Task<RequestResult<IReadOnlyList<AsnAttachmentDto>>> ListAttachmentsAsync(Guid asnId, CancellationToken cancellationToken)
+    {
+        var exists = await _asnRepository.ExistsAsync(asnId, cancellationToken);
+        if (!exists)
+        {
+            return RequestResult<IReadOnlyList<AsnAttachmentDto>>.Failure("asns.asn.not_found", "ASN not found.");
+        }
+
+        var attachments = await _attachmentRepository.ListByAsnAsync(asnId, cancellationToken);
+        var mapped = attachments.Select(AsnMapping.MapAttachment).ToList();
+        return RequestResult<IReadOnlyList<AsnAttachmentDto>>.Success(mapped);
+    }
+
+    public async Task<RequestResult<AsnAttachmentDto>> AddAttachmentAsync(
+        Guid asnId,
+        string fileName,
+        string contentType,
+        long sizeBytes,
+        byte[] content,
+        CancellationToken cancellationToken)
+    {
+        var exists = await _asnRepository.ExistsAsync(asnId, cancellationToken);
+        if (!exists)
+        {
+            return RequestResult<AsnAttachmentDto>.Failure("asns.asn.not_found", "ASN not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return RequestResult<AsnAttachmentDto>.Failure("asns.attachment.file_required", "File name is required.");
+        }
+
+        if (content.Length == 0)
+        {
+            return RequestResult<AsnAttachmentDto>.Failure("asns.attachment.empty", "Attachment content is required.");
+        }
+
+        var attachment = new AsnAttachment
+        {
+            Id = Guid.NewGuid(),
+            AsnId = asnId,
+            FileName = fileName,
+            ContentType = contentType,
+            SizeBytes = sizeBytes,
+            Content = content
+        };
+
+        await _attachmentRepository.AddAsync(attachment, cancellationToken);
+        return RequestResult<AsnAttachmentDto>.Success(AsnMapping.MapAttachment(attachment));
     }
 }

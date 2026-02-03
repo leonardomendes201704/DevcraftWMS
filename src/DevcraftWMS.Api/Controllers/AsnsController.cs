@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.Asns.Commands.CreateAsn;
+using DevcraftWMS.Application.Features.Asns.Commands.AddAsnAttachment;
 using DevcraftWMS.Application.Features.Asns.Queries.GetAsnById;
+using DevcraftWMS.Application.Features.Asns.Queries.ListAsnAttachments;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnsPaged;
 using DevcraftWMS.Domain.Enums;
 
@@ -84,6 +86,37 @@ public sealed class AsnsController : ControllerBase
     public async Task<IActionResult> GetAsnById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAsnByIdQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("asns/{id:guid}/attachments")]
+    public async Task<IActionResult> ListAttachments(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListAsnAttachmentsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("asns/{id:guid}/attachments")]
+    [RequestSizeLimit(10_000_000)]
+    public async Task<IActionResult> AddAttachment(Guid id, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest(new { message = "File is required." });
+        }
+
+        await using var stream = new MemoryStream();
+        await file.CopyToAsync(stream, cancellationToken);
+
+        var result = await _mediator.Send(
+            new AddAsnAttachmentCommand(
+                id,
+                file.FileName,
+                file.ContentType ?? "application/octet-stream",
+                file.Length,
+                stream.ToArray()),
+            cancellationToken);
+
         return this.ToActionResult(result);
     }
 }

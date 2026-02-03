@@ -43,6 +43,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
     public DbSet<Asn> Asns => Set<Asn>();
     public DbSet<AsnItem> AsnItems => Set<AsnItem>();
+    public DbSet<AsnAttachment> AsnAttachments => Set<AsnAttachment>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
     public DbSet<Uom> Uoms => Set<Uom>();
