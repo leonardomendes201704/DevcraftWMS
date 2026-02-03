@@ -1,0 +1,77 @@
+@model DevcraftWMS.DemoMvc.ViewModels.UnitLoads.UnitLoadDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Unit Load {Model.UnitLoad.SsccInternal}";
+    ViewData["Subtitle"] = "Label details and print actions";
+
+    var statusBadge = Model.UnitLoad.Status switch
+    {
+        DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed => "text-bg-success",
+        DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled => "text-bg-secondary",
+        _ => "text-bg-light"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="UnitLoads" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.UnitLoad.Status != DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled)
+        {
+            <form asp-controller="UnitLoads" asp-action="Print" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.UnitLoad.Id" />
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-printer me-1"></i>Print Label
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-muted small">Status</div>
+                <span class="badge @statusBadge">@Model.UnitLoad.Status</span>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">SSCC (Internal)</div>
+                <div class="fw-semibold">@Model.UnitLoad.SsccInternal</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">SSCC (External)</div>
+                <div class="fw-semibold">@(Model.UnitLoad.SsccExternal ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Receipt</div>
+                <div class="fw-semibold">@Model.UnitLoad.ReceiptNumber</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Warehouse</div>
+                <div class="fw-semibold">@Model.UnitLoad.WarehouseName</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Printed At</div>
+                <div class="fw-semibold">@(Model.UnitLoad.PrintedAtUtc?.ToLocalTime().ToString("g") ?? "-")</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">Notes</div>
+                <div class="fw-semibold">@(Model.UnitLoad.Notes ?? "-")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Label is not null)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Generated Label</h5>
+            <pre class="bg-light border rounded p-3 mb-0">@Model.Label.Content</pre>
+        </div>
+    </div>
+}

@@ -29,4 +29,10 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - UL vinculada ao recebimento
 
 ## Status
-PENDENTE
+DONE
+
+## Implementacao
+- UnitLoad entity + status, com SSCC interno gerado e opcional externo.
+- Endpoints de criacao, listagem, detalhe e impressao de etiqueta.
+- UI DemoMvc (Index/Create/Details) com modal de help e impressao.
+- Tests unitarios e integracao para criacao + etiqueta.

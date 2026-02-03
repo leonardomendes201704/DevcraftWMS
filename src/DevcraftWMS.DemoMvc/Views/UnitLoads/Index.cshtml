@@ -1,0 +1,146 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.ViewModels.Shared
+@model DevcraftWMS.DemoMvc.ViewModels.UnitLoads.UnitLoadListPageViewModel
+@{
+    ViewData["Title"] = "Unit Loads";
+    ViewData["Subtitle"] = "Internal SSCC labels and receipt linkage";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "UnitLoads",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["ReceiptId"] = Model.Query.ReceiptId?.ToString(),
+            ["Sscc"] = Model.Query.Sscc,
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null },
+        new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Created.ToString(), Text = "Created", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Created },
+        new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed.ToString(), Text = "Printed", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed },
+        new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled.ToString(), Text = "Canceled", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled }
+    };
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var warehouseOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "All warehouses", Selected = Model.Query.WarehouseId is null }
+    };
+    warehouseOptions.AddRange(Model.Warehouses.Select(w => new GridSelectOption
+    {
+        Value = w.Value ?? string.Empty,
+        Text = w.Text,
+        Selected = Model.Query.WarehouseId.HasValue && w.Value == Model.Query.WarehouseId.Value.ToString()
+    }));
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "UnitLoads",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new()
+            {
+                Label = "Warehouse",
+                Name = "WarehouseId",
+                Type = GridFilterType.Select,
+                Options = warehouseOptions
+            },
+            new() { Label = "SSCC", Name = "Sscc", Value = Model.Query.Sscc },
+            new()
+            {
+                Label = "Status",
+                Name = "Status",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new()
+            {
+                Label = "Active",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = activeOptions
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "UnitLoads")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "unitLoadsFilters",
+        Title = "Unit load filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.UnitLoads.UnitLoadListItemViewModel>()
+        .WithTitle("Unit Loads")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithPrimaryAction("New Unit Load", Url.Action("Create", "UnitLoads") ?? "#")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("SSCC", item => new HtmlString(HtmlEncoder.Default.Encode(item.SsccInternal)), "SsccInternal")
+        .AddColumn("Receipt", item => new HtmlString(HtmlEncoder.Default.Encode(item.ReceiptNumber)), "ReceiptNumber")
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-light border\">{item.Status}</span>"), "Status")
+        .AddColumn("Printed", item => new HtmlString(item.PrintedAtUtc?.ToLocalTime().ToString("g") ?? "-"), "PrintedAtUtc")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "UnitLoads", new { id = item.Id }))
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#unitLoadsHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_UnitLoadsHelp" />
