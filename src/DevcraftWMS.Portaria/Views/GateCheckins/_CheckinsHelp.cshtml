@@ -1,0 +1,42 @@
+<div class="modal fade" id="gateCheckinsHelp" tabindex="-1" aria-labelledby="gateCheckinsHelpLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gateCheckinsHelpLabel">Gate Check-ins Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <section class="mb-4">
+                    <h6>Purpose</h6>
+                    <p>Register inbound vehicle arrivals, confirm the inbound order or document, and manage the waiting dock queue.</p>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Creating a check-in</h6>
+                    <ul class="mb-0">
+                        <li>Provide the <strong>Inbound Order Number</strong> whenever possible.</li>
+                        <li>If the inbound order is not known, use the <strong>Document Number</strong> instead.</li>
+                        <li>Vehicle plate and driver name are mandatory for gate control.</li>
+                        <li>Arrival time can be left blank to use the current time.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h6>Triage actions</h6>
+                    <ul class="mb-0">
+                        <li><strong>Send to queue</strong> moves a check-in to the waiting dock queue.</li>
+                        <li><strong>Cancel</strong> marks the check-in as canceled when the vehicle leaves.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h6>Waiting dock queue</h6>
+                    <p class="mb-0">Queue entries are ordered by arrival time to keep dock assignments fair and visible.</p>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

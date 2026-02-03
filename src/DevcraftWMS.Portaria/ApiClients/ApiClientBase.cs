@@ -37,6 +37,19 @@ public abstract class ApiClientBase
         return await SendAsync<T>(request, cancellationToken);
     }
 
+    protected async Task<ApiResult<T>> PutAsync<T>(string path, object payload, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, BuildUri(path));
+        request.Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+        return await SendAsync<T>(request, cancellationToken);
+    }
+
+    protected async Task<ApiResult<T>> DeleteAsync<T>(string path, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, BuildUri(path));
+        return await SendAsync<T>(request, cancellationToken);
+    }
+
     private Uri BuildUri(string path)
     {
         var baseUrl = _urlProvider.GetBaseUrl().TrimEnd('/');

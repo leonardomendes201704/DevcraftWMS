@@ -1,0 +1,147 @@
+@model DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinIndexViewModel
+@using DevcraftWMS.Portaria.Infrastructure
+@{
+    ViewData["Title"] ??= "Gate Check-ins";
+}
+
+@functions {
+    private static string StatusBadge(DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinStatus status)
+        => status switch
+        {
+            DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinStatus.CheckedIn => "text-bg-primary",
+            DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinStatus.WaitingDock => "text-bg-warning",
+            DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinStatus.AtDock => "text-bg-success",
+            DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinStatus.Canceled => "text-bg-secondary",
+            _ => "text-bg-light"
+        };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">Gate Check-ins</h4>
+        <div class="text-muted small">Register arrivals and manage the waiting dock queue.</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary btn-sm" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> New Check-in
+        </a>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#gateCheckinsHelp">
+            <i class="bi bi-question-circle"></i> Help
+        </button>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-xl-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pending triage</h5>
+                <p class="text-muted small mb-3">Vehicles checked in and ready to be sent to the waiting dock queue.</p>
+
+                @if (Model.PendingCheckins.Count == 0)
+                {
+                    <div class="text-muted">No pending check-ins.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Document</th>
+                                    <th>Vehicle</th>
+                                    <th>Driver</th>
+                                    <th>Arrival (UTC)</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.PendingCheckins)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@((string.IsNullOrWhiteSpace(item.InboundOrderNumber) ? "-" : item.InboundOrderNumber))</td>
+                                        <td>@(item.DocumentNumber ?? "-")</td>
+                                        <td>@item.VehiclePlate</td>
+                                        <td>@item.DriverName</td>
+                                        <td>@item.ArrivalAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            <span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="SendToQueue" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-arrow-right-circle"></i> Send to queue
+                                                </button>
+                                            </form>
+                                            <form asp-action="Cancel" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle"></i> Cancel
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-5">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Waiting dock queue</h5>
+                <p class="text-muted small mb-3">Ordered by arrival time to manage dock assignments.</p>
+
+                @if (Model.WaitingDockQueue.Count == 0)
+                {
+                    <div class="text-muted">No vehicles waiting for dock assignment.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Order</th>
+                                    <th>Arrival (UTC)</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.WaitingDockQueue)
+                                {
+                                    <tr>
+                                        <td>@item.VehiclePlate</td>
+                                        <td class="fw-semibold">@((string.IsNullOrWhiteSpace(item.InboundOrderNumber) ? "-" : item.InboundOrderNumber))</td>
+                                        <td>@item.ArrivalAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            <span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="Cancel" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle"></i> Cancel
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_CheckinsHelp" />

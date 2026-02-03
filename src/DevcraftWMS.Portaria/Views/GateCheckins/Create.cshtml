@@ -1,0 +1,94 @@
+@model DevcraftWMS.Portaria.ViewModels.GateCheckins.GateCheckinCreateViewModel
+@{
+    ViewData["Title"] ??= "New Check-in";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">New Check-in</h4>
+        <div class="text-muted small">Capture vehicle arrival details for inbound orders.</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8 col-xl-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post" class="d-grid gap-3">
+                    <div>
+                        <label class="form-label">Inbound Order Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                            <input asp-for="InboundOrderNumber" class="form-control" placeholder="OE-2026-000392" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="InboundOrderNumber"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">Document Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-file-earmark-text"></i></span>
+                            <input asp-for="DocumentNumber" class="form-control" placeholder="NF-e / CT-e" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="DocumentNumber"></span>
+                        <div class="form-text">Provide a document number when the inbound order number is not available.</div>
+                    </div>
+                    <div>
+                        <label class="form-label">Vehicle Plate</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-truck"></i></span>
+                            <input asp-for="VehiclePlate" class="form-control" placeholder="ABC1D23" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="VehiclePlate"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">Driver Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input asp-for="DriverName" class="form-control" placeholder="Driver name" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="DriverName"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">Carrier Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-building"></i></span>
+                            <input asp-for="CarrierName" class="form-control" placeholder="Carrier company" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="CarrierName"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">Arrival (UTC)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                            <input asp-for="ArrivalAtUtc" type="datetime-local" class="form-control" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="ArrivalAtUtc"></span>
+                        <div class="form-text">Leave empty to use the current time.</div>
+                    </div>
+                    <div>
+                        <label class="form-label">Notes</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Optional notes"></textarea>
+                        </div>
+                        <span class="text-danger small" asp-validation-for="Notes"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Create check-in
+                        </button>
+                        <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+                    </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

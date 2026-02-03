@@ -22,6 +22,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.HealthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.AuthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.CustomersApiClient>();
+builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.InboundOrdersApiClient>();
+builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.GateCheckinsApiClient>();
 
 var app = builder.Build();
 

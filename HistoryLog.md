@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-03
+- TASK-0064 - Portaria check-in UI completed.
+  - Key changes: added Portaria gate check-in screens, queue list with triage actions, new API clients, and help manual.
 - Fix - Sample data access seeding concurrency.
   - Key changes: insert sector/section/structure/aisle/location access via join tables to avoid tracking/concurrency issues.
 - Fix - Ensure SQLite connection strings resolve to writable paths.
