@@ -12,6 +12,9 @@ using DevcraftWMS.Application.Features.Receipts.Commands.AddReceiptItem;
 using DevcraftWMS.Application.Features.Receipts.Queries.GetReceiptById;
 using DevcraftWMS.Application.Features.Receipts.Queries.ListReceiptsPaged;
 using DevcraftWMS.Application.Features.Receipts.Queries.ListReceiptItemsPaged;
+using DevcraftWMS.Application.Features.ReceiptCounts.Commands.RegisterReceiptCount;
+using DevcraftWMS.Application.Features.ReceiptCounts.Queries.ListReceiptExpectedItems;
+using DevcraftWMS.Application.Features.ReceiptCounts.Queries.ListReceiptCounts;
 using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -140,6 +143,35 @@ public sealed class ReceiptsController : ControllerBase
                 request.UomId,
                 request.Quantity,
                 request.UnitCost),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("receipts/{id:guid}/expected-items")]
+    public async Task<IActionResult> ListExpectedItems(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListReceiptExpectedItemsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("receipts/{id:guid}/counts")]
+    public async Task<IActionResult> ListCounts(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListReceiptCountsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("receipts/{id:guid}/counts")]
+    public async Task<IActionResult> RegisterCount(Guid id, [FromBody] RegisterReceiptCountRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new RegisterReceiptCountCommand(
+                id,
+                request.InboundOrderItemId,
+                request.CountedQuantity,
+                request.Mode,
+                request.Notes),
             cancellationToken);
 
         return this.ToActionResult(result);

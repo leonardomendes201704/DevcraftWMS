@@ -97,6 +97,19 @@ public sealed class ReceiptsApiClient : ApiClientBase
             payload.UomId,
             payload.Quantity,
             payload.UnitCost), cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<ReceiptExpectedItemViewModel>>> ListExpectedItemsAsync(Guid receiptId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<ReceiptExpectedItemViewModel>>($"/api/receipts/{receiptId}/expected-items", cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<ReceiptCountListItemViewModel>>> ListCountsAsync(Guid receiptId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<ReceiptCountListItemViewModel>>($"/api/receipts/{receiptId}/counts", cancellationToken);
+
+    public Task<ApiResult<ReceiptCountListItemViewModel>> RegisterCountAsync(Guid receiptId, ReceiptCountFormViewModel payload, CancellationToken cancellationToken)
+        => PostAsync<ReceiptCountListItemViewModel>($"/api/receipts/{receiptId}/counts", new RegisterReceiptCountRequest(
+            payload.InboundOrderItemId,
+            payload.CountedQuantity,
+            payload.Mode,
+            payload.Notes), cancellationToken);
 }
 
 public sealed record CreateReceiptRequest(
@@ -120,3 +133,9 @@ public sealed record AddReceiptItemRequest(
     Guid UomId,
     decimal Quantity,
     decimal? UnitCost);
+
+public sealed record RegisterReceiptCountRequest(
+    Guid InboundOrderItemId,
+    decimal CountedQuantity,
+    ReceiptCountMode Mode,
+    string? Notes);

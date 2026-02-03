@@ -135,6 +135,18 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<InboundOrderItem?> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.InboundOrderItems
+            .AsNoTracking()
+            .Include(i => i.Product)
+            .Include(i => i.Uom)
+            .Include(i => i.InboundOrder)
+            .Where(i => i.InboundOrder != null && i.InboundOrder.CustomerId == customerId)
+            .SingleOrDefaultAsync(i => i.Id == id, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<InboundOrderItem>> ListItemsAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
     {
         var customerId = GetCustomerId();

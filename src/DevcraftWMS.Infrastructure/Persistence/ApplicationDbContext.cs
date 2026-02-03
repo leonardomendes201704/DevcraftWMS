@@ -50,6 +50,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<GateCheckin> GateCheckins => Set<GateCheckin>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
+    public DbSet<ReceiptCount> ReceiptCounts => Set<ReceiptCount>();
     public DbSet<UnitLoad> UnitLoads => Set<UnitLoad>();
     public DbSet<Uom> Uoms => Set<Uom>();
     public DbSet<ProductUom> ProductUoms => Set<ProductUom>();

@@ -57,6 +57,12 @@
                 </button>
             </form>
         }
+        @if (Model.Receipt.InboundOrderId.HasValue)
+        {
+            <a class="btn btn-outline-primary btn-sm" asp-controller="Receipts" asp-action="Counts" asp-route-id="@Model.Receipt.Id">
+                <i class="bi bi-clipboard-check me-1"></i>Count Items
+            </a>
+        }
         <a class="btn btn-outline-primary btn-sm" asp-controller="Receipts" asp-action="Edit" asp-route-id="@Model.Receipt.Id">Edit</a>
     </div>
 </div>

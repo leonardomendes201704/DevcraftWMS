@@ -34,5 +34,6 @@ public interface IInboundOrderRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task AddItemAsync(InboundOrderItem item, CancellationToken cancellationToken = default);
+    Task<InboundOrderItem?> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<InboundOrderItem>> ListItemsAsync(Guid inboundOrderId, CancellationToken cancellationToken = default);
 }

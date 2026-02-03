@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using DevcraftWMS.DemoMvc.ApiClients;
+using DevcraftWMS.DemoMvc.Enums;
 using DevcraftWMS.DemoMvc.ViewModels.Receipts;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
 using DevcraftWMS.DemoMvc.ViewModels.Warehouses;
@@ -201,6 +202,66 @@ public sealed class ReceiptsController : Controller
         };
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Counts(Guid id, ReceiptCountMode mode = ReceiptCountMode.Blind, Guid? selectItemId = null, CancellationToken cancellationToken = default)
+    {
+        var receiptResult = await _receiptsClient.GetByIdAsync(id, cancellationToken);
+        if (!receiptResult.IsSuccess || receiptResult.Data is null)
+        {
+            TempData["Error"] = receiptResult.Error ?? "Receipt not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!receiptResult.Data.InboundOrderId.HasValue)
+        {
+            TempData["Error"] = "Receipt must be linked to an inbound order to count items.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var newCount = new ReceiptCountFormViewModel
+        {
+            ReceiptId = id,
+            InboundOrderItemId = selectItemId ?? Guid.Empty,
+            Mode = mode
+        };
+
+        var model = await BuildCountsViewModelAsync(receiptResult.Data, newCount, mode, cancellationToken);
+        if (!model.ExpectedItems.Any())
+        {
+            TempData["Warning"] = "No inbound order items available for this receipt.";
+        }
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RegisterCount(ReceiptCountFormViewModel model, CancellationToken cancellationToken)
+    {
+        var receiptResult = await _receiptsClient.GetByIdAsync(model.ReceiptId, cancellationToken);
+        if (!receiptResult.IsSuccess || receiptResult.Data is null)
+        {
+            TempData["Error"] = receiptResult.Error ?? "Receipt not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var detailsModel = await BuildCountsViewModelAsync(receiptResult.Data, model, model.Mode, cancellationToken);
+            return View("Counts", detailsModel);
+        }
+
+        var result = await _receiptsClient.RegisterCountAsync(model.ReceiptId, model, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(string.Empty, result.Error ?? "Failed to register count.");
+            var detailsModel = await BuildCountsViewModelAsync(receiptResult.Data, model, model.Mode, cancellationToken);
+            return View("Counts", detailsModel);
+        }
+
+        TempData["Success"] = "Count registered successfully.";
+        return RedirectToAction(nameof(Counts), new { id = model.ReceiptId, mode = model.Mode });
     }
 
     [HttpPost]
@@ -413,6 +474,58 @@ public sealed class ReceiptsController : Controller
 
         TempData["Success"] = "Receipt deactivated successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<ReceiptCountsPageViewModel> BuildCountsViewModelAsync(
+        ReceiptDetailViewModel receipt,
+        ReceiptCountFormViewModel newCount,
+        ReceiptCountMode mode,
+        CancellationToken cancellationToken)
+    {
+        var expectedResult = await _receiptsClient.ListExpectedItemsAsync(receipt.Id, cancellationToken);
+        if (!expectedResult.IsSuccess)
+        {
+            TempData["Error"] = expectedResult.Error ?? "Failed to load expected items.";
+        }
+
+        var countsResult = await _receiptsClient.ListCountsAsync(receipt.Id, cancellationToken);
+        if (!countsResult.IsSuccess)
+        {
+            TempData["Error"] = countsResult.Error ?? "Failed to load counts.";
+        }
+
+        var expectedItems = expectedResult.Data ?? Array.Empty<ReceiptExpectedItemViewModel>();
+        var counts = countsResult.Data ?? Array.Empty<ReceiptCountListItemViewModel>();
+
+        if (newCount.InboundOrderItemId == Guid.Empty && expectedItems.Count == 1)
+        {
+            newCount.InboundOrderItemId = expectedItems[0].InboundOrderItemId;
+        }
+
+        newCount.Items = BuildExpectedItemOptions(expectedItems, newCount.InboundOrderItemId);
+        newCount.Mode = mode;
+        newCount.ReceiptId = receipt.Id;
+
+        return new ReceiptCountsPageViewModel
+        {
+            Receipt = receipt,
+            ExpectedItems = expectedItems,
+            Counts = counts,
+            NewCount = newCount,
+            Mode = mode
+        };
+    }
+
+    private static IReadOnlyList<SelectListItem> BuildExpectedItemOptions(IReadOnlyList<ReceiptExpectedItemViewModel> items, Guid selectedId)
+    {
+        var options = items
+            .Select(item => new SelectListItem(
+                $"{item.ProductCode} - {item.ProductName} ({item.UomCode})",
+                item.InboundOrderItemId.ToString(),
+                item.InboundOrderItemId == selectedId))
+            .ToList();
+
+        return AddSelectPrompt(options, selectedId != Guid.Empty);
     }
 
     private async Task<ReceiptDetailsPageViewModel> BuildDetailsViewModelAsync(ReceiptDetailViewModel receipt, ReceiptItemFormViewModel newItem, CancellationToken cancellationToken)

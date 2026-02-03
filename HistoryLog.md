@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-03
+- TASK-0068 - Recebimento conferencia cega/assistida completed.
+  - Key changes: added ReceiptCount entity/mode, API endpoints for expected items and counts, DemoMvc counts screen with help, unit/integration tests, and migration AddReceiptCounts.
 - TASK-0067 - Unit load SSCC model and label printing completed.
   - Key changes: added UnitLoad entity/status with internal SSCC generation, print label endpoint, DemoMvc UI with help modal, tests, and migration AddUnitLoads.
 - TASK-0066 - Recebimento session linked to inbound order completed.
