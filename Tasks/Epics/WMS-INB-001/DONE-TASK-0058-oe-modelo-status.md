@@ -29,4 +29,4 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Vinculo ASN obrigatorio
 
 ## Status
-PENDENTE
+DONE

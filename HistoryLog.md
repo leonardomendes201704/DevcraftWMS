@@ -1,6 +1,12 @@
 ﻿# History Log
 
 ## 2026-02-03
+- Fix - Portal ASN approve action and UI button.
+  - Key changes: added Approve API call + controller action and enabled approve button when status is Pending.
+- Fix - Inbound Orders list view grid rendering.
+  - Key changes: build GridViewModel before rendering in DemoMvc Index view.
+- TASK-0058/0059/0060/0061/0062 - Inbound Orders (OE) completed.
+  - Key changes: added InboundOrder model/status, ASN-to-OE conversion, parameters + cancel endpoints, backoffice queue UI, Portal details/actions, and migration AddInboundOrders with integration tests.
 - TASK-0057 - ASN status update fix.
   - Key changes: updated ASN status persistence to avoid concurrency errors and aligned unit tests.
 

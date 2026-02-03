@@ -45,6 +45,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<AsnItem> AsnItems => Set<AsnItem>();
     public DbSet<AsnAttachment> AsnAttachments => Set<AsnAttachment>();
     public DbSet<AsnStatusEvent> AsnStatusEvents => Set<AsnStatusEvent>();
+    public DbSet<InboundOrder> InboundOrders => Set<InboundOrder>();
+    public DbSet<InboundOrderItem> InboundOrderItems => Set<InboundOrderItem>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
     public DbSet<Uom> Uoms => Set<Uom>();

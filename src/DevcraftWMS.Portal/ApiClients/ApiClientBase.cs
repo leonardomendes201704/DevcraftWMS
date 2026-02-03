@@ -37,6 +37,13 @@ public abstract class ApiClientBase
         return await SendAsync<T>(request, cancellationToken);
     }
 
+    protected async Task<ApiResult<T>> PutAsync<T>(string path, object payload, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, BuildUri(path));
+        request.Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+        return await SendAsync<T>(request, cancellationToken);
+    }
+
     protected async Task<ApiResult<T>> PostMultipartAsync<T>(string path, MultipartFormDataContent content, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, BuildUri(path))

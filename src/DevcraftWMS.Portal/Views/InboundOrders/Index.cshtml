@@ -1,0 +1,182 @@
+@model DevcraftWMS.Portal.ViewModels.InboundOrders.InboundOrderListViewModel
+@{
+    ViewData["Title"] = "Inbound Orders";
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Issued",
+        1 => "Scheduled",
+        2 => "In Progress",
+        3 => "Completed",
+        4 => "Canceled",
+        _ => $"Status {status}"
+    };
+    string PriorityLabel(int priority) => priority switch
+    {
+        0 => "Low",
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => $"Priority {priority}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Inbound Orders</h1>
+        <div class="text-muted">Queue of inbound orders generated from ASNs.</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="#oeHelp" data-bs-toggle="modal">
+            <i class="bi bi-question-circle"></i> Help
+        </a>
+        <a class="btn btn-outline-secondary" asp-controller="Asns" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> ASNs
+        </a>
+    </div>
+</div>
+
+<form method="get" class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12 col-lg-3">
+                <label class="form-label">Order Number</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                    <input class="form-control" name="OrderNumber" value="@Model.Query.OrderNumber" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <label class="form-label">Warehouse</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                    <select class="form-select" name="WarehouseId">
+                        <option value="">Select...</option>
+                        @foreach (var warehouse in Model.Warehouses)
+                        {
+                            <option value="@warehouse.Id" selected="@(Model.Query.WarehouseId == warehouse.Id)">@warehouse.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2">
+                <label class="form-label">Status</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-circle-half"></i></span>
+                    <select class="form-select" name="Status">
+                        <option value="">Select...</option>
+                        <option value="0" selected="@(Model.Query.Status == 0)">Issued</option>
+                        <option value="1" selected="@(Model.Query.Status == 1)">Scheduled</option>
+                        <option value="2" selected="@(Model.Query.Status == 2)">In Progress</option>
+                        <option value="3" selected="@(Model.Query.Status == 3)">Completed</option>
+                        <option value="4" selected="@(Model.Query.Status == 4)">Canceled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2">
+                <label class="form-label">Priority</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-flag"></i></span>
+                    <select class="form-select" name="Priority">
+                        <option value="">Select...</option>
+                        <option value="0" selected="@(Model.Query.Priority == 0)">Low</option>
+                        <option value="1" selected="@(Model.Query.Priority == 1)">Normal</option>
+                        <option value="2" selected="@(Model.Query.Priority == 2)">High</option>
+                        <option value="3" selected="@(Model.Query.Priority == 3)">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2">
+                <label class="form-label">Active</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
+                    <select class="form-select" name="IsActive">
+                        <option value="">Select...</option>
+                        <option value="true" selected="@(Model.Query.IsActive == true)">Active</option>
+                        <option value="false" selected="@(Model.Query.IsActive == false)">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Reset</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="text-muted">Total: @Model.TotalCount</div>
+            <div class="text-muted">Page @Model.Query.PageNumber</div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>ASN</th>
+                        <th>Warehouse</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Expected</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No inbound orders found.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var order in Model.Items)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@order.OrderNumber</td>
+                                <td>@order.AsnNumber</td>
+                                <td>@order.WarehouseName</td>
+                                <td><span class="badge bg-primary-subtle text-primary">@StatusLabel(order.Status)</span></td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">@PriorityLabel(order.Priority)</span></td>
+                                <td>@order.ExpectedArrivalDate?.ToString("yyyy-MM-dd")</td>
+                                <td>@order.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@order.Id">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="oeHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inbound Orders Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Use this screen to monitor inbound orders created from ASNs. Each OE represents the execution plan for receiving an ASN.</p>
+                <ul>
+                    <li><strong>Filters:</strong> narrow the queue by warehouse, status, priority, or active flag.</li>
+                    <li><strong>Details:</strong> open an order to review items, parameters, and cancellation options.</li>
+                    <li><strong>Conversion:</strong> OEs are created from approved ASNs in the ASN details screen.</li>
+                </ul>
+                <p>Subscreens:</p>
+                <ul>
+                    <li><strong>Details:</strong> edit inspection/priority/dock and review items.</li>
+                    <li><strong>Cancel:</strong> require a reason and will lock the order.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

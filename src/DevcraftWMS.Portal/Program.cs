@@ -23,6 +23,7 @@ builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.HealthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.AuthApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.CustomersApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.AsnsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.InboundOrdersApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.WarehousesApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.ProductsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.Portal.ApiClients.UomsApiClient>();

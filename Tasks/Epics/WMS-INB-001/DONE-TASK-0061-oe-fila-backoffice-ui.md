@@ -1,21 +1,21 @@
-﻿# TASK-0062 - OE: cancelamento controlado com motivo
+﻿# TASK-0061 - Backoffice: fila de OEs por status/prioridade
 
 ## Resumo
-Cancelamento controlado de OE com motivo e permissao.
+UI de fila de OEs por status/prioridade.
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Command de cancelamento
-- Registro de motivo
-- Permissao por role
+- Index com filtros
+- Acoes rapidas
+- Paginacao
 
 ## Dependencias
-- TASK-0058,TASK-0051
+- TASK-0058
 
 ## Estimativa
-- 4h
+- 6h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- Somente autorizado cancela
-- Motivo obrigatorio
-- Status atualizado
+- Listagem consistente
+- Filtros funcionam
+- Help/manual da tela
 
 ## Status
-PENDENTE
+DONE

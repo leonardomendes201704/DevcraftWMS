@@ -78,6 +78,27 @@ else
                             <i class="bi bi-send"></i> Submit
                         </button>
                     </form>
+                    @if (Model.Asn.Status == 1)
+                    {
+                        <form asp-action="Approve" asp-route-id="@Model.Asn.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="notes" value="Approved via Portal" />
+                            <button type="submit" class="btn btn-outline-success">
+                                <i class="bi bi-check2-circle"></i> Approve
+                            </button>
+                        </form>
+                    }
+                    @if (Model.Asn.Status == 2)
+                    {
+                        <form asp-controller="InboundOrders" asp-action="ConvertFromAsn" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="asnId" value="@Model.Asn.Id" />
+                            <input type="hidden" name="notes" value="Converted via Portal" />
+                            <button type="submit" class="btn btn-outline-success">
+                                <i class="bi bi-check2-circle"></i> Convert to OE
+                            </button>
+                        </form>
+                    }
                     <form asp-action="Cancel" asp-route-id="@Model.Asn.Id" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="notes" value="Canceled via Portal" />

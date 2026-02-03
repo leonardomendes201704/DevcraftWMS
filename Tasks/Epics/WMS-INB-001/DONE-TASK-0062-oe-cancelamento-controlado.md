@@ -1,21 +1,21 @@
-﻿# TASK-0059 - OE: converter ASN -> OE
+﻿# TASK-0062 - OE: cancelamento controlado com motivo
 
 ## Resumo
-Converter ASN em OE mantendo itens e dados.
+Cancelamento controlado de OE com motivo e permissao.
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Command de conversao
-- Validacoes
-- Auditoria de conversao
+- Command de cancelamento
+- Registro de motivo
+- Permissao por role
 
 ## Dependencias
-- TASK-0058,TASK-0053
+- TASK-0058,TASK-0051
 
 ## Estimativa
-- 5h
+- 4h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- OE gerada a partir do ASN
-- ASN marcado como Convertido
-- Logs registrados
+- Somente autorizado cancela
+- Motivo obrigatorio
+- Status atualizado
 
 ## Status
-PENDENTE
+DONE

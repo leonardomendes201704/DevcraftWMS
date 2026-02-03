@@ -1,21 +1,21 @@
-﻿# TASK-0061 - Backoffice: fila de OEs por status/prioridade
+﻿# TASK-0059 - OE: converter ASN -> OE
 
 ## Resumo
-UI de fila de OEs por status/prioridade.
+Converter ASN em OE mantendo itens e dados.
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Index com filtros
-- Acoes rapidas
-- Paginacao
+- Command de conversao
+- Validacoes
+- Auditoria de conversao
 
 ## Dependencias
-- TASK-0058
+- TASK-0058,TASK-0053
 
 ## Estimativa
-- 6h
+- 5h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- Listagem consistente
-- Filtros funcionam
-- Help/manual da tela
+- OE gerada a partir do ASN
+- ASN marcado como Convertido
+- Logs registrados
 
 ## Status
-PENDENTE
+DONE

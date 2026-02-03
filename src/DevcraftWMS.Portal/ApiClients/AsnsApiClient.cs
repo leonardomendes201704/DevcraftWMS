@@ -68,6 +68,9 @@ public sealed class AsnsApiClient : ApiClientBase
     public Task<ApiResult<AsnDetailDto>> SubmitAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
         => PostAsync<AsnDetailDto>($"/api/asns/{asnId}/submit", new { notes }, cancellationToken);
 
+    public Task<ApiResult<AsnDetailDto>> ApproveAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
+        => PostAsync<AsnDetailDto>($"/api/asns/{asnId}/approve", new { notes }, cancellationToken);
+
     public Task<ApiResult<AsnDetailDto>> CancelAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
         => PostAsync<AsnDetailDto>($"/api/asns/{asnId}/cancel", new { notes }, cancellationToken);
 }

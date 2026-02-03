@@ -228,6 +228,21 @@ public sealed class AsnsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Approve(Guid id, string? notes, CancellationToken cancellationToken)
+    {
+        var result = await _asnsClient.ApproveAsync(id, notes, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to approve ASN.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "ASN approved successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(Guid id, string? notes, CancellationToken cancellationToken)
     {
         var result = await _asnsClient.CancelAsync(id, notes, cancellationToken);
