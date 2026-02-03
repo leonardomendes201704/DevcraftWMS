@@ -447,62 +447,109 @@ public sealed class SampleDataSeeder
 
     private async Task EnsureSectorAccessAsync(Sector sector, Guid customerId, CancellationToken cancellationToken)
     {
-        if (sector.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        var exists = await _dbContext.SectorCustomers
+            .AnyAsync(s => s.SectorId == sector.Id && s.CustomerId == customerId, cancellationToken);
+
+        if (exists)
         {
             return;
         }
 
-        sector.CustomerAccesses.Add(new SectorCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        _dbContext.SectorCustomers.Add(new SectorCustomer
+        {
+            Id = Guid.NewGuid(),
+            SectorId = sector.Id,
+            CustomerId = customerId
+        });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task EnsureSectionAccessAsync(Section section, Guid customerId, CancellationToken cancellationToken)
     {
-        if (section.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        var exists = await _dbContext.SectionCustomers
+            .AnyAsync(s => s.SectionId == section.Id && s.CustomerId == customerId, cancellationToken);
+
+        if (exists)
         {
             return;
         }
 
-        section.CustomerAccesses.Add(new SectionCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        _dbContext.SectionCustomers.Add(new SectionCustomer
+        {
+            Id = Guid.NewGuid(),
+            SectionId = section.Id,
+            CustomerId = customerId
+        });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task EnsureStructureAccessAsync(Structure structure, Guid customerId, CancellationToken cancellationToken)
     {
-        if (structure.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        var exists = await _dbContext.StructureCustomers
+            .AnyAsync(s => s.StructureId == structure.Id && s.CustomerId == customerId, cancellationToken);
+
+        if (exists)
         {
             return;
         }
 
-        structure.CustomerAccesses.Add(new StructureCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        _dbContext.StructureCustomers.Add(new StructureCustomer
+        {
+            Id = Guid.NewGuid(),
+            StructureId = structure.Id,
+            CustomerId = customerId
+        });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task EnsureAisleAccessAsync(Aisle aisle, Guid customerId, CancellationToken cancellationToken)
     {
-        if (aisle.CustomerAccesses.Any(a => a.CustomerId == customerId))
+        var exists = await _dbContext.AisleCustomers
+            .AnyAsync(a => a.AisleId == aisle.Id && a.CustomerId == customerId, cancellationToken);
+
+        if (exists)
         {
             return;
         }
 
-        aisle.CustomerAccesses.Add(new AisleCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        _dbContext.AisleCustomers.Add(new AisleCustomer
+        {
+            Id = Guid.NewGuid(),
+            AisleId = aisle.Id,
+            CustomerId = customerId
+        });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task EnsureLocationAccessAsync(IEnumerable<Location> locations, Guid customerId, CancellationToken cancellationToken)
     {
-        var missing = locations
-            .Where(l => l.CustomerAccesses.All(a => a.CustomerId != customerId))
-            .ToList();
-
-        if (missing.Count == 0)
+        var locationIds = locations.Select(l => l.Id).ToList();
+        if (locationIds.Count == 0)
         {
             return;
         }
 
-        foreach (var location in missing)
+        var existing = await _dbContext.LocationCustomers
+            .Where(lc => lc.CustomerId == customerId && locationIds.Contains(lc.LocationId))
+            .Select(lc => lc.LocationId)
+            .ToListAsync(cancellationToken);
+
+        var existingSet = existing.ToHashSet();
+        var missingIds = locationIds.Where(id => !existingSet.Contains(id)).ToList();
+
+        if (missingIds.Count == 0)
         {
-            location.CustomerAccesses.Add(new LocationCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+            return;
+        }
+
+        foreach (var locationId in missingIds)
+        {
+            _dbContext.LocationCustomers.Add(new LocationCustomer
+            {
+                Id = Guid.NewGuid(),
+                LocationId = locationId,
+                CustomerId = customerId
+            });
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

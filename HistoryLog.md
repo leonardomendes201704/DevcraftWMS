@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-03
+- Fix - Sample data access seeding concurrency.
+  - Key changes: insert sector/section/structure/aisle/location access via join tables to avoid tracking/concurrency issues.
+- Fix - Ensure SQLite connection strings resolve to writable paths.
+  - Key changes: normalize SQLite Data Source to content root and create directories on startup to avoid "unable to open database file".
 - TASK-0063 - Portaria check-in API completed.
   - Key changes: added GateCheckin entity/status, CQRS/service/repository, API CRUD endpoints, migration AddGateCheckins, and unit/integration tests.
 - Fix - Portal ASN approve action and UI button.

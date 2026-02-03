@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Data.Sqlite;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Options;
 using DevcraftWMS.Api.Middleware;
@@ -18,6 +19,7 @@ using DevcraftWMS.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+EnsureSqliteDataDirectories(builder);
 
 // --------------------------
 // Logging (Serilog)
@@ -313,7 +315,42 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-public partial class Program { }
+static void EnsureSqliteDataDirectories(WebApplicationBuilder builder)
+{
+    NormalizeSqliteConnectionString(builder, "ConnectionStrings:MainDb");
+    NormalizeSqliteConnectionString(builder, "ConnectionStrings:LogsDb");
+}
 
+static void NormalizeSqliteConnectionString(WebApplicationBuilder builder, string key)
+{
+    var connectionString = builder.Configuration[key];
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        return;
+    }
+
+    var sqliteBuilder = new SqliteConnectionStringBuilder(connectionString);
+    if (string.IsNullOrWhiteSpace(sqliteBuilder.DataSource))
+    {
+        return;
+    }
+
+    var dataSource = sqliteBuilder.DataSource;
+    if (!Path.IsPathRooted(dataSource))
+    {
+        dataSource = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, dataSource));
+        sqliteBuilder.DataSource = dataSource;
+    }
+
+    var directory = Path.GetDirectoryName(dataSource);
+    if (!string.IsNullOrWhiteSpace(directory))
+    {
+        Directory.CreateDirectory(directory);
+    }
+
+    builder.Configuration[key] = sqliteBuilder.ToString();
+}
+
+public partial class Program { }
 
 
