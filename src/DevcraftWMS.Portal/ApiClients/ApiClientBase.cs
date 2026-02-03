@@ -135,6 +135,11 @@ public abstract class ApiClientBase
             return null;
         }
 
+        if (content.Contains("X-Customer-Id header is required.", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Customer context is required. Please select a customer and try again.";
+        }
+
         try
         {
             if (TryExtractValidationErrors(content, out var validationMessage))

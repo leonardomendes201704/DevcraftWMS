@@ -1,6 +1,12 @@
 ﻿# History Log
 
 ## 2026-02-02
+- UX - Portal customer context error message.
+  - Key changes: friendly message when X-Customer-Id is missing in Portal API calls.
+- Fix - Seed zone customer access concurrency.
+  - Key changes: insert ZoneCustomer directly to avoid tracking conflicts during seed.
+- TASK-0054 - Portal ASN UI completed.
+  - Key changes: added ASN list/create/details screens in Portal, API clients for ASN/warehouses, and help manual on index.
 - TASK-0053 - ASN API CQRS completed.
   - Key changes: added ASN CQRS/service/repository, API endpoints, and unit/integration tests for create/list/get.
 - TASK-0052 - ASN model and status completed.

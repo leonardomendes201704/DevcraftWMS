@@ -12,6 +12,7 @@
 - No SPA frameworks; minimal JS (only Bootstrap behaviors).
 - UI must use shared partials and input groups with left icons.
 - Every Index screen must include a Help button with HTML manual (Index + CRUD flows).
+- Any API call requiring customer context must surface a friendly, actionable message when X-Customer-Id is missing.
 - External endpoints must be configured via appsettings-bound Options with startup validation.
 - Enums must include DisplayName for every member.
 - All user-facing error messages must be friendly and actionable.

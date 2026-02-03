@@ -8,8 +8,8 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 
 ## Escopo
 - Tela Create ASN
-- Itens dinamica + validacao
-- Anexos placeholder
+- Lista + detalhes basicos de ASN
+- Help/manual da tela
 
 ## Dependencias
 - TASK-0045,TASK-0053
@@ -29,4 +29,4 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Help/manual da tela
 
 ## Status
-PENDENTE
+DONE

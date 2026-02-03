@@ -518,7 +518,12 @@ public sealed class SampleDataSeeder
             return;
         }
 
-        zone.CustomerAccesses.Add(new ZoneCustomer { Id = Guid.NewGuid(), CustomerId = customerId });
+        _dbContext.ZoneCustomers.Add(new ZoneCustomer
+        {
+            Id = Guid.NewGuid(),
+            ZoneId = zone.Id,
+            CustomerId = customerId
+        });
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

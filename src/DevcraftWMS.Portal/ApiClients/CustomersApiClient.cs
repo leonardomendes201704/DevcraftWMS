@@ -38,5 +38,3 @@ public sealed record CustomerListQuery(
     string? Email = null,
     string? Name = null,
     bool IncludeInactive = false);
-
-public sealed record PagedResultDto<T>(IReadOnlyList<T> Items, int TotalCount, int PageNumber, int PageSize, string OrderBy, string OrderDir);
