@@ -163,7 +163,7 @@ public sealed class GateCheckinService : IGateCheckinService
                 return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.inbound_order.not_found", "Inbound order not found.");
             }
 
-            if (inboundOrder.Status is InboundOrderStatus.Completed or InboundOrderStatus.Canceled)
+            if (inboundOrder.Status is InboundOrderStatus.Completed or InboundOrderStatus.Canceled or InboundOrderStatus.PartiallyCompleted)
             {
                 return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.inbound_order.status_locked", "Inbound order status does not allow dock assignment.");
             }

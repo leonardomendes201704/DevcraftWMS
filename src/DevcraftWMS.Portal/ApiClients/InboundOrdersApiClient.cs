@@ -45,4 +45,7 @@ public sealed class InboundOrdersApiClient : ApiClientBase
 
     public Task<ApiResult<InboundOrderDetailDto>> CancelAsync(Guid id, CancelInboundOrderRequest request, CancellationToken cancellationToken)
         => PostAsync<InboundOrderDetailDto>($"/api/inbound-orders/{id}/cancel", request, cancellationToken);
+
+    public Task<ApiResult<InboundOrderDetailDto>> CompleteAsync(Guid id, CompleteInboundOrderRequest request, CancellationToken cancellationToken)
+        => PostAsync<InboundOrderDetailDto>($"/api/inbound-orders/{id}/complete", request, cancellationToken);
 }

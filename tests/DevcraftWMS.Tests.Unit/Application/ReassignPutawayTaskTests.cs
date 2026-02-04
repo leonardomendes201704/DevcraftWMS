@@ -105,6 +105,8 @@ public sealed class ReassignPutawayTaskTests
         public Task<PutawayTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult(id == _task.Id ? _task : null);
         public Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> AnyPendingByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+            => Task.FromResult(receiptIds.Contains(_task.ReceiptId) && _task.Status != PutawayTaskStatus.Completed && _task.Status != PutawayTaskStatus.Canceled);
         public Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(1);
         public Task<IReadOnlyList<PutawayTask>> ListAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<PutawayTask>>(new[] { _task });

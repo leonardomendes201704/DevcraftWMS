@@ -8,6 +8,7 @@
         2 => "In Progress",
         3 => "Completed",
         4 => "Canceled",
+        5 => "Partially completed",
         _ => $"Status {status}"
     };
     string PriorityLabel(int priority) => priority switch
@@ -25,6 +26,7 @@
         2 => "Full",
         _ => $"Inspection {inspection}"
     };
+    var isCompletionLocked = Model.Order?.Status is 3 or 4;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -151,6 +153,83 @@ else
                             <button type="submit" class="btn btn-outline-danger">Cancel Order</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6">Complete Order</h2>
+                    @if (isCompletionLocked)
+                    {
+                        <div class="alert alert-info mb-0">Inbound order is already closed or canceled.</div>
+                    }
+                    else
+                    {
+                        <form asp-action="Complete" asp-route-id="@Model.Order.Id" method="post" class="row g-3">
+                            @Html.AntiForgeryToken()
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="AllowPartial" value="true" id="AllowPartial" />
+                                    <label class="form-check-label" for="AllowPartial">
+                                        Allow partial completion (if receipts or putaway are still pending)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                                    <input class="form-control" name="Notes" value="@Model.Complete.Notes" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">Complete Order</button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6">Status History</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Notes</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Order.StatusEvents is null || !Model.Order.StatusEvents.Any())
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No status events recorded.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var evt in Model.Order.StatusEvents)
+                                    {
+                                        <tr>
+                                            <td>@StatusLabel(evt.FromStatus)</td>
+                                            <td>@StatusLabel(evt.ToStatus)</td>
+                                            <td>@evt.Notes</td>
+                                            <td>@evt.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

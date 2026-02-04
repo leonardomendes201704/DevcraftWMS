@@ -110,4 +110,20 @@ public sealed class InboundOrdersController : Controller
 
         return RedirectToAction(nameof(Details), new { id });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Complete(Guid id, CompleteInboundOrderViewModel model, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.CompleteAsync(id, new CompleteInboundOrderRequest(model.AllowPartial, model.Notes), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to complete inbound order.";
+        }
+        else
+        {
+            TempData["Success"] = "Inbound order closed.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
 }

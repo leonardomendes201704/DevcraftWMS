@@ -8,6 +8,7 @@
         2 => "In Progress",
         3 => "Completed",
         4 => "Canceled",
+        5 => "Partially completed",
         _ => $"Status {status}"
     };
     string PriorityLabel(int priority) => priority switch
@@ -175,6 +176,7 @@
                 <ul>
                     <li><strong>Details:</strong> edit inspection/priority/dock and review items.</li>
                     <li><strong>Cancel:</strong> require a reason and will lock the order.</li>
+                    <li><strong>Complete:</strong> closes the order when receipts and putaway tasks are finished. Use partial completion only when authorized.</li>
                 </ul>
             </div>
         </div>

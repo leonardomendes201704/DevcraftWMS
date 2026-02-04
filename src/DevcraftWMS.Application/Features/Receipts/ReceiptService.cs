@@ -326,7 +326,7 @@ public sealed class ReceiptService : IReceiptService
             return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.not_found", "Inbound order not found.");
         }
 
-        if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed)
+        if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed or InboundOrderStatus.PartiallyCompleted)
         {
             return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.status_locked", "Inbound order status does not allow receipt start.");
         }
@@ -396,7 +396,7 @@ public sealed class ReceiptService : IReceiptService
                 return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.not_found", "Inbound order not found.");
             }
 
-            if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed)
+            if (inboundOrder.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed or InboundOrderStatus.PartiallyCompleted)
             {
                 return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.status_locked", "Inbound order status does not allow receipt completion.");
             }
@@ -445,12 +445,6 @@ public sealed class ReceiptService : IReceiptService
         receipt.Status = ReceiptStatus.Completed;
         receipt.ReceivedAtUtc = _dateTimeProvider.UtcNow;
         await _receiptRepository.UpdateAsync(receipt, cancellationToken);
-
-        if (inboundOrder is not null)
-        {
-            inboundOrder.Status = InboundOrderStatus.Completed;
-            await _inboundOrderRepository.UpdateAsync(inboundOrder, cancellationToken);
-        }
 
         return RequestResult<ReceiptDetailDto>.Success(ReceiptMapping.MapDetail(receipt));
     }

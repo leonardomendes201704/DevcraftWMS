@@ -127,6 +127,9 @@ public sealed class UnitLoadServiceTests
         public Task<bool> SsccExistsAsync(string ssccInternal, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.Any(u => u.SsccInternal == ssccInternal));
 
+        public Task<bool> AnyNotPutawayCompletedByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.Any(u => receiptIds.Contains(u.ReceiptId) && u.Status != UnitLoadStatus.PutawayCompleted));
+
         public Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, string? sscc, UnitLoadStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.Count);
 
@@ -148,6 +151,8 @@ public sealed class UnitLoadServiceTests
         public Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_receipt?.Id == id ? _receipt : null);
         public Task<Receipt?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_receipt?.Id == id ? _receipt : null);
         public Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default) => Task.FromResult<Receipt?>(null);
+        public Task<IReadOnlyList<Receipt>> ListByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Receipt>>(Array.Empty<Receipt>());
         public Task<int> CountAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Receipt>> ListAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Receipt>>(Array.Empty<Receipt>());
@@ -184,6 +189,9 @@ public sealed class UnitLoadServiceTests
 
         public Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.Any(x => x.UnitLoadId == unitLoadId));
+
+        public Task<bool> AnyPendingByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.Any(x => receiptIds.Contains(x.ReceiptId) && x.Status != PutawayTaskStatus.Completed && x.Status != PutawayTaskStatus.Canceled));
 
         public Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.Count);

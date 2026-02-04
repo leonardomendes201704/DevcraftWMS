@@ -35,6 +35,12 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AddStatusEventAsync(InboundOrderStatusEvent statusEvent, CancellationToken cancellationToken = default)
+    {
+        _dbContext.InboundOrderStatusEvents.Add(statusEvent);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var customerId = GetCustomerId();
@@ -70,6 +76,7 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
                 .ThenInclude(i => i.Product)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Uom)
+            .Include(o => o.StatusEvents)
             .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
     }
 
@@ -89,6 +96,7 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         return await _dbContext.InboundOrders
             .Include(o => o.Items)
             .Include(o => o.Asn)
+            .Include(o => o.StatusEvents)
             .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
     }
 

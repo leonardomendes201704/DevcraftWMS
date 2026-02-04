@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0079 - OE completion validations completed.
+  - Key changes: added inbound order completion endpoint/command, status events, partial completion status, putaway/unit load validations, updated Portal/DemoMvc UI, and integration tests with migration AddInboundOrderStatusEvents.
 - TASK-0078 - Putaway manual reassignment completed.
   - Key changes: added assignment events, reassign endpoint/command/validator, DemoMvc reassignment UI + history, and unit/integration tests with migration AddPutawayTaskAssignments.
 - TASK-0077 - Putaway confirmation stabilization.

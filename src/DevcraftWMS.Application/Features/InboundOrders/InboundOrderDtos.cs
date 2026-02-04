@@ -32,7 +32,8 @@ public sealed record InboundOrderDetailDto(
     DateTime? CanceledAtUtc,
     DateTime CreatedAtUtc,
     bool IsActive,
-    IReadOnlyList<InboundOrderItemDto> Items);
+    IReadOnlyList<InboundOrderItemDto> Items,
+    IReadOnlyList<InboundOrderStatusEventDto> StatusEvents);
 
 public sealed record InboundOrderItemDto(
     Guid Id,
@@ -44,3 +45,10 @@ public sealed record InboundOrderItemDto(
     decimal Quantity,
     string? LotCode,
     DateOnly? ExpirationDate);
+
+public sealed record InboundOrderStatusEventDto(
+    Guid Id,
+    InboundOrderStatus FromStatus,
+    InboundOrderStatus ToStatus,
+    string? Notes,
+    DateTime CreatedAtUtc);

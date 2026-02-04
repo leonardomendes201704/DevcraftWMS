@@ -30,7 +30,8 @@ public sealed record InboundOrderDetailDto(
     DateTime? CanceledAtUtc,
     DateTime CreatedAtUtc,
     bool IsActive,
-    IReadOnlyList<InboundOrderItemDto> Items);
+    IReadOnlyList<InboundOrderItemDto> Items,
+    IReadOnlyList<InboundOrderStatusEventDto> StatusEvents);
 
 public sealed record InboundOrderItemDto(
     Guid Id,
@@ -43,6 +44,13 @@ public sealed record InboundOrderItemDto(
     string? LotCode,
     DateOnly? ExpirationDate);
 
+public sealed record InboundOrderStatusEventDto(
+    Guid Id,
+    int FromStatus,
+    int ToStatus,
+    string? Notes,
+    DateTime CreatedAtUtc);
+
 public sealed record ConvertInboundOrderRequest(Guid AsnId, string? Notes);
 
 public sealed record UpdateInboundOrderParametersRequest(
@@ -51,3 +59,5 @@ public sealed record UpdateInboundOrderParametersRequest(
     string? SuggestedDock);
 
 public sealed record CancelInboundOrderRequest(string Reason);
+
+public sealed record CompleteInboundOrderRequest(bool AllowPartial, string? Notes);

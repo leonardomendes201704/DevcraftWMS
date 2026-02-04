@@ -11,15 +11,24 @@ public sealed class InboundOrderService : IInboundOrderService
 {
     private readonly IInboundOrderRepository _inboundOrderRepository;
     private readonly IAsnRepository _asnRepository;
+    private readonly IReceiptRepository _receiptRepository;
+    private readonly IPutawayTaskRepository _putawayTaskRepository;
+    private readonly IUnitLoadRepository _unitLoadRepository;
     private readonly ICurrentUserService _currentUserService;
 
     public InboundOrderService(
         IInboundOrderRepository inboundOrderRepository,
         IAsnRepository asnRepository,
+        IReceiptRepository receiptRepository,
+        IPutawayTaskRepository putawayTaskRepository,
+        IUnitLoadRepository unitLoadRepository,
         ICurrentUserService currentUserService)
     {
         _inboundOrderRepository = inboundOrderRepository;
         _asnRepository = asnRepository;
+        _receiptRepository = receiptRepository;
+        _putawayTaskRepository = putawayTaskRepository;
+        _unitLoadRepository = unitLoadRepository;
         _currentUserService = currentUserService;
     }
 
@@ -72,7 +81,11 @@ public sealed class InboundOrderService : IInboundOrderService
         }
 
         var items = order.Items.Select(InboundOrderMapping.MapItem).ToList();
-        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, items));
+        var statusEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, items, statusEvents));
     }
 
     public async Task<RequestResult<InboundOrderDetailDto>> ConvertFromAsnAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
@@ -154,7 +167,11 @@ public sealed class InboundOrderService : IInboundOrderService
         order.Items = items;
 
         var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
-        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems));
+        var mappedEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
     }
 
     public async Task<RequestResult<InboundOrderDetailDto>> UpdateParametersAsync(
@@ -170,7 +187,7 @@ public sealed class InboundOrderService : IInboundOrderService
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.not_found", "Inbound order not found.");
         }
 
-        if (order.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed)
+        if (order.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed or InboundOrderStatus.PartiallyCompleted)
         {
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.status_locked", "Inbound order status does not allow updates.");
         }
@@ -183,7 +200,11 @@ public sealed class InboundOrderService : IInboundOrderService
 
         var items = await _inboundOrderRepository.ListItemsAsync(order.Id, cancellationToken);
         var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
-        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems));
+        var mappedEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
     }
 
     public async Task<RequestResult<InboundOrderDetailDto>> CancelAsync(Guid id, string reason, CancellationToken cancellationToken)
@@ -199,7 +220,7 @@ public sealed class InboundOrderService : IInboundOrderService
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.not_found", "Inbound order not found.");
         }
 
-        if (order.Status is InboundOrderStatus.Completed or InboundOrderStatus.Canceled)
+        if (order.Status is InboundOrderStatus.Completed or InboundOrderStatus.Canceled or InboundOrderStatus.PartiallyCompleted)
         {
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.status_locked", "Inbound order status does not allow cancellation.");
         }
@@ -213,7 +234,90 @@ public sealed class InboundOrderService : IInboundOrderService
 
         var items = await _inboundOrderRepository.ListItemsAsync(order.Id, cancellationToken);
         var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
-        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems));
+        var mappedEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
+    }
+
+    public async Task<RequestResult<InboundOrderDetailDto>> CompleteAsync(
+        Guid id,
+        bool allowPartial,
+        string? notes,
+        CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.required", "Inbound order is required.");
+        }
+
+        var order = await _inboundOrderRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (order is null)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.not_found", "Inbound order not found.");
+        }
+
+        if (order.Status is InboundOrderStatus.Canceled or InboundOrderStatus.Completed or InboundOrderStatus.PartiallyCompleted)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.status_locked", "Inbound order status does not allow completion.");
+        }
+
+        var receipts = await _receiptRepository.ListByInboundOrderIdAsync(order.Id, cancellationToken);
+        if (receipts.Count == 0)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.receipts_required", "Inbound order requires at least one receipt.");
+        }
+
+        var hasIncompleteReceipts = receipts.Any(r => r.Status != ReceiptStatus.Completed);
+        if (hasIncompleteReceipts && !allowPartial)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.receipts_not_completed", "All receipts must be completed before closing the inbound order.");
+        }
+
+        var receiptIds = receipts.Select(r => r.Id).ToArray();
+        var hasPendingPutaway = await _putawayTaskRepository.AnyPendingByReceiptIdsAsync(receiptIds, cancellationToken);
+        if (hasPendingPutaway && !allowPartial)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.putaway_incomplete", "Putaway tasks must be completed before closing the inbound order.");
+        }
+
+        var hasUnitLoadsPending = await _unitLoadRepository.AnyNotPutawayCompletedByReceiptIdsAsync(receiptIds, cancellationToken);
+        if (hasUnitLoadsPending && !allowPartial)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.unit_loads_not_putaway", "All unit loads must be in a valid destination before closing the inbound order.");
+        }
+
+        var targetStatus = (hasIncompleteReceipts || hasPendingPutaway || hasUnitLoadsPending)
+            ? InboundOrderStatus.PartiallyCompleted
+            : InboundOrderStatus.Completed;
+
+        var previousStatus = order.Status;
+        order.Status = targetStatus;
+
+        await _inboundOrderRepository.UpdateAsync(order, cancellationToken);
+
+        var statusEvent = new InboundOrderStatusEvent
+        {
+            Id = Guid.NewGuid(),
+            InboundOrderId = order.Id,
+            FromStatus = previousStatus,
+            ToStatus = targetStatus,
+            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
+        };
+
+        await _inboundOrderRepository.AddStatusEventAsync(statusEvent, cancellationToken);
+
+        var items = await _inboundOrderRepository.ListItemsAsync(order.Id, cancellationToken);
+        order.StatusEvents.Add(statusEvent);
+
+        var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
+        var mappedEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
     }
 
     private async Task<string> BuildOrderNumberAsync(string asnNumber, CancellationToken cancellationToken)

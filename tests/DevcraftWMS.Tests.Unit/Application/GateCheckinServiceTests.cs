@@ -179,6 +179,9 @@ public sealed class GateCheckinServiceTests
 
         public Task UpdateAsync(InboundOrder order, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
+        public Task AddStatusEventAsync(InboundOrderStatusEvent statusEvent, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
         public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_inboundOrder?.Id == id);
 
         public Task<bool> ExistsByAsnAsync(Guid asnId, CancellationToken cancellationToken = default) => Task.FromResult(false);

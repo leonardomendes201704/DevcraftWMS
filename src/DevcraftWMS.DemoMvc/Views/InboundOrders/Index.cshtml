@@ -32,7 +32,8 @@
         new() { Value = "1", Text = "Scheduled", Selected = Model.Query.Status == 1 },
         new() { Value = "2", Text = "In Progress", Selected = Model.Query.Status == 2 },
         new() { Value = "3", Text = "Completed", Selected = Model.Query.Status == 3 },
-        new() { Value = "4", Text = "Canceled", Selected = Model.Query.Status == 4 }
+        new() { Value = "4", Text = "Canceled", Selected = Model.Query.Status == 4 },
+        new() { Value = "5", Text = "Partially completed", Selected = Model.Query.Status == 5 }
     };
 
     var priorityOptions = new List<GridSelectOption>
@@ -120,6 +121,7 @@
             2 => "In Progress",
             3 => "Completed",
             4 => "Canceled",
+            5 => "Partially completed",
             _ => $"Status {item.Status}"
         }), "Status")
         .AddColumn("Priority", item => new HtmlString(item.Priority switch
@@ -134,7 +136,7 @@
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .AddAction(
             "Start Receipt",
-            item => item.Status is 3 or 4 ? null : Url.Action("StartReceipt", "InboundOrders", new { id = item.Id }),
+            item => item.Status is 3 or 4 or 5 ? null : Url.Action("StartReceipt", "InboundOrders", new { id = item.Id }),
             "btn btn-sm btn-outline-success",
             "bi bi-box-arrow-in-right")
         .Build();

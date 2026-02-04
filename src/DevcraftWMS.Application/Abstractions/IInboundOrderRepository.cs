@@ -7,6 +7,7 @@ public interface IInboundOrderRepository
 {
     Task AddAsync(InboundOrder order, CancellationToken cancellationToken = default);
     Task UpdateAsync(InboundOrder order, CancellationToken cancellationToken = default);
+    Task AddStatusEventAsync(InboundOrderStatusEvent statusEvent, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByAsnAsync(Guid asnId, CancellationToken cancellationToken = default);
     Task<bool> OrderNumberExistsAsync(string orderNumber, CancellationToken cancellationToken = default);

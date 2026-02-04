@@ -10,6 +10,7 @@ public interface IUnitLoadRepository
     Task<UnitLoad?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<UnitLoad?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> SsccExistsAsync(string ssccInternal, CancellationToken cancellationToken = default);
+    Task<bool> AnyNotPutawayCompletedByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? warehouseId,
         Guid? receiptId,

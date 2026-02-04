@@ -23,4 +23,5 @@ public sealed class InboundOrder : AuditableEntity
     public Warehouse? Warehouse { get; set; }
     public Asn? Asn { get; set; }
     public ICollection<InboundOrderItem> Items { get; set; } = new List<InboundOrderItem>();
+    public ICollection<InboundOrderStatusEvent> StatusEvents { get; set; } = new List<InboundOrderStatusEvent>();
 }

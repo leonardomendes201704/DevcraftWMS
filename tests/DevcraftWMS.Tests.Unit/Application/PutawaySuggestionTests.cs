@@ -85,6 +85,8 @@ public sealed class PutawaySuggestionTests
         public Task<PutawayTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(id == _task.Id ? _task : null);
         public Task<PutawayTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(id == _task.Id ? _task : null);
         public Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default) => Task.FromResult(unitLoadId == _task.UnitLoadId);
+        public Task<bool> AnyPendingByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+            => Task.FromResult(receiptIds.Contains(_task.ReceiptId) && _task.Status != PutawayTaskStatus.Completed && _task.Status != PutawayTaskStatus.Canceled);
         public Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(1);
         public Task<IReadOnlyList<PutawayTask>> ListAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<PutawayTask>>(new[] { _task });
@@ -104,6 +106,8 @@ public sealed class PutawaySuggestionTests
         public Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Receipt?>(null);
         public Task<Receipt?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Receipt?>(null);
         public Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default) => Task.FromResult<Receipt?>(null);
+        public Task<IReadOnlyList<Receipt>> ListByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Receipt>>(Array.Empty<Receipt>());
         public Task<int> CountAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Receipt>> ListAsync(Guid? warehouseId, string? receiptNumber, string? documentNumber, string? supplierName, ReceiptStatus? status, DateTime? receivedFromUtc, DateTime? receivedToUtc, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Receipt>>(Array.Empty<Receipt>());

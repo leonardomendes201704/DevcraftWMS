@@ -13,5 +13,7 @@ public enum InboundOrderStatus
     [Display(Name = "Completed")]
     Completed = 3,
     [Display(Name = "Canceled")]
-    Canceled = 4
+    Canceled = 4,
+    [Display(Name = "Partially completed")]
+    PartiallyCompleted = 5
 }

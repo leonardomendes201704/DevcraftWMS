@@ -6,6 +6,7 @@ using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.ConvertAsnToInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.UpdateInboundOrderParameters;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.CancelInboundOrder;
+using DevcraftWMS.Application.Features.InboundOrders.Commands.CompleteInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.ListInboundOrders;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrder;
 using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListInboundOrderDivergences;
@@ -101,6 +102,13 @@ public sealed class InboundOrdersController : ControllerBase
     public async Task<IActionResult> Cancel(Guid id, [FromBody] CancelInboundOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CancelInboundOrderCommand(id, request.Reason), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("inbound-orders/{id:guid}/complete")]
+    public async Task<IActionResult> Complete(Guid id, [FromBody] CompleteInboundOrderRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new CompleteInboundOrderCommand(id, request.AllowPartial, request.Notes), cancellationToken);
         return this.ToActionResult(result);
     }
 }

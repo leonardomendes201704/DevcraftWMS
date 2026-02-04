@@ -58,6 +58,21 @@ public sealed class UnitLoadRepository : IUnitLoadRepository
             .AnyAsync(u => u.CustomerId == customerId && u.SsccInternal == ssccInternal, cancellationToken);
     }
 
+    public async Task<bool> AnyNotPutawayCompletedByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+    {
+        if (receiptIds.Count == 0)
+        {
+            return false;
+        }
+
+        var customerId = GetCustomerId();
+        return await _dbContext.UnitLoads
+            .AsNoTracking()
+            .AnyAsync(u => u.CustomerId == customerId
+                           && receiptIds.Contains(u.ReceiptId)
+                           && u.Status != UnitLoadStatus.PutawayCompleted, cancellationToken);
+    }
+
     public async Task<int> CountAsync(
         Guid? warehouseId,
         Guid? receiptId,

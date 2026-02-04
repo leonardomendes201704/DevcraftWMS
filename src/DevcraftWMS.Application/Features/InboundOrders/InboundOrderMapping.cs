@@ -16,7 +16,10 @@ public static class InboundOrderMapping
             order.CreatedAtUtc,
             order.IsActive);
 
-    public static InboundOrderDetailDto MapDetail(InboundOrder order, IReadOnlyList<InboundOrderItemDto> items)
+    public static InboundOrderDetailDto MapDetail(
+        InboundOrder order,
+        IReadOnlyList<InboundOrderItemDto> items,
+        IReadOnlyList<InboundOrderStatusEventDto> statusEvents)
         => new(
             order.Id,
             order.AsnId,
@@ -36,7 +39,8 @@ public static class InboundOrderMapping
             order.CanceledAtUtc,
             order.CreatedAtUtc,
             order.IsActive,
-            items);
+            items,
+            statusEvents);
 
     public static InboundOrderItemDto MapItem(InboundOrderItem item)
         => new(
@@ -49,4 +53,12 @@ public static class InboundOrderMapping
             item.Quantity,
             item.LotCode,
             item.ExpirationDate);
+
+    public static InboundOrderStatusEventDto MapStatusEvent(InboundOrderStatusEvent statusEvent)
+        => new(
+            statusEvent.Id,
+            statusEvent.FromStatus,
+            statusEvent.ToStatus,
+            statusEvent.Notes,
+            statusEvent.CreatedAtUtc);
 }

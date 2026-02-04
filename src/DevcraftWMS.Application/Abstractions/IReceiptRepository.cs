@@ -10,6 +10,7 @@ public interface IReceiptRepository
     Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Receipt?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Receipt?> GetByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Receipt>> ListByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? warehouseId,
         string? receiptNumber,

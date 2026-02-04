@@ -63,6 +63,16 @@ public sealed class ReceiptRepository : IReceiptRepository
             .SingleOrDefaultAsync(r => r.InboundOrderId == inboundOrderId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Receipt>> ListByInboundOrderIdAsync(Guid inboundOrderId, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.Receipts
+            .AsNoTracking()
+            .Include(r => r.InboundOrder)
+            .Where(r => r.CustomerId == customerId && r.InboundOrderId == inboundOrderId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(
         Guid? warehouseId,
         string? receiptNumber,

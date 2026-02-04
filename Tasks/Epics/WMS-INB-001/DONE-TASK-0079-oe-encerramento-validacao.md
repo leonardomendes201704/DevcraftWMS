@@ -29,4 +29,15 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Auditoria registrada
 
 ## Status
-PENDENTE
+DONE
+
+## Como testar
+1) API: criar ASN, aprovar, converter para OE.
+2) Iniciar recebimento pela OE (`POST /api/inbound-orders/{id}/receipts/start`).
+3) Adicionar item e completar o recebimento (`POST /api/receipts/{id}/items` + `/complete`).
+4) Criar Unit Load, imprimir e confirmar putaway (`/api/unit-loads`, `/print`, `/api/putaway-tasks/{id}/confirm`).
+5) Encerrar OE (`POST /api/inbound-orders/{id}/complete`) com `allowPartial=false`.
+6) Verificar status `Completed` e evento de status na resposta.
+
+## Observacoes
+- Encerramento parcial retorna status `PartiallyCompleted` quando ha recebimentos ou putaway pendentes e `allowPartial=true`.

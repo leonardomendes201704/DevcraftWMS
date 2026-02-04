@@ -10,6 +10,7 @@ public interface IPutawayTaskRepository
     Task<PutawayTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<PutawayTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default);
+    Task<bool> AnyPendingByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PutawayTask>> ListAsync(
         Guid? warehouseId,

@@ -6,6 +6,7 @@ public sealed class InboundOrderDetailViewModel
     public IReadOnlyList<InboundOrderItemDto> Items { get; set; } = Array.Empty<InboundOrderItemDto>();
     public UpdateInboundOrderParametersViewModel Parameters { get; set; } = new();
     public CancelInboundOrderViewModel Cancel { get; set; } = new();
+    public CompleteInboundOrderViewModel Complete { get; set; } = new();
 }
 
 public sealed class UpdateInboundOrderParametersViewModel
@@ -18,4 +19,10 @@ public sealed class UpdateInboundOrderParametersViewModel
 public sealed class CancelInboundOrderViewModel
 {
     public string Reason { get; set; } = string.Empty;
+}
+
+public sealed class CompleteInboundOrderViewModel
+{
+    public bool AllowPartial { get; set; }
+    public string? Notes { get; set; }
 }

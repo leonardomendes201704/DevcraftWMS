@@ -54,6 +54,19 @@ public sealed class PutawayTaskRepository : IPutawayTaskRepository
         => await BuildQuery(null, null, unitLoadId, null, null, true)
             .AnyAsync(x => x.UnitLoadId == unitLoadId, cancellationToken);
 
+    public async Task<bool> AnyPendingByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
+    {
+        if (receiptIds.Count == 0)
+        {
+            return false;
+        }
+
+        return await BuildQuery(null, null, null, null, null, true)
+            .AnyAsync(x => receiptIds.Contains(x.ReceiptId)
+                           && x.Status != PutawayTaskStatus.Completed
+                           && x.Status != PutawayTaskStatus.Canceled, cancellationToken);
+    }
+
     public async Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
         => await BuildQuery(warehouseId, receiptId, unitLoadId, status, isActive, includeInactive).CountAsync(cancellationToken);
 
