@@ -1,5 +1,6 @@
 using DevcraftWMS.DemoMvc.Enums;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DevcraftWMS.DemoMvc.ViewModels.PutawayTasks;
 
@@ -59,4 +60,12 @@ public sealed class PutawayTaskDetailsPageViewModel
 {
     public PutawayTaskDetailViewModel Task { get; init; } = default!;
     public IReadOnlyList<PutawaySuggestionViewModel> Suggestions { get; init; } = Array.Empty<PutawaySuggestionViewModel>();
+    public PutawayTaskConfirmViewModel Confirm { get; init; } = new();
+}
+
+public sealed class PutawayTaskConfirmViewModel
+{
+    public Guid LocationId { get; set; }
+    public string? Notes { get; set; }
+    public IReadOnlyList<SelectListItem> LocationOptions { get; init; } = Array.Empty<SelectListItem>();
 }

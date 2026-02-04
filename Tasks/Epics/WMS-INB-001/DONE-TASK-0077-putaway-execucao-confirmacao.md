@@ -28,5 +28,13 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Estoque enderecado criado
 - Status UL atualizado
 
+## How to test
+1) Crie um Receipt com item e finalize o recebimento (Complete Receipt).
+2) Crie um Unit Load e imprima a etiqueta (gera Putaway Task).
+3) DemoMvc -> Putaway Tasks -> Details -> selecione um endereco e confirme.
+   - Esperado: status da tarefa como Completed e UL como PutawayCompleted.
+4) API: POST /api/putaway-tasks/{id}/confirm com LocationId.
+   - Esperado: sucesso e saldo movido para o novo endereco.
+
 ## Status
-PENDENTE
+DONE

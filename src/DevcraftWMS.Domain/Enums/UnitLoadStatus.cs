@@ -8,6 +8,8 @@ public enum UnitLoadStatus
     Created = 0,
     [Display(Name = "Printed")]
     Printed = 1,
+    [Display(Name = "Putaway completed")]
+    PutawayCompleted = 2,
     [Display(Name = "Canceled")]
-    Canceled = 2
+    Canceled = 3
 }

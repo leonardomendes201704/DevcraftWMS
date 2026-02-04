@@ -1,7 +1,9 @@
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskById;
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskSuggestions;
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.ListPutawayTasksPaged;
+using DevcraftWMS.Application.Features.PutawayTasks.Commands.ConfirmPutawayTask;
 using DevcraftWMS.Api.Extensions;
+using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -63,6 +65,17 @@ public sealed class PutawayTasksController : ControllerBase
     public async Task<IActionResult> GetSuggestions(Guid id, [FromQuery] int limit = 5, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetPutawayTaskSuggestionsQuery(id, limit), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/confirm")]
+    [Authorize(Policy = "Role:Backoffice")]
+    public async Task<IActionResult> Confirm(Guid id, [FromBody] ConfirmPutawayTaskRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new ConfirmPutawayTaskCommand(id, request.LocationId, request.Notes),
+            cancellationToken);
+
         return this.ToActionResult(result);
     }
 }

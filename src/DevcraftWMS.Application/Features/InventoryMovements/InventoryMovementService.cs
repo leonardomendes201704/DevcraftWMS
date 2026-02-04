@@ -172,12 +172,28 @@ public sealed class InventoryMovementService : IInventoryMovementService
             await _movementRepository.AddAsync(movement, ct);
         }, cancellationToken);
 
-        movement.Product = product;
-        movement.Lot = lot;
-        movement.FromLocation = fromLocation;
-        movement.ToLocation = toLocation;
+        var dto = new InventoryMovementDto(
+            movement.Id,
+            movement.CustomerId,
+            movement.FromLocationId,
+            fromLocation.Code,
+            movement.ToLocationId,
+            toLocation.Code,
+            movement.ProductId,
+            product.Code,
+            product.Name,
+            movement.LotId,
+            lot?.Code,
+            movement.Quantity,
+            movement.Reason,
+            movement.Reference,
+            movement.Status,
+            movement.PerformedAtUtc,
+            movement.IsActive,
+            movement.CreatedAtUtc,
+            movement.UpdatedAtUtc);
 
-        return RequestResult<InventoryMovementDto>.Success(InventoryMovementMapping.MapDetails(movement));
+        return RequestResult<InventoryMovementDto>.Success(dto);
     }
 
     private static RequestResult<InventoryMovementDto>? ValidateLocationCompatibility(Location location, Product product, decimal quantity)

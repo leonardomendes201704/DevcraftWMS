@@ -50,4 +50,11 @@ public sealed class PutawayTasksApiClient : ApiClientBase
 
         return GetAsync<IReadOnlyList<PutawaySuggestionViewModel>>(url, cancellationToken);
     }
+
+    public Task<ApiResult<PutawayTaskDetailViewModel>> ConfirmAsync(Guid id, Guid locationId, string? notes, CancellationToken cancellationToken)
+        => PostAsync<PutawayTaskDetailViewModel>($"/api/putaway-tasks/{id}/confirm", new
+        {
+            locationId,
+            notes
+        }, cancellationToken);
 }

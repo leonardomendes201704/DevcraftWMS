@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0077 - Putaway confirmation stabilization.
+  - Key changes: avoid EF tracking conflicts in inventory movement response mapping, adjust tracked balance query includes, and disable integration test parallelization to prevent disposed provider failures.
+- TASK-0077 - Putaway execution and confirmation completed.
+  - Key changes: added confirm endpoint/command, moved balances via inventory movements, updated UL status, added DemoMvc confirmation UI, and unit/integration tests.
 - TASK-0076 - Putaway suggestion engine completed.
   - Key changes: added suggestion query/endpoint, ranking and compatibility filters (zone/capacity/tracking), DemoMvc suggestions on task details, ensured putaway tasks persist on label print, and unit/integration tests.
 - TASK-0075 - Putaway task model and generation completed.

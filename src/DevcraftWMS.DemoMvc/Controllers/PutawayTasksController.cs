@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.DemoMvc.ApiClients;
 using DevcraftWMS.DemoMvc.ViewModels.PutawayTasks;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DevcraftWMS.DemoMvc.Controllers;
 
@@ -70,10 +71,44 @@ public sealed class PutawayTasksController : Controller
             ? suggestions.Data
             : Array.Empty<PutawaySuggestionViewModel>();
 
+        var locationOptions = suggestionItems
+            .Select(s => new SelectListItem
+            {
+                Value = s.LocationId.ToString(),
+                Text = $"{s.LocationCode} - {s.ZoneName}"
+            })
+            .ToList();
+        locationOptions.Insert(0, new SelectListItem { Value = string.Empty, Text = "Select..." });
+
         return View(new PutawayTaskDetailsPageViewModel
         {
             Task = result.Data,
-            Suggestions = suggestionItems
+            Suggestions = suggestionItems,
+            Confirm = new PutawayTaskConfirmViewModel
+            {
+                LocationOptions = locationOptions
+            }
         });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Confirm(Guid id, PutawayTaskConfirmViewModel model, CancellationToken cancellationToken)
+    {
+        if (model.LocationId == Guid.Empty)
+        {
+            TempData["Error"] = "Please select a destination location.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var result = await _client.ConfirmAsync(id, model.LocationId, model.Notes, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to confirm putaway.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "Putaway confirmed successfully.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 }

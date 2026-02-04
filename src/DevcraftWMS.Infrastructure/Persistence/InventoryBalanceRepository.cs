@@ -63,8 +63,6 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
         var customerId = GetCustomerId();
         var query = _dbContext.InventoryBalances
             .Include(b => b.Product)
-            .Include(b => b.Location)
-            .ThenInclude(l => l.CustomerAccesses)
             .Where(b => b.LocationId == locationId && b.ProductId == productId)
             .Where(b => b.Product != null && b.Product.CustomerId == customerId)
             .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId));

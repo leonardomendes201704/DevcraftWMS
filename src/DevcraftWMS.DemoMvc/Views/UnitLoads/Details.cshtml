@@ -6,6 +6,7 @@
     var statusBadge = Model.UnitLoad.Status switch
     {
         DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed => "text-bg-success",
+        DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.PutawayCompleted => "text-bg-primary",
         DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled => "text-bg-secondary",
         _ => "text-bg-light"
     };

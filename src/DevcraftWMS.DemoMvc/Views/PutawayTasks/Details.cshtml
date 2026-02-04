@@ -82,3 +82,49 @@
         }
     </div>
 </div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header">
+        <div class="fw-semibold">Confirm Putaway</div>
+    </div>
+    <div class="card-body">
+        @if (Model.Task.Status == DevcraftWMS.DemoMvc.Enums.PutawayTaskStatus.Completed)
+        {
+            <div class="alert alert-success mb-0">Putaway already completed.</div>
+        }
+        else if (Model.Task.Status == DevcraftWMS.DemoMvc.Enums.PutawayTaskStatus.Canceled)
+        {
+            <div class="alert alert-secondary mb-0">Putaway task is canceled.</div>
+        }
+        else
+        {
+            <form asp-controller="PutawayTasks" asp-action="Confirm" asp-route-id="@Model.Task.Id" method="post" class="vstack gap-3">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label class="form-label">Destination location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <select class="form-select" name="LocationId" required>
+                            @foreach (var option in Model.Confirm.LocationOptions)
+                            {
+                                <option value="@option.Value">@option.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Notes</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                        <textarea class="form-control" name="Notes" rows="3" placeholder="Optional notes">@Model.Confirm.Notes</textarea>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2-circle me-1"></i>Confirm Putaway
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+</div>

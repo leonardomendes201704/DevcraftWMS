@@ -30,6 +30,7 @@
         new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null },
         new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Created.ToString(), Text = "Created", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Created },
         new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed.ToString(), Text = "Printed", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Printed },
+        new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.PutawayCompleted.ToString(), Text = "Putaway completed", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.PutawayCompleted },
         new() { Value = DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled.ToString(), Text = "Canceled", Selected = Model.Query.Status == DevcraftWMS.DemoMvc.Enums.UnitLoadStatus.Canceled }
     };
 
