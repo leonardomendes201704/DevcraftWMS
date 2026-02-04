@@ -118,6 +118,11 @@ public sealed class ReceiptItemFormViewModel
 
     public Guid? LotId { get; set; }
 
+    [MaxLength(50)]
+    public string? LotCode { get; set; }
+
+    public DateOnly? ExpirationDate { get; set; }
+
     [Required]
     public Guid LocationId { get; set; }
 

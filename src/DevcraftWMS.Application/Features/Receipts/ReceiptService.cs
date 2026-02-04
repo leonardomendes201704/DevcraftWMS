@@ -139,6 +139,8 @@ public sealed class ReceiptService : IReceiptService
         Guid receiptId,
         Guid productId,
         Guid? lotId,
+        string? lotCode,
+        DateOnly? expirationDate,
         Guid locationId,
         Guid uomId,
         decimal quantity,
@@ -167,7 +169,9 @@ public sealed class ReceiptService : IReceiptService
             return RequestResult<ReceiptItemDto>.Failure("receipts.product.not_found", "Product not found.");
         }
 
-        if (product.TrackingMode != TrackingMode.None && !lotId.HasValue)
+        lotCode = string.IsNullOrWhiteSpace(lotCode) ? null : lotCode.Trim();
+
+        if (product.TrackingMode != TrackingMode.None && !lotId.HasValue && string.IsNullOrWhiteSpace(lotCode))
         {
             return RequestResult<ReceiptItemDto>.Failure("receipts.lot.required", "Lot is required for the selected product.");
         }
@@ -188,20 +192,64 @@ public sealed class ReceiptService : IReceiptService
 
             if (product.TrackingMode == TrackingMode.LotAndExpiry && !lot.ExpirationDate.HasValue)
             {
+                if (expirationDate.HasValue)
+                {
+                    lot.ExpirationDate = expirationDate;
+                    await _lotRepository.UpdateAsync(lot, cancellationToken);
+                }
+                else
+                {
+                    return RequestResult<ReceiptItemDto>.Failure("receipts.lot.expiration_required", "Lot expiration date is required for the selected product.");
+                }
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(lotCode))
+        {
+            lot = await _lotRepository.GetByCodeAsync(productId, lotCode, cancellationToken);
+
+            if (lot is null)
+            {
+                if (product.TrackingMode == TrackingMode.LotAndExpiry && !expirationDate.HasValue)
+                {
+                    return RequestResult<ReceiptItemDto>.Failure("receipts.lot.expiration_required", "Lot expiration date is required for the selected product.");
+                }
+
+                lot = new Lot
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = productId,
+                    Code = lotCode,
+                    ExpirationDate = expirationDate,
+                    Status = LotStatus.Available
+                };
+
+                await _lotRepository.AddAsync(lot, cancellationToken);
+            }
+        }
+
+        if (product.TrackingMode == TrackingMode.LotAndExpiry && lot is not null && !lot.ExpirationDate.HasValue)
+        {
+            if (expirationDate.HasValue)
+            {
+                lot.ExpirationDate = expirationDate;
+                await _lotRepository.UpdateAsync(lot, cancellationToken);
+            }
+            else
+            {
                 return RequestResult<ReceiptItemDto>.Failure("receipts.lot.expiration_required", "Lot expiration date is required for the selected product.");
             }
+        }
 
-            if (product.MinimumShelfLifeDays.HasValue && lot.ExpirationDate.HasValue)
+        if (product.MinimumShelfLifeDays.HasValue && lot?.ExpirationDate.HasValue == true)
+        {
+            var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
+            var remainingDays = lot.ExpirationDate!.Value.DayNumber - today.DayNumber;
+            if (remainingDays < product.MinimumShelfLifeDays.Value)
             {
-                var today = DateOnly.FromDateTime(_dateTimeProvider.UtcNow);
-                var remainingDays = lot.ExpirationDate.Value.DayNumber - today.DayNumber;
-                if (remainingDays < product.MinimumShelfLifeDays.Value)
+                if (lot.Status != LotStatus.Quarantined)
                 {
-                    if (lot.Status != LotStatus.Quarantined)
-                    {
-                        lot.Status = LotStatus.Quarantined;
-                        await _lotRepository.UpdateAsync(lot, cancellationToken);
-                    }
+                    lot.Status = LotStatus.Quarantined;
+                    await _lotRepository.UpdateAsync(lot, cancellationToken);
                 }
             }
         }

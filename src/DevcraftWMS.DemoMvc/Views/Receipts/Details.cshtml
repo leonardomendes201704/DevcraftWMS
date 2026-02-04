@@ -156,11 +156,27 @@
                     <span class="text-danger small" asp-validation-for="NewItem.ProductId"></span>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Lot (optional)</label>
+                    <label class="form-label">Lot (existing)</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-collection"></i></span>
                         <select id="receipt-lot" asp-for="NewItem.LotId" class="form-select" asp-items="Model.NewItem.Lots"></select>
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lot code</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                        <input asp-for="NewItem.LotCode" class="form-control" maxlength="50" placeholder="LOT-0001" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.LotCode"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Expiration date</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input asp-for="NewItem.ExpirationDate" class="form-control" type="date" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.ExpirationDate"></span>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">UoM</label>
@@ -215,6 +231,8 @@
             const product = document.getElementById('receipt-product');
             const lot = document.getElementById('receipt-lot');
             const uom = document.getElementById('receipt-uom');
+            const lotCodeInput = document.getElementById('NewItem_LotCode');
+            const expirationInput = document.getElementById('NewItem_ExpirationDate');
 
             const buildUrl = () => {
                 const params = new URLSearchParams();
@@ -262,6 +280,8 @@
             if (product) {
                 product.addEventListener('change', () => {
                     if (lot) lot.value = '';
+                    if (lotCodeInput) lotCodeInput.value = '';
+                    if (expirationInput) expirationInput.value = '';
                     navigate();
                 });
             }

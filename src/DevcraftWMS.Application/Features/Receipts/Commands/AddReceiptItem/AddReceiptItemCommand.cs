@@ -8,6 +8,8 @@ public sealed record AddReceiptItemCommand(
     Guid ReceiptId,
     Guid ProductId,
     Guid? LotId,
+    string? LotCode,
+    DateOnly? ExpirationDate,
     Guid LocationId,
     Guid UomId,
     decimal Quantity,

@@ -24,6 +24,8 @@ public interface IReceiptService
         Guid receiptId,
         Guid productId,
         Guid? lotId,
+        string? lotCode,
+        DateOnly? expirationDate,
         Guid locationId,
         Guid uomId,
         decimal quantity,

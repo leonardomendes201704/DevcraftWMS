@@ -1,5 +1,9 @@
 ﻿# History Log
 
+## 2026-02-04
+- TASK-0070 - Recebimento: captura lote/validade completed.
+  - Key changes: added lot code/expiration capture on receipt items, auto-create lots when needed, updated UI/help, and unit test coverage.
+
 ## 2026-02-03
 - Fix - Receipt counts form binding for Save Count.
   - Key changes: bind ReceiptCount form using NewCount prefix to avoid missing ReceiptId.

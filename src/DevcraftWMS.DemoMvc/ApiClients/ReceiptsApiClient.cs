@@ -93,6 +93,8 @@ public sealed class ReceiptsApiClient : ApiClientBase
         => PostAsync<ReceiptItemListItemViewModel>($"/api/receipts/{receiptId}/items", new AddReceiptItemRequest(
             payload.ProductId,
             payload.LotId,
+            payload.LotCode,
+            payload.ExpirationDate,
             payload.LocationId,
             payload.UomId,
             payload.Quantity,
@@ -157,6 +159,8 @@ public sealed record UpdateReceiptRequest(
 public sealed record AddReceiptItemRequest(
     Guid ProductId,
     Guid? LotId,
+    string? LotCode,
+    DateOnly? ExpirationDate,
     Guid LocationId,
     Guid UomId,
     decimal Quantity,

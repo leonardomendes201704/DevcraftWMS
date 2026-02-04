@@ -11,6 +11,7 @@ public interface ILotRepository
     Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default);
     Task<Lot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Lot?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Lot?> GetByCodeAsync(Guid productId, string code, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid productId,
         string? code,

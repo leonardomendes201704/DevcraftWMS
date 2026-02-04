@@ -17,6 +17,8 @@ public sealed record UpdateReceiptRequest(
 public sealed record AddReceiptItemRequest(
     Guid ProductId,
     Guid? LotId,
+    string? LotCode,
+    DateOnly? ExpirationDate,
     Guid LocationId,
     Guid UomId,
     decimal Quantity,

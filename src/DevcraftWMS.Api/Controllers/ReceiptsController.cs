@@ -145,6 +145,8 @@ public sealed class ReceiptsController : ControllerBase
                 id,
                 request.ProductId,
                 request.LotId,
+                request.LotCode,
+                request.ExpirationDate,
                 request.LocationId,
                 request.UomId,
                 request.Quantity,

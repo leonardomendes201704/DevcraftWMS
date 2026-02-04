@@ -18,6 +18,8 @@ public sealed class AddReceiptItemCommandHandler : IRequestHandler<AddReceiptIte
             request.ReceiptId,
             request.ProductId,
             request.LotId,
+            request.LotCode,
+            request.ExpirationDate,
             request.LocationId,
             request.UomId,
             request.Quantity,

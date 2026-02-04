@@ -54,6 +54,15 @@ public sealed class LotRepository : ILotRepository
             .SingleOrDefaultAsync(l => l.Id == id && l.Product != null && l.Product.CustomerId == customerId, cancellationToken);
     }
 
+    public async Task<Lot?> GetByCodeAsync(Guid productId, string code, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.Lots
+            .AsNoTracking()
+            .Include(l => l.Product)
+            .SingleOrDefaultAsync(l => l.ProductId == productId && l.Code == code && l.Product != null && l.Product.CustomerId == customerId, cancellationToken);
+    }
+
     public async Task<int> CountAsync(
         Guid productId,
         string? code,

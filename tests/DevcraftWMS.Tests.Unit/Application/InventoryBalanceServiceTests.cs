@@ -168,7 +168,9 @@ public sealed class InventoryBalanceServiceTests
         public Task AddAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<Lot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_lot?.Id == id ? _lot : null);
-        public Task<Lot?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Lot?>(null);
+        public Task<Lot?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_lot?.Id == id ? _lot : null);
+        public Task<Lot?> GetByCodeAsync(Guid productId, string code, CancellationToken cancellationToken = default)
+            => Task.FromResult(_lot?.ProductId == productId && string.Equals(_lot.Code, code, StringComparison.OrdinalIgnoreCase) ? _lot : null);
         public Task<int> CountAsync(Guid productId, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<int> CountExpiringAsync(DateOnly fromDate, DateOnly toDate, LotStatus? status, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Lot>> ListAsync(Guid productId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Lot>>(Array.Empty<Lot>());

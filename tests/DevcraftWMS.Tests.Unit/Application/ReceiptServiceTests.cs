@@ -61,7 +61,7 @@ public sealed class ReceiptServiceTests
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
-        var result = await service.AddItemAsync(receipt.Id, Guid.NewGuid(), null, Guid.NewGuid(), Guid.NewGuid(), 0, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, Guid.NewGuid(), null, null, null, Guid.NewGuid(), Guid.NewGuid(), 0, null, CancellationToken.None);
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.item.invalid_quantity");
     }
@@ -100,10 +100,97 @@ public sealed class ReceiptServiceTests
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, null, null, null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.lot.required");
+    }
+
+    [Fact]
+    public async Task AddItem_Should_Create_Lot_When_LotCode_Provided()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-008",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            TrackingMode = TrackingMode.Lot
+        };
+
+        var lotRepository = new FakeLotRepository(null);
+        var locationId = Guid.NewGuid();
+        var uomId = Guid.NewGuid();
+        var expiration = new DateOnly(2026, 3, 15);
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
+            new FakeProductRepository(product),
+            lotRepository,
+            new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01", AllowLotTracking = true }),
+            new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-NEW", expiration, locationId, uomId, 1, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        lotRepository.AddedLot.Should().NotBeNull();
+        lotRepository.AddedLot!.Code.Should().Be("LOT-NEW");
+        lotRepository.AddedLot.ExpirationDate.Should().Be(expiration);
+    }
+
+    [Fact]
+    public async Task AddItem_Should_Return_Failure_When_Expiration_Missing_For_LotAndExpiry()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-009",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            TrackingMode = TrackingMode.LotAndExpiry
+        };
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
+            new FakeProductRepository(product),
+            new FakeLotRepository(null),
+            new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01", AllowExpiryTracking = true, AllowLotTracking = true }),
+            new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-EXP", null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("receipts.lot.expiration_required");
     }
 
     [Fact]
@@ -159,7 +246,7 @@ public sealed class ReceiptServiceTests
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, lotId, location.Id, uomId, 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, lotId, null, null, location.Id, uomId, 1, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("locations.location.tracking_not_allowed");
@@ -212,7 +299,7 @@ public sealed class ReceiptServiceTests
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, lot.Id, locationId, uomId, 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, lot.Id, null, null, locationId, uomId, 1, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         lot.Status.Should().Be(LotStatus.Quarantined);
@@ -474,6 +561,9 @@ public sealed class ReceiptServiceTests
     {
         private readonly Lot? _lot;
 
+        public Lot? AddedLot { get; private set; }
+        public Lot? UpdatedLot { get; private set; }
+
         public FakeLotRepository(Lot? lot)
         {
             _lot = lot;
@@ -481,10 +571,21 @@ public sealed class ReceiptServiceTests
 
         public Task<bool> CodeExistsAsync(Guid productId, string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(Guid productId, string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
-        public Task AddAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task AddAsync(Lot lot, CancellationToken cancellationToken = default)
+        {
+            AddedLot = lot;
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default)
+        {
+            UpdatedLot = lot;
+            return Task.CompletedTask;
+        }
         public Task<Lot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_lot?.Id == id ? _lot : null);
         public Task<Lot?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_lot?.Id == id ? _lot : null);
+        public Task<Lot?> GetByCodeAsync(Guid productId, string code, CancellationToken cancellationToken = default)
+            => Task.FromResult(_lot?.ProductId == productId && string.Equals(_lot.Code, code, StringComparison.OrdinalIgnoreCase) ? _lot : null);
         public Task<int> CountAsync(Guid productId, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<Lot>> ListAsync(Guid productId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Lot>>(Array.Empty<Lot>());
         public Task<int> CountExpiringAsync(DateOnly expirationFrom, DateOnly expirationTo, LotStatus? status, CancellationToken cancellationToken = default) => Task.FromResult(0);
