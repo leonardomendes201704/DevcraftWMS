@@ -16,6 +16,7 @@ public sealed class UnitLoadServiceTests
         var service = new UnitLoadService(
             new FakeUnitLoadRepository(),
             new FakeReceiptRepository(null),
+            new FakePutawayTaskRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -41,6 +42,7 @@ public sealed class UnitLoadServiceTests
         var service = new UnitLoadService(
             repository,
             new FakeReceiptRepository(receipt),
+            new FakePutawayTaskRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -66,9 +68,11 @@ public sealed class UnitLoadServiceTests
         };
 
         var repository = new FakeUnitLoadRepository(unitLoad);
+        var putawayRepository = new FakePutawayTaskRepository();
         var service = new UnitLoadService(
             repository,
             new FakeReceiptRepository(null),
+            putawayRepository,
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -78,6 +82,8 @@ public sealed class UnitLoadServiceTests
         result.Value!.Content.Should().Contain("SSCC:");
         repository.Stored[0].Status.Should().Be(UnitLoadStatus.Printed);
         repository.Stored[0].PrintedAtUtc.Should().NotBeNull();
+        putawayRepository.Stored.Should().ContainSingle();
+        putawayRepository.Stored[0].Status.Should().Be(PutawayTaskStatus.Pending);
     }
 
     private sealed class FakeUnitLoadRepository : IUnitLoadRepository
@@ -155,6 +161,35 @@ public sealed class UnitLoadServiceTests
     private sealed class FakeCustomerContext : ICustomerContext
     {
         public Guid? CustomerId { get; } = Guid.NewGuid();
+    }
+
+    private sealed class FakePutawayTaskRepository : IPutawayTaskRepository
+    {
+        public List<PutawayTask> Stored { get; } = new();
+
+        public Task AddAsync(PutawayTask task, CancellationToken cancellationToken = default)
+        {
+            Stored.Add(task);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(PutawayTask task, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<PutawayTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.SingleOrDefault(x => x.Id == id));
+
+        public Task<PutawayTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.SingleOrDefault(x => x.Id == id));
+
+        public Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.Any(x => x.UnitLoadId == unitLoadId));
+
+        public Task<int> CountAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(Stored.Count);
+
+        public Task<IReadOnlyList<PutawayTask>> ListAsync(Guid? warehouseId, Guid? receiptId, Guid? unitLoadId, PutawayTaskStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<PutawayTask>>(Stored.ToList());
     }
 
     private sealed class FakeDateTimeProvider : IDateTimeProvider

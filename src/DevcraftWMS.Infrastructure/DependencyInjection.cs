@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IReceiptDivergenceRepository, ReceiptDivergenceRepository>();
         services.AddScoped<IQualityInspectionRepository, QualityInspectionRepository>();
         services.AddScoped<IUnitLoadRepository, UnitLoadRepository>();
+        services.AddScoped<IPutawayTaskRepository, PutawayTaskRepository>();
         services.AddScoped<IAsnRepository, AsnRepository>();
         services.AddScoped<IAsnAttachmentRepository, AsnAttachmentRepository>();
         services.AddScoped<IAsnItemRepository, AsnItemRepository>();

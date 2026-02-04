@@ -14,17 +14,20 @@ public sealed class UnitLoadService : IUnitLoadService
 
     private readonly IUnitLoadRepository _unitLoadRepository;
     private readonly IReceiptRepository _receiptRepository;
+    private readonly IPutawayTaskRepository _putawayTaskRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
 
     public UnitLoadService(
         IUnitLoadRepository unitLoadRepository,
         IReceiptRepository receiptRepository,
+        IPutawayTaskRepository putawayTaskRepository,
         ICustomerContext customerContext,
         IDateTimeProvider dateTimeProvider)
     {
         _unitLoadRepository = unitLoadRepository;
         _receiptRepository = receiptRepository;
+        _putawayTaskRepository = putawayTaskRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
     }
@@ -144,6 +147,8 @@ public sealed class UnitLoadService : IUnitLoadService
         unitLoad.PrintedAtUtc = _dateTimeProvider.UtcNow;
         await _unitLoadRepository.UpdateAsync(unitLoad, cancellationToken);
 
+        await EnsurePutawayTaskAsync(unitLoad, cancellationToken);
+
         var printedAt = unitLoad.PrintedAtUtc ?? _dateTimeProvider.UtcNow;
         var receiptNumber = unitLoad.Receipt?.ReceiptNumber ?? "-";
         var warehouseName = unitLoad.Warehouse?.Name ?? "-";
@@ -158,6 +163,26 @@ public sealed class UnitLoadService : IUnitLoadService
             labelContent);
 
         return RequestResult<UnitLoadLabelDto>.Success(dto);
+    }
+
+    private async Task EnsurePutawayTaskAsync(UnitLoad unitLoad, CancellationToken cancellationToken)
+    {
+        if (await _putawayTaskRepository.ExistsByUnitLoadIdAsync(unitLoad.Id, cancellationToken))
+        {
+            return;
+        }
+
+        var task = new PutawayTask
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = unitLoad.CustomerId,
+            WarehouseId = unitLoad.WarehouseId,
+            ReceiptId = unitLoad.ReceiptId,
+            UnitLoadId = unitLoad.Id,
+            Status = PutawayTaskStatus.Pending
+        };
+
+        await _putawayTaskRepository.AddAsync(task, cancellationToken);
     }
 
     private async Task<string?> GenerateUniqueSsccAsync(CancellationToken cancellationToken)

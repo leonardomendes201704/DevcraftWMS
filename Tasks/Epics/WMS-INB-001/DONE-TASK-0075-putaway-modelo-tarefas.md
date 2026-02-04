@@ -28,5 +28,13 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Status inicial Pendente
 - UI listagem basica
 
+## How to test
+1) Crie um Unit Load e execute Print Label (liberar UL).
+2) Acesse DemoMvc -> Putaway Tasks.
+   - Esperado: tarefa criada com Status = Pending e SSCC do UL.
+3) Opcional via API:
+   - GET /api/putaway-tasks (com X-Customer-Id)
+   - Esperado: tarefa listada.
+
 ## Status
-PENDENTE
+DONE

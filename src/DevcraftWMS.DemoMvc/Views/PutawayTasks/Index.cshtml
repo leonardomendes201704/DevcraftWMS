@@ -1,0 +1,121 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.PutawayTasks.PutawayTaskListPageViewModel
+@{
+    ViewData["Title"] = "Putaway Tasks";
+    ViewData["Subtitle"] = "Tasks generated when unit loads are released";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "PutawayTasks",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["ReceiptId"] = Model.Query.ReceiptId?.ToString(),
+            ["UnitLoadId"] = Model.Query.UnitLoadId?.ToString(),
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<PutawayTaskStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.ToString(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "PutawayTasks",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Warehouse Id", Name = "WarehouseId", Type = GridFilterType.Text, Value = Model.Query.WarehouseId?.ToString() },
+            new() { Label = "Receipt Id", Name = "ReceiptId", Type = GridFilterType.Text, Value = Model.Query.ReceiptId?.ToString() },
+            new() { Label = "Unit Load Id", Name = "UnitLoadId", Type = GridFilterType.Text, Value = Model.Query.UnitLoadId?.ToString() },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "PutawayTasks")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "putawayTaskFilters",
+        Title = "Putaway task filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.PutawayTasks.PutawayTaskListItemViewModel>()
+        .WithTitle("Putaway Tasks")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("SSCC", item => new HtmlString(HtmlEncoder.Default.Encode(item.SsccInternal)), "SsccInternal")
+        .AddColumn("Receipt", item => new HtmlString(HtmlEncoder.Default.Encode(item.ReceiptNumber)), "ReceiptNumber")
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{item.Status}</span>"), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "PutawayTasks", new { id = item.Id }))
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#putawayTasksHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_PutawayTasksHelp" />

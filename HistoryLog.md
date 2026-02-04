@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0075 - Putaway task model and generation completed.
+  - Key changes: added PutawayTask entity/repository/queries, created task on UL label print, added API + DemoMvc list/details UI, migration AddPutawayTasks, and unit test coverage.
 - Guideline - Require "How to test" steps in chat after completing tasks.
   - Key changes: added PR checklist rule to include concrete testing steps in the response and in the completed task file.
 - TASK-0074 - Quarantine stock blocking completed.

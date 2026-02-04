@@ -1,0 +1,45 @@
+@model DevcraftWMS.DemoMvc.ViewModels.PutawayTasks.PutawayTaskDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Putaway Task {Model.Task.SsccInternal}";
+    ViewData["Subtitle"] = "Putaway task details";
+
+    var statusBadge = Model.Task.Status switch
+    {
+        DevcraftWMS.DemoMvc.Enums.PutawayTaskStatus.Completed => "text-bg-success",
+        DevcraftWMS.DemoMvc.Enums.PutawayTaskStatus.InProgress => "text-bg-warning",
+        DevcraftWMS.DemoMvc.Enums.PutawayTaskStatus.Canceled => "text-bg-secondary",
+        _ => "text-bg-info"
+    };
+
+    var summary = new List<KeyValuePair<string, string>>
+    {
+        new("SSCC", Model.Task.SsccInternal),
+        new("Receipt", Model.Task.ReceiptNumber),
+        new("Warehouse", Model.Task.WarehouseName),
+        new("Status", Model.Task.Status.ToString()),
+        new("Created", Model.Task.CreatedAtUtc.ToLocalTime().ToString("g"))
+    };
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="PutawayTasks" asp-action="Index">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+    <span class="badge @statusBadge">@Model.Task.Status</span>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-3">
+            @foreach (var item in summary)
+            {
+                <div class="col-md-4">
+                    <div class="text-muted small">@item.Key</div>
+                    <div class="fw-semibold">@item.Value</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
