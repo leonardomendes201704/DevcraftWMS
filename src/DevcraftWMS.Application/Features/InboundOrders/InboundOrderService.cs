@@ -15,6 +15,7 @@ public sealed class InboundOrderService : IInboundOrderService
     private readonly IPutawayTaskRepository _putawayTaskRepository;
     private readonly IUnitLoadRepository _unitLoadRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly InboundOrderNotifications.IInboundOrderNotificationService _notificationService;
 
     public InboundOrderService(
         IInboundOrderRepository inboundOrderRepository,
@@ -22,7 +23,8 @@ public sealed class InboundOrderService : IInboundOrderService
         IReceiptRepository receiptRepository,
         IPutawayTaskRepository putawayTaskRepository,
         IUnitLoadRepository unitLoadRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        InboundOrderNotifications.IInboundOrderNotificationService notificationService)
     {
         _inboundOrderRepository = inboundOrderRepository;
         _asnRepository = asnRepository;
@@ -30,6 +32,7 @@ public sealed class InboundOrderService : IInboundOrderService
         _putawayTaskRepository = putawayTaskRepository;
         _unitLoadRepository = unitLoadRepository;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
     }
 
     public async Task<RequestResult<PagedResult<InboundOrderListItemDto>>> ListAsync(
@@ -310,6 +313,8 @@ public sealed class InboundOrderService : IInboundOrderService
 
         var items = await _inboundOrderRepository.ListItemsAsync(order.Id, cancellationToken);
         order.StatusEvents.Add(statusEvent);
+
+        await _notificationService.NotifyCompletionAsync(order, targetStatus, cancellationToken);
 
         var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
         var mappedEvents = order.StatusEvents

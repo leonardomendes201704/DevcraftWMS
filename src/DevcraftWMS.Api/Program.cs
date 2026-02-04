@@ -75,6 +75,14 @@ builder.Services.AddOptions<DevcraftWMS.Application.Features.ReceiptDivergences.
     .Bind(builder.Configuration.GetSection(DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions.SectionName))
     .Validate(options => options.MaxEvidenceBytes > 0, "ReceiptDivergences:MaxEvidenceBytes must be greater than zero.")
     .ValidateOnStart();
+builder.Services.AddOptions<DevcraftWMS.Application.Features.InboundOrderNotifications.InboundOrderNotificationOptions>()
+    .Bind(builder.Configuration.GetSection("Notifications:InboundOrders"))
+    .Validate(options => !options.WebhookEnabled || !string.IsNullOrWhiteSpace(options.WebhookUrl),
+        "Notifications:InboundOrders:WebhookUrl is required when WebhookEnabled is true.")
+    .Validate(options => !options.WebhookEnabled || Uri.IsWellFormedUriString(options.WebhookUrl, UriKind.Absolute),
+        "Notifications:InboundOrders:WebhookUrl must be an absolute URI when WebhookEnabled is true.")
+    .Validate(options => options.WebhookTimeoutSeconds > 0, "Notifications:InboundOrders:WebhookTimeoutSeconds must be greater than zero.")
+    .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingOptions>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOptions>>().Value);
 builder.Services.AddSingleton<IAppSettingsReader, ApiSettingsReader>();

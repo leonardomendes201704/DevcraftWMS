@@ -29,4 +29,11 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Reenvio manual
 
 ## Status
-PENDENTE
+CONCLUIDO
+
+## Como testar
+1. Execute a API e o Portal.
+2. No Portal, abra uma OE e finalize (Complete Order).
+3. Na mesma tela, verifique a secao "Notifications" com registros Email/Portal (Webhook se habilitado).
+4. Clique em "Resend" e confirme o novo envio (Attempts incrementa).
+5. Opcional: habilite `Notifications:InboundOrders:WebhookEnabled=true` e configure `WebhookUrl` para validar webhook.

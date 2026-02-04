@@ -24,6 +24,7 @@ using DevcraftWMS.Application.Features.InventoryMovements;
 using DevcraftWMS.Application.Features.Zones;
 using DevcraftWMS.Application.Features.Asns;
 using DevcraftWMS.Application.Features.InboundOrders;
+using DevcraftWMS.Application.Features.InboundOrderNotifications;
 using DevcraftWMS.Application.Features.GateCheckins;
 using DevcraftWMS.Application.Features.UnitLoads;
 using DevcraftWMS.Application.Features.ReceiptCounts;
@@ -61,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();
         services.AddScoped<IInboundOrderReportService, InboundOrderReportService>();
+        services.AddScoped<IInboundOrderNotificationService, InboundOrderNotificationService>();
         services.AddScoped<IGateCheckinService, GateCheckinService>();
         services.AddScoped<IUnitLoadService, UnitLoadService>();
         services.AddScoped<IReceiptCountService, ReceiptCountService>();

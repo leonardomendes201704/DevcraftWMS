@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0081 - Inbound order notifications completed.
+  - Key changes: added notification entity/repository, email/webhook/portal delivery with templates, Portal UI with resend, API endpoints, integration tests, and migration AddInboundOrderNotifications.
 - TASK-0080 - OE receipt report completed.
   - Key changes: added receipt report service/queries + export endpoint, Portal/DemoMvc report views and CSV download, updated receipt repository includes, and integration tests for report/export.
 - TASK-0079 - OE completion validations completed.

@@ -375,6 +375,11 @@ Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back f
 Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
+Notifications:InboundOrders:EmailEnabled -> Enable inbound order email notifications
+Notifications:InboundOrders:WebhookEnabled -> Enable inbound order webhook notifications
+Notifications:InboundOrders:PortalEnabled -> Enable inbound order portal notifications
+Notifications:InboundOrders:WebhookUrl -> Webhook endpoint for inbound order notifications
+Notifications:InboundOrders:WebhookTimeoutSeconds -> Webhook timeout in seconds
 ReceiptDivergences:EvidenceRequiredTypes -> Divergence types that require evidence photo
 ReceiptDivergences:MaxEvidenceBytes     -> Max evidence file size (bytes)
 ApiBaseUrl                          -> Demo MVC API base URL

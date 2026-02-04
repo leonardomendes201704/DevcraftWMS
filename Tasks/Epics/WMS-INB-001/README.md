@@ -51,7 +51,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0078] Putaway: reatribuicao manual | Prioridade: P1 | Dependencias: TASK-0075 | Estimativa: 4h
 - [DONE-TASK-0079] OE: validacoes de encerramento | Prioridade: P0 | Dependencias: TASK-0077,TASK-0074 | Estimativa: 5h
 - [DONE-TASK-0080] OE: relatorio final de recebimento | Prioridade: P1 | Dependencias: TASK-0079 | Estimativa: 6h
-- [TASK-0081] Notificacao ao cliente (portal/email/webhook) | Prioridade: P1 | Dependencias: TASK-0080,TASK-0045 | Estimativa: 6h
+- [DONE-TASK-0081] Notificacao ao cliente (portal/email/webhook) | Prioridade: P1 | Dependencias: TASK-0080,TASK-0045 | Estimativa: 6h
 - [TASK-0082] KPIs inbound (chegada->doca->conferencia->armazenado) | Prioridade: P1 | Dependencias: TASK-0079 | Estimativa: 6h
 - [TASK-0083] Fluxos alternativos: sem OE e entrada parcial | Prioridade: P2 | Dependencias: TASK-0058,TASK-0066 | Estimativa: 6h
 - [TASK-0084] Cross-dock: excecao sem putaway | Prioridade: P2 | Dependencias: TASK-0075 | Estimativa: 6h

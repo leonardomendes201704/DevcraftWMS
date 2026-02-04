@@ -49,10 +49,17 @@ public sealed class InboundOrdersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var notificationsResult = await _ordersClient.ListNotificationsAsync(id, cancellationToken);
+        if (!notificationsResult.IsSuccess)
+        {
+            TempData["Error"] = notificationsResult.Error ?? "Unable to load notifications.";
+        }
+
         return View(new InboundOrderDetailViewModel
         {
             Order = result.Data,
             Items = result.Data.Items,
+            Notifications = notificationsResult.Data ?? Array.Empty<InboundOrderNotificationDto>(),
             Parameters = new UpdateInboundOrderParametersViewModel
             {
                 InspectionLevel = result.Data.InspectionLevel,
@@ -146,6 +153,22 @@ public sealed class InboundOrdersController : Controller
         else
         {
             TempData["Success"] = "Inbound order closed.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ResendNotification(Guid id, Guid notificationId, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.ResendNotificationAsync(id, notificationId, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to resend notification.";
+        }
+        else
+        {
+            TempData["Success"] = "Notification resend queued.";
         }
 
         return RedirectToAction(nameof(Details), new { id });

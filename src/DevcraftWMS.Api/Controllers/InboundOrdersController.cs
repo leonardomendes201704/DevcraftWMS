@@ -11,6 +11,8 @@ using DevcraftWMS.Application.Features.InboundOrders.Queries.ListInboundOrders;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrderReceiptReport;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.ExportInboundOrderReceiptReport;
+using DevcraftWMS.Application.Features.InboundOrderNotifications.Queries.ListInboundOrderNotifications;
+using DevcraftWMS.Application.Features.InboundOrderNotifications.Commands.ResendInboundOrderNotification;
 using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListInboundOrderDivergences;
 using DevcraftWMS.Domain.Enums;
 
@@ -103,6 +105,20 @@ public sealed class InboundOrdersController : ControllerBase
         }
 
         return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
+    }
+
+    [HttpGet("inbound-orders/{id:guid}/notifications")]
+    public async Task<IActionResult> ListNotifications(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListInboundOrderNotificationsQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("inbound-orders/{id:guid}/notifications/{notificationId:guid}/resend")]
+    public async Task<IActionResult> ResendNotification(Guid id, Guid notificationId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ResendInboundOrderNotificationCommand(id, notificationId), cancellationToken);
+        return this.ToActionResult(result);
     }
 
     [HttpPut("inbound-orders/{id:guid}/parameters")]

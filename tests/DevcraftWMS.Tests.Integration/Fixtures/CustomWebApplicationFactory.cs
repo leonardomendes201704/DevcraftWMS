@@ -55,7 +55,12 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Email:Processing:OutboxPollingSeconds"] = "9999",
                 ["Email:Processing:InboxPollingSeconds"] = "9999",
                 ["Email:Processing:BatchSize"] = "1",
-                ["Email:Processing:MaxAttempts"] = "3"
+                ["Email:Processing:MaxAttempts"] = "3",
+                ["Notifications:InboundOrders:EmailEnabled"] = "true",
+                ["Notifications:InboundOrders:WebhookEnabled"] = "false",
+                ["Notifications:InboundOrders:PortalEnabled"] = "true",
+                ["Notifications:InboundOrders:WebhookUrl"] = "",
+                ["Notifications:InboundOrders:WebhookTimeoutSeconds"] = "10"
             };
             config.AddInMemoryCollection(overrides);
         });

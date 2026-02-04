@@ -20,6 +20,9 @@ using DevcraftWMS.Infrastructure.Persistence.Logging.Writers;
 using DevcraftWMS.Infrastructure.Persistence.Logging.Workers;
 using DevcraftWMS.Infrastructure.Realtime;
 using DevcraftWMS.Infrastructure.Seeding;
+using DevcraftWMS.Infrastructure.Notifications;
+using Microsoft.Extensions.Options;
+using DevcraftWMS.Application.Features.InboundOrderNotifications;
 
 namespace DevcraftWMS.Infrastructure;
 
@@ -66,10 +69,17 @@ public static class DependencyInjection
         services.AddScoped<IUomRepository, UomRepository>();
         services.AddScoped<IProductUomRepository, ProductUomRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
+        services.AddScoped<IInboundOrderNotificationRepository, InboundOrderNotificationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserProviderRepository, UserProviderRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddHttpClient<IExternalAuthService, ExternalAuthService>();
+        services.AddHttpClient<IWebhookSender, WebhookSender>()
+            .ConfigureHttpClient((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<InboundOrderNotificationOptions>>().Value;
+                client.Timeout = TimeSpan.FromSeconds(options.WebhookTimeoutSeconds);
+            });
         services.AddOptions<ExternalAuthOptions>()
             .Bind(configuration.GetSection("ExternalAuth"))
             .ValidateOnStart();
