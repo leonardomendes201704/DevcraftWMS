@@ -43,4 +43,7 @@ public sealed class InboundOrdersApiClient : ApiClientBase
 
     public Task<ApiFileResult> ExportReportAsync(Guid id, CancellationToken cancellationToken)
         => GetFileAsync($"/api/inbound-orders/{id}/report/export", cancellationToken);
+
+    public Task<ApiResult<object>> ApproveEmergencyAsync(Guid id, string? notes, CancellationToken cancellationToken)
+        => PostAsync<object>($"/api/inbound-orders/{id}/approve-emergency", new { notes }, cancellationToken);
 }

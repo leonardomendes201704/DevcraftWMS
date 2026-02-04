@@ -108,6 +108,14 @@ else
         <div class="col-12 col-lg-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
+                    <div class="text-muted small">Pending Qty</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.PendingQuantity</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
                     <div class="text-muted small">Divergences</div>
                     <div class="h4 mb-0">@Model.Report.Summary.DivergenceCount</div>
                 </div>
@@ -150,6 +158,50 @@ else
                                     <td class="text-end">@line.ExpectedQuantity</td>
                                     <td class="text-end">@line.ReceivedQuantity</td>
                                     <td class="text-end">@line.Variance</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Pending Lines</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>UoM</th>
+                            <th>Lot</th>
+                            <th>Expiry</th>
+                            <th class="text-end">Expected</th>
+                            <th class="text-end">Received</th>
+                            <th class="text-end">Pending</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.PendingLines.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No pending quantities.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var line in Model.Report.PendingLines)
+                            {
+                                <tr>
+                                    <td>@line.ProductCode - @line.ProductName</td>
+                                    <td>@line.UomCode</td>
+                                    <td>@line.LotCode</td>
+                                    <td>@line.ExpirationDate?.ToString("yyyy-MM-dd")</td>
+                                    <td class="text-end">@line.ExpectedQuantity</td>
+                                    <td class="text-end">@line.ReceivedQuantity</td>
+                                    <td class="text-end">@Math.Abs(line.Variance)</td>
                                 </tr>
                             }
                         }
@@ -210,6 +262,7 @@ else
                 <ul>
                     <li><strong>Summary cards</strong> show the totals and variance.</li>
                     <li><strong>Receipt Lines</strong> list received quantities by lot/expiry.</li>
+                    <li><strong>Pending Lines</strong> highlight quantities still missing (partial receipts).</li>
                     <li><strong>Divergences</strong> highlight receiving exceptions and evidence counts.</li>
                     <li><strong>Export CSV</strong> provides a downloadable file for sharing.</li>
                 </ul>

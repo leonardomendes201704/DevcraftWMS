@@ -30,6 +30,14 @@ public sealed class CreateGateCheckinCommandValidator : AbstractValidator<Create
         RuleFor(x => x)
             .Must(HasInboundOrderOrDocument)
             .WithMessage("InboundOrderId or DocumentNumber is required.");
+
+        RuleFor(x => x.WarehouseId)
+            .Must(id => !id.HasValue || id.Value != Guid.Empty)
+            .WithMessage("WarehouseId cannot be empty.");
+
+        RuleFor(x => x)
+            .Must(HasWarehouseForEmergency)
+            .WithMessage("WarehouseId is required to create an emergency inbound order.");
     }
 
     private static bool HasInboundOrderOrDocument(CreateGateCheckinCommand command)
@@ -37,5 +45,22 @@ public sealed class CreateGateCheckinCommandValidator : AbstractValidator<Create
         var hasInboundOrder = command.InboundOrderId.HasValue && command.InboundOrderId.Value != Guid.Empty;
         var hasDocument = !string.IsNullOrWhiteSpace(command.DocumentNumber);
         return hasInboundOrder || hasDocument;
+    }
+
+    private static bool HasWarehouseForEmergency(CreateGateCheckinCommand command)
+    {
+        var hasInboundOrder = command.InboundOrderId.HasValue && command.InboundOrderId.Value != Guid.Empty;
+        if (hasInboundOrder)
+        {
+            return true;
+        }
+
+        var hasDocument = !string.IsNullOrWhiteSpace(command.DocumentNumber);
+        if (!hasDocument)
+        {
+            return true;
+        }
+
+        return command.WarehouseId.HasValue && command.WarehouseId.Value != Guid.Empty;
     }
 }

@@ -112,6 +112,9 @@
         .WithTableCssClass("table align-middle mb-0 grid-table")
         .WithFilters(filters)
         .AddColumn("Order", item => new HtmlString(HtmlEncoder.Default.Encode(item.OrderNumber)), "OrderNumber")
+        .AddColumn("Emergency", item => item.IsEmergency
+            ? new HtmlString("<span class=\"badge text-bg-danger\">Emergency</span>")
+            : new HtmlString("<span class=\"text-muted\">-</span>"))
         .AddColumn("ASN", item => new HtmlString(HtmlEncoder.Default.Encode(item.AsnNumber ?? "-")), "AsnNumber")
         .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
         .AddColumn("Status", item => new HtmlString(item.Status switch
@@ -139,6 +142,11 @@
             item => item.Status is 3 or 4 or 5 ? null : Url.Action("StartReceipt", "InboundOrders", new { id = item.Id }),
             "btn btn-sm btn-outline-success",
             "bi bi-box-arrow-in-right")
+        .AddAction(
+            "Approve Emergency",
+            item => item.IsEmergency && item.Status == 1 ? Url.Action("ApproveEmergency", "InboundOrders", new { id = item.Id }) : null,
+            "btn btn-sm btn-outline-warning",
+            "bi bi-check2-circle")
         .AddAction(
             "Report",
             item => Url.Action("Report", "InboundOrders", new { id = item.Id }),
@@ -172,6 +180,7 @@
                 <ul>
                     <li><strong>Status and Priority</strong>: focus on urgent inbound operations first.</li>
                     <li><strong>Warehouse</strong>: see orders by site.</li>
+                    <li><strong>Emergency</strong>: orders created from gate check-in without an OE; approve before starting receipts.</li>
                     <li><strong>Start Receipt</strong>: open a receiving session linked to the selected inbound order.</li>
                     <li><strong>Report</strong>: review the final receiving summary and export the CSV.</li>
                 </ul>

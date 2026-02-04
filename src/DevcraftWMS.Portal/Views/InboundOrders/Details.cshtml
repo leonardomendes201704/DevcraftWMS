@@ -69,6 +69,17 @@ else
                     <span class="badge bg-primary-subtle text-primary">@StatusLabel(Model.Order.Status)</span>
                 </div>
                 <div class="col-12 col-lg-4">
+                    <div class="text-muted small">Type</div>
+                    @if (Model.Order.IsEmergency)
+                    {
+                        <span class="badge text-bg-danger">Emergency</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Standard</span>
+                    }
+                </div>
+                <div class="col-12 col-lg-4">
                     <div class="text-muted small">Priority</div>
                     <span class="badge bg-secondary-subtle text-secondary">@PriorityLabel(Model.Order.Priority)</span>
                 </div>

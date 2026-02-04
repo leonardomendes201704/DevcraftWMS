@@ -15,6 +15,7 @@ public sealed class InboundOrder : AuditableEntity
     public InboundOrderStatus Status { get; set; } = InboundOrderStatus.Issued;
     public InboundOrderPriority Priority { get; set; } = InboundOrderPriority.Normal;
     public InboundOrderInspectionLevel InspectionLevel { get; set; } = InboundOrderInspectionLevel.None;
+    public bool IsEmergency { get; set; }
     public string? SuggestedDock { get; set; }
     public string? CancelReason { get; set; }
     public DateTime? CanceledAtUtc { get; set; }

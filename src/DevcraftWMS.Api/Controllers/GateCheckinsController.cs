@@ -82,7 +82,8 @@ public sealed class GateCheckinsController : ControllerBase
                 request.DriverName,
                 request.CarrierName,
                 request.ArrivalAtUtc,
-                request.Notes),
+                request.Notes,
+                request.WarehouseId),
             cancellationToken);
 
         if (result.IsSuccess && result.Value is not null)

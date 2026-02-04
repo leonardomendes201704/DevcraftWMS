@@ -92,6 +92,49 @@ public sealed class GateCheckinCrudTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task Create_Should_Create_Emergency_InboundOrder_When_Document_Only()
+    {
+        var client = _factory.CreateClient();
+        var warehouseId = await CreateWarehouseAsync(client);
+
+        var createPayload = JsonSerializer.Serialize(new
+        {
+            inboundOrderId = (Guid?)null,
+            documentNumber = "DOC-EMG-001",
+            vehiclePlate = "EMG1D23",
+            driverName = "Emergency Driver",
+            carrierName = "Carrier",
+            arrivalAtUtc = new DateTime(2026, 2, 3, 8, 0, 0, DateTimeKind.Utc),
+            notes = "Emergency check-in",
+            warehouseId
+        });
+
+        var createResponse = await client.PostAsync("/api/gate/checkins", new StringContent(createPayload, Encoding.UTF8, "application/json"));
+        var createBody = await createResponse.Content.ReadAsStringAsync();
+        createResponse.IsSuccessStatusCode.Should().BeTrue(createBody);
+
+        using var createDoc = JsonDocument.Parse(createBody);
+        var inboundOrderId = createDoc.RootElement.GetProperty("inboundOrderId").GetGuid();
+        inboundOrderId.Should().NotBe(Guid.Empty);
+
+        var orderResponse = await client.GetAsync($"/api/inbound-orders/{inboundOrderId}");
+        var orderBody = await orderResponse.Content.ReadAsStringAsync();
+        orderResponse.IsSuccessStatusCode.Should().BeTrue(orderBody);
+
+        using var orderDoc = JsonDocument.Parse(orderBody);
+        orderDoc.RootElement.GetProperty("isEmergency").GetBoolean().Should().BeTrue();
+        orderDoc.RootElement.GetProperty("status").GetInt32().Should().Be(1);
+
+        var approvePayload = JsonSerializer.Serialize(new { notes = "Approve emergency" });
+        var approveResponse = await client.PostAsync($"/api/inbound-orders/{inboundOrderId}/approve-emergency", new StringContent(approvePayload, Encoding.UTF8, "application/json"));
+        var approveBody = await approveResponse.Content.ReadAsStringAsync();
+        approveResponse.IsSuccessStatusCode.Should().BeTrue(approveBody);
+
+        using var approveDoc = JsonDocument.Parse(approveBody);
+        approveDoc.RootElement.GetProperty("status").GetInt32().Should().Be(0);
+    }
+
     private static async Task<(Guid OrderId, string DocumentNumber)> CreateInboundOrderAsync(HttpClient client)
     {
         var warehouseId = await CreateWarehouseAsync(client);

@@ -331,6 +331,11 @@ public sealed class ReceiptService : IReceiptService
             return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.status_locked", "Inbound order status does not allow receipt start.");
         }
 
+        if (inboundOrder.IsEmergency && inboundOrder.Status == InboundOrderStatus.Scheduled)
+        {
+            return RequestResult<ReceiptDetailDto>.Failure("receipts.inbound_order.emergency_approval_required", "Emergency inbound order must be approved before starting receipts.");
+        }
+
         var existing = await _receiptRepository.GetByInboundOrderIdAsync(inboundOrderId, cancellationToken);
         if (existing is not null)
         {

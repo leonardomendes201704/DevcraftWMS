@@ -11,6 +11,7 @@ public sealed record InboundOrderListItemDto(
     InboundOrderPriority Priority,
     DateOnly? ExpectedArrivalDate,
     DateTime CreatedAtUtc,
+    bool IsEmergency,
     bool IsActive);
 
 public sealed record InboundOrderDetailDto(
@@ -27,6 +28,7 @@ public sealed record InboundOrderDetailDto(
     InboundOrderStatus Status,
     InboundOrderPriority Priority,
     InboundOrderInspectionLevel InspectionLevel,
+    bool IsEmergency,
     string? SuggestedDock,
     string? CancelReason,
     DateTime? CanceledAtUtc,

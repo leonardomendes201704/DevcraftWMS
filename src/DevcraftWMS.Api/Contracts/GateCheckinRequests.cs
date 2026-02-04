@@ -7,7 +7,8 @@ public sealed record CreateGateCheckinRequest(
     string DriverName,
     string? CarrierName,
     DateTime? ArrivalAtUtc,
-    string? Notes);
+    string? Notes,
+    Guid? WarehouseId);
 
 public sealed record UpdateGateCheckinRequest(
     Guid? InboundOrderId,

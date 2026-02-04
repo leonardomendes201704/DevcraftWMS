@@ -28,6 +28,8 @@ public sealed class InboundOrderReceiptReportTests : IClassFixture<CustomWebAppl
         var summary = document.RootElement.GetProperty("summary");
         summary.GetProperty("lineCount").GetInt32().Should().BeGreaterThan(0);
         summary.GetProperty("totalExpected").GetDecimal().Should().Be(5m);
+        summary.GetProperty("pendingLineCount").GetInt32().Should().Be(1);
+        summary.GetProperty("pendingQuantity").GetDecimal().Should().Be(5m);
     }
 
     [Fact]

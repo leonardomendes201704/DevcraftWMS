@@ -19,6 +19,20 @@
             <div class="card-body p-4">
                 <form asp-action="Create" method="post" class="d-grid gap-3">
                     <div>
+                        <label class="form-label">Warehouse</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-building"></i></span>
+                            <select asp-for="WarehouseId" class="form-select">
+                                @foreach (var option in Model.Warehouses)
+                                {
+                                    <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <span class="text-danger small" asp-validation-for="WarehouseId"></span>
+                        <div class="form-text">Required when no inbound order number is available (emergency pre-registration).</div>
+                    </div>
+                    <div>
                         <label class="form-label">Inbound Order Number</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>

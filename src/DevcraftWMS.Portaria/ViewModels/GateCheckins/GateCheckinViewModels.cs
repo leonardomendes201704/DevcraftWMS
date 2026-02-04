@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DevcraftWMS.Portaria.ViewModels.GateCheckins;
 
@@ -57,6 +58,11 @@ public sealed class GateCheckinIndexViewModel
 
 public sealed class GateCheckinCreateViewModel
 {
+    [Display(Name = "Warehouse")]
+    public Guid? WarehouseId { get; set; }
+
+    public IReadOnlyList<SelectListItem> Warehouses { get; set; } = Array.Empty<SelectListItem>();
+
     [Display(Name = "Inbound Order Number")]
     [StringLength(50)]
     public string? InboundOrderNumber { get; set; }

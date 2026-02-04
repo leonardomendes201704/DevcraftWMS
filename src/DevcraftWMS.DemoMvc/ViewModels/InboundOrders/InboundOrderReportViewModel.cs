@@ -17,6 +17,7 @@ public sealed record InboundOrderReceiptReportViewModel(
     DateTime CreatedAtUtc,
     InboundOrderReceiptReportSummaryViewModel Summary,
     IReadOnlyList<InboundOrderReceiptReportLineViewModel> Lines,
+    IReadOnlyList<InboundOrderReceiptReportLineViewModel> PendingLines,
     IReadOnlyList<InboundOrderReceiptDivergenceViewModel> Divergences);
 
 public sealed record InboundOrderReceiptReportSummaryViewModel(
@@ -24,6 +25,8 @@ public sealed record InboundOrderReceiptReportSummaryViewModel(
     decimal TotalReceived,
     decimal TotalVariance,
     int LineCount,
+    int PendingLineCount,
+    decimal PendingQuantity,
     int DivergenceCount);
 
 public sealed record InboundOrderReceiptReportLineViewModel(

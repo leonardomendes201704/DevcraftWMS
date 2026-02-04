@@ -17,6 +17,7 @@ public sealed record InboundOrderReceiptReportDto(
     DateTime CreatedAtUtc,
     InboundOrderReceiptReportSummaryDto Summary,
     IReadOnlyList<InboundOrderReceiptReportLineDto> Lines,
+    IReadOnlyList<InboundOrderReceiptReportLineDto> PendingLines,
     IReadOnlyList<InboundOrderReceiptDivergenceDto> Divergences);
 
 public sealed record InboundOrderReceiptReportSummaryDto(
@@ -24,6 +25,8 @@ public sealed record InboundOrderReceiptReportSummaryDto(
     decimal TotalReceived,
     decimal TotalVariance,
     int LineCount,
+    int PendingLineCount,
+    decimal PendingQuantity,
     int DivergenceCount);
 
 public sealed record InboundOrderReceiptReportLineDto(

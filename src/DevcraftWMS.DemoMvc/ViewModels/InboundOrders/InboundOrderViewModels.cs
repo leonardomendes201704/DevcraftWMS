@@ -24,6 +24,7 @@ public sealed record InboundOrderListItemViewModel(
     int Priority,
     DateOnly? ExpectedArrivalDate,
     DateTime CreatedAtUtc,
+    bool IsEmergency,
     bool IsActive);
 
 public sealed class InboundOrderListPageViewModel

@@ -14,6 +14,7 @@ public interface IGateCheckinService
         string? carrierName,
         DateTime? arrivalAtUtc,
         string? notes,
+        Guid? warehouseId,
         CancellationToken cancellationToken);
 
     Task<RequestResult<GateCheckinDetailDto>> UpdateAsync(

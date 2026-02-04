@@ -118,6 +118,7 @@
                 <thead>
                     <tr>
                         <th>Order</th>
+                        <th>Emergency</th>
                         <th>ASN</th>
                         <th>Warehouse</th>
                         <th>Status</th>
@@ -131,7 +132,7 @@
                     @if (!Model.Items.Any())
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted">No inbound orders found.</td>
+                            <td colspan="9" class="text-center text-muted">No inbound orders found.</td>
                         </tr>
                     }
                     else
@@ -139,9 +140,19 @@
                         @foreach (var order in Model.Items)
                         {
                             <tr>
-                                <td class="fw-semibold">@order.OrderNumber</td>
-                                <td>@order.AsnNumber</td>
-                                <td>@order.WarehouseName</td>
+                            <td class="fw-semibold">@order.OrderNumber</td>
+                            <td>
+                                @if (order.IsEmergency)
+                                {
+                                    <span class="badge text-bg-danger">Emergency</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@order.AsnNumber</td>
+                            <td>@order.WarehouseName</td>
                                 <td><span class="badge bg-primary-subtle text-primary">@StatusLabel(order.Status)</span></td>
                                 <td><span class="badge bg-secondary-subtle text-secondary">@PriorityLabel(order.Priority)</span></td>
                                 <td>@order.ExpectedArrivalDate?.ToString("yyyy-MM-dd")</td>
@@ -171,6 +182,7 @@
                     <li><strong>Filters:</strong> narrow the queue by warehouse, status, priority, or active flag.</li>
                     <li><strong>Details:</strong> open an order to review items, parameters, and cancellation options.</li>
                     <li><strong>Conversion:</strong> OEs are created from approved ASNs in the ASN details screen.</li>
+                    <li><strong>Emergency:</strong> orders created by gate check-in without an OE are marked as Emergency.</li>
                 </ul>
                 <p>Subscreens:</p>
                 <ul>

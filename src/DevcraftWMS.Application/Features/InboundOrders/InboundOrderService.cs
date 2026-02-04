@@ -325,6 +325,59 @@ public sealed class InboundOrderService : IInboundOrderService
         return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
     }
 
+    public async Task<RequestResult<InboundOrderDetailDto>> ApproveEmergencyAsync(
+        Guid id,
+        string? notes,
+        CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.required", "Inbound order is required.");
+        }
+
+        var order = await _inboundOrderRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (order is null)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.not_found", "Inbound order not found.");
+        }
+
+        if (!order.IsEmergency)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.not_emergency", "Inbound order is not marked as emergency.");
+        }
+
+        if (order.Status != InboundOrderStatus.Scheduled)
+        {
+            return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.status_locked", "Inbound order status does not allow emergency approval.");
+        }
+
+        var previousStatus = order.Status;
+        order.Status = InboundOrderStatus.Issued;
+
+        await _inboundOrderRepository.UpdateAsync(order, cancellationToken);
+
+        var statusEvent = new InboundOrderStatusEvent
+        {
+            Id = Guid.NewGuid(),
+            InboundOrderId = order.Id,
+            FromStatus = previousStatus,
+            ToStatus = InboundOrderStatus.Issued,
+            Notes = string.IsNullOrWhiteSpace(notes) ? "Emergency inbound order approved." : notes.Trim()
+        };
+
+        await _inboundOrderRepository.AddStatusEventAsync(statusEvent, cancellationToken);
+        order.StatusEvents.Add(statusEvent);
+
+        var items = await _inboundOrderRepository.ListItemsAsync(order.Id, cancellationToken);
+        var mappedItems = items.Select(InboundOrderMapping.MapItem).ToList();
+        var mappedEvents = order.StatusEvents
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Select(InboundOrderMapping.MapStatusEvent)
+            .ToList();
+
+        return RequestResult<InboundOrderDetailDto>.Success(InboundOrderMapping.MapDetail(order, mappedItems, mappedEvents));
+    }
+
     private async Task<string> BuildOrderNumberAsync(string asnNumber, CancellationToken cancellationToken)
     {
         var candidate = $"OE-{asnNumber}";

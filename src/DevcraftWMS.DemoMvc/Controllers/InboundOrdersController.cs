@@ -145,6 +145,26 @@ public sealed class InboundOrdersController : Controller
         return File(result.Content, result.ContentType, result.FileName);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ApproveEmergency(Guid id, CancellationToken cancellationToken)
+    {
+        if (!HasCustomerContext())
+        {
+            TempData["Warning"] = "Select a customer to approve inbound orders.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await _ordersClient.ApproveEmergencyAsync(id, "Approved by backoffice", cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to approve emergency inbound order.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["Success"] = "Emergency inbound order approved.";
+        return RedirectToAction(nameof(Index));
+    }
+
     private bool HasCustomerContext()
         => !string.IsNullOrWhiteSpace(HttpContext.Session.GetStringValue(SessionKeys.CustomerId));
 }

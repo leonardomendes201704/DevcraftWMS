@@ -33,4 +33,6 @@ public interface IInboundOrderService
     Task<RequestResult<InboundOrderDetailDto>> CancelAsync(Guid id, string reason, CancellationToken cancellationToken);
 
     Task<RequestResult<InboundOrderDetailDto>> CompleteAsync(Guid id, bool allowPartial, string? notes, CancellationToken cancellationToken);
+
+    Task<RequestResult<InboundOrderDetailDto>> ApproveEmergencyAsync(Guid id, string? notes, CancellationToken cancellationToken);
 }

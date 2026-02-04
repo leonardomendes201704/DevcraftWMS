@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using DevcraftWMS.Portaria.ApiClients;
 using DevcraftWMS.Portaria.ViewModels.GateCheckins;
 using DevcraftWMS.Portaria.ViewModels.InboundOrders;
@@ -10,11 +11,16 @@ public sealed class GateCheckinsController : Controller
 {
     private readonly GateCheckinsApiClient _gateCheckinsApiClient;
     private readonly InboundOrdersApiClient _inboundOrdersApiClient;
+    private readonly WarehousesApiClient _warehousesApiClient;
 
-    public GateCheckinsController(GateCheckinsApiClient gateCheckinsApiClient, InboundOrdersApiClient inboundOrdersApiClient)
+    public GateCheckinsController(
+        GateCheckinsApiClient gateCheckinsApiClient,
+        InboundOrdersApiClient inboundOrdersApiClient,
+        WarehousesApiClient warehousesApiClient)
     {
         _gateCheckinsApiClient = gateCheckinsApiClient;
         _inboundOrdersApiClient = inboundOrdersApiClient;
+        _warehousesApiClient = warehousesApiClient;
     }
 
     [HttpGet]
@@ -61,7 +67,7 @@ public sealed class GateCheckinsController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "New Check-in";
         ViewData["Subtitle"] = "Capture inbound vehicle arrival details.";
@@ -69,7 +75,8 @@ public sealed class GateCheckinsController : Controller
 
         return View(new GateCheckinCreateViewModel
         {
-            ArrivalAtUtc = DateTime.UtcNow
+            ArrivalAtUtc = DateTime.UtcNow,
+            Warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken)
         });
     }
 
@@ -79,6 +86,8 @@ public sealed class GateCheckinsController : Controller
         ViewData["Title"] = "New Check-in";
         ViewData["Subtitle"] = "Capture inbound vehicle arrival details.";
         ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "New Check-in");
+
+        model.Warehouses = await LoadWarehouseOptionsAsync(model.WarehouseId, cancellationToken);
 
         if (!ModelState.IsValid)
         {
@@ -98,6 +107,12 @@ public sealed class GateCheckinsController : Controller
             return View(model);
         }
 
+        if (inboundOrderId is null && string.IsNullOrWhiteSpace(model.DocumentNumber) == false && model.WarehouseId is null)
+        {
+            ModelState.AddModelError(nameof(model.WarehouseId), "Warehouse is required to create an emergency inbound order.");
+            return View(model);
+        }
+
         var request = new GateCheckinCreateRequest(
             inboundOrderId,
             string.IsNullOrWhiteSpace(model.DocumentNumber) ? null : model.DocumentNumber.Trim(),
@@ -105,7 +120,8 @@ public sealed class GateCheckinsController : Controller
             model.DriverName.Trim(),
             string.IsNullOrWhiteSpace(model.CarrierName) ? null : model.CarrierName.Trim(),
             model.ArrivalAtUtc,
-            string.IsNullOrWhiteSpace(model.Notes) ? null : model.Notes.Trim());
+            string.IsNullOrWhiteSpace(model.Notes) ? null : model.Notes.Trim(),
+            model.WarehouseId);
 
         var result = await _gateCheckinsApiClient.CreateAsync(request, cancellationToken);
         if (!result.IsSuccess)
@@ -253,6 +269,25 @@ public sealed class GateCheckinsController : Controller
             string.Equals(item.OrderNumber, inboundOrderNumber.Trim(), StringComparison.OrdinalIgnoreCase));
 
         return match?.Id;
+    }
+
+    private async Task<IReadOnlyList<SelectListItem>> LoadWarehouseOptionsAsync(Guid? selectedId, CancellationToken cancellationToken)
+    {
+        var result = await _warehousesApiClient.ListAsync(new WarehouseListQuery(PageNumber: 1, PageSize: 100, OrderBy: "Name", OrderDir: "asc"), cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Unable to load warehouses.";
+            return new List<SelectListItem>
+            {
+                new("Select...", string.Empty, selectedId is null)
+            };
+        }
+
+        var options = result.Data.Items
+            .Select(wh => new SelectListItem($"{wh.Code} - {wh.Name}", wh.Id.ToString(), selectedId == wh.Id))
+            .ToList();
+        options.Insert(0, new SelectListItem("Select...", string.Empty, selectedId is null));
+        return options;
     }
 
     private static IReadOnlyList<BreadcrumbItem> BuildBreadcrumbs(string rootLabel, string rootUrl, string? currentLabel = null)

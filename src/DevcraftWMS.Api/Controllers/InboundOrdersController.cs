@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.ConvertAsnToInboundOrder;
+using DevcraftWMS.Application.Features.InboundOrders.Commands.ApproveEmergencyInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.UpdateInboundOrderParameters;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.CancelInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Commands.CompleteInboundOrder;
@@ -132,6 +133,13 @@ public sealed class InboundOrdersController : ControllerBase
                 request.SuggestedDock),
             cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("inbound-orders/{id:guid}/approve-emergency")]
+    public async Task<IActionResult> ApproveEmergency(Guid id, [FromBody] ApproveInboundOrderRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ApproveEmergencyInboundOrderCommand(id, request.Notes), cancellationToken);
         return this.ToActionResult(result);
     }
 

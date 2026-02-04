@@ -16,7 +16,9 @@ public sealed class GateCheckinServiceTests
         var inboundOrderRepository = new FakeInboundOrderRepository(null);
         var customerContext = new FakeCustomerContext(Guid.NewGuid());
         var dateTimeProvider = new FakeDateTimeProvider(new DateTime(2026, 2, 3, 10, 0, 0, DateTimeKind.Utc));
-        var service = new GateCheckinService(gateRepository, inboundOrderRepository, customerContext, dateTimeProvider);
+        var asnRepository = new FakeAsnRepository();
+        var warehouseRepository = new FakeWarehouseRepository(null);
+        var service = new GateCheckinService(gateRepository, inboundOrderRepository, asnRepository, warehouseRepository, customerContext, dateTimeProvider);
 
         var result = await service.CreateAsync(
             Guid.NewGuid(),
@@ -24,6 +26,7 @@ public sealed class GateCheckinServiceTests
             "abc1d23",
             "Driver Test",
             "Carrier",
+            null,
             null,
             null,
             CancellationToken.None);
@@ -51,7 +54,9 @@ public sealed class GateCheckinServiceTests
         var customerContext = new FakeCustomerContext(customerId);
         var now = new DateTime(2026, 2, 3, 10, 30, 0, DateTimeKind.Utc);
         var dateTimeProvider = new FakeDateTimeProvider(now);
-        var service = new GateCheckinService(gateRepository, inboundOrderRepository, customerContext, dateTimeProvider);
+        var asnRepository = new FakeAsnRepository();
+        var warehouseRepository = new FakeWarehouseRepository(null);
+        var service = new GateCheckinService(gateRepository, inboundOrderRepository, asnRepository, warehouseRepository, customerContext, dateTimeProvider);
 
         var result = await service.CreateAsync(
             inboundOrder.Id,
@@ -61,6 +66,7 @@ public sealed class GateCheckinServiceTests
             " Carrier ",
             null,
             " Notes ",
+            null,
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -70,6 +76,44 @@ public sealed class GateCheckinServiceTests
         result.Value.DriverName.Should().Be("Driver Test");
         result.Value.ArrivalAtUtc.Should().Be(now);
         result.Value.Status.Should().Be(GateCheckinStatus.CheckedIn);
+    }
+
+    [Fact]
+    public async Task Create_Should_Create_Emergency_InboundOrder_When_Document_And_Warehouse_Provided()
+    {
+        var customerId = Guid.NewGuid();
+        var warehouse = new Warehouse
+        {
+            Id = Guid.NewGuid(),
+            Code = "WH-EMG",
+            Name = "Emergency Warehouse",
+            WarehouseType = WarehouseType.Other,
+            IsReceivingEnabled = true
+        };
+
+        var gateRepository = new FakeGateCheckinRepository();
+        var inboundOrderRepository = new FakeInboundOrderRepository(null);
+        var asnRepository = new FakeAsnRepository();
+        var warehouseRepository = new FakeWarehouseRepository(warehouse);
+        var customerContext = new FakeCustomerContext(customerId);
+        var now = new DateTime(2026, 2, 3, 11, 0, 0, DateTimeKind.Utc);
+        var dateTimeProvider = new FakeDateTimeProvider(now);
+        var service = new GateCheckinService(gateRepository, inboundOrderRepository, asnRepository, warehouseRepository, customerContext, dateTimeProvider);
+
+        var result = await service.CreateAsync(
+            null,
+            "DOC-EMG-01",
+            "QWE9Z99",
+            "Emergency Driver",
+            "Carrier",
+            null,
+            null,
+            warehouse.Id,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.InboundOrderId.Should().NotBeNull();
     }
 
     [Fact]
@@ -104,7 +148,9 @@ public sealed class GateCheckinServiceTests
         var customerContext = new FakeCustomerContext(customerId);
         var now = new DateTime(2026, 2, 3, 10, 0, 0, DateTimeKind.Utc);
         var dateTimeProvider = new FakeDateTimeProvider(now);
-        var service = new GateCheckinService(gateRepository, inboundOrderRepository, customerContext, dateTimeProvider);
+        var asnRepository = new FakeAsnRepository();
+        var warehouseRepository = new FakeWarehouseRepository(null);
+        var service = new GateCheckinService(gateRepository, inboundOrderRepository, asnRepository, warehouseRepository, customerContext, dateTimeProvider);
 
         var result = await service.AssignDockAsync(checkin.Id, "D-01", CancellationToken.None);
 
@@ -246,5 +292,42 @@ public sealed class GateCheckinServiceTests
         }
 
         public DateTime UtcNow { get; }
+    }
+
+    private sealed class FakeAsnRepository : IAsnRepository
+    {
+        public Task<bool> AsnNumberExistsAsync(string asnNumber, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> AsnNumberExistsAsync(string asnNumber, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task AddAsync(Asn asn, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(Asn asn, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<bool> UpdateStatusAsync(Guid asnId, AsnStatus status, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task AddStatusEventAsync(AsnStatusEvent statusEvent, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<Asn?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Asn?>(null);
+        public Task<Asn?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Asn?>(null);
+        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<int> CountAsync(Guid? warehouseId, string? asnNumber, string? supplierName, string? documentNumber, AsnStatus? status, DateOnly? expectedFrom, DateOnly? expectedTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<Asn>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? asnNumber, string? supplierName, string? documentNumber, AsnStatus? status, DateOnly? expectedFrom, DateOnly? expectedTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Asn>>(Array.Empty<Asn>());
+    }
+
+    private sealed class FakeWarehouseRepository : IWarehouseRepository
+    {
+        private readonly Warehouse? _warehouse;
+
+        public FakeWarehouseRepository(Warehouse? warehouse)
+        {
+            _warehouse = warehouse;
+        }
+
+        public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<Warehouse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_warehouse?.Id == id ? _warehouse : null);
+        public Task<Warehouse?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_warehouse?.Id == id ? _warehouse : null);
+        public Task<int> CountAsync(string? search, string? code, string? name, WarehouseType? warehouseType, string? city, string? state, string? country, string? externalId, string? erpCode, string? costCenterCode, bool? isPrimary, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<Warehouse>> ListAsync(int pageNumber, int pageSize, string orderBy, string orderDir, string? search, string? code, string? name, WarehouseType? warehouseType, string? city, string? state, string? country, string? externalId, string? erpCode, string? costCenterCode, bool? isPrimary, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Warehouse>>(Array.Empty<Warehouse>());
     }
 }

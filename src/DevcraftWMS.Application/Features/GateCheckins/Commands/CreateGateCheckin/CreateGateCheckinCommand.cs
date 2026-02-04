@@ -10,4 +10,5 @@ public sealed record CreateGateCheckinCommand(
     string DriverName,
     string? CarrierName,
     DateTime? ArrivalAtUtc,
-    string? Notes) : IRequest<RequestResult<GateCheckinDetailDto>>;
+    string? Notes,
+    Guid? WarehouseId) : IRequest<RequestResult<GateCheckinDetailDto>>;

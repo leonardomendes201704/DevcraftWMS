@@ -11,17 +11,23 @@ public sealed class GateCheckinService : IGateCheckinService
 {
     private readonly IGateCheckinRepository _gateCheckinRepository;
     private readonly IInboundOrderRepository _inboundOrderRepository;
+    private readonly IAsnRepository _asnRepository;
+    private readonly IWarehouseRepository _warehouseRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
 
     public GateCheckinService(
         IGateCheckinRepository gateCheckinRepository,
         IInboundOrderRepository inboundOrderRepository,
+        IAsnRepository asnRepository,
+        IWarehouseRepository warehouseRepository,
         ICustomerContext customerContext,
         IDateTimeProvider dateTimeProvider)
     {
         _gateCheckinRepository = gateCheckinRepository;
         _inboundOrderRepository = inboundOrderRepository;
+        _asnRepository = asnRepository;
+        _warehouseRepository = warehouseRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
     }
@@ -34,6 +40,7 @@ public sealed class GateCheckinService : IGateCheckinService
         string? carrierName,
         DateTime? arrivalAtUtc,
         string? notes,
+        Guid? warehouseId,
         CancellationToken cancellationToken)
     {
         if (!_customerContext.CustomerId.HasValue)
@@ -41,7 +48,7 @@ public sealed class GateCheckinService : IGateCheckinService
             return RequestResult<GateCheckinDetailDto>.Failure("customers.context.required", "Customer context is required.");
         }
 
-        var inboundOrderResult = await ResolveInboundOrderAsync(inboundOrderId, documentNumber, cancellationToken);
+        var inboundOrderResult = await ResolveInboundOrderAsync(inboundOrderId, documentNumber, warehouseId, cancellationToken);
         if (!inboundOrderResult.IsSuccess)
         {
             return RequestResult<GateCheckinDetailDto>.Failure(inboundOrderResult.ErrorCode!, inboundOrderResult.ErrorMessage!);
@@ -91,7 +98,7 @@ public sealed class GateCheckinService : IGateCheckinService
             return RequestResult<GateCheckinDetailDto>.Failure("gate_checkins.checkin.not_found", "Gate check-in not found.");
         }
 
-        var inboundOrderResult = await ResolveInboundOrderAsync(inboundOrderId, documentNumber, cancellationToken);
+        var inboundOrderResult = await ResolveInboundOrderAsync(inboundOrderId, documentNumber, null, cancellationToken);
         if (!inboundOrderResult.IsSuccess)
         {
             return RequestResult<GateCheckinDetailDto>.Failure(inboundOrderResult.ErrorCode!, inboundOrderResult.ErrorMessage!);
@@ -243,6 +250,7 @@ public sealed class GateCheckinService : IGateCheckinService
     private async Task<RequestResult<InboundOrder?>> ResolveInboundOrderAsync(
         Guid? inboundOrderId,
         string? documentNumber,
+        Guid? warehouseId,
         CancellationToken cancellationToken)
     {
         if (inboundOrderId.HasValue && inboundOrderId.Value != Guid.Empty)
@@ -262,13 +270,100 @@ public sealed class GateCheckinService : IGateCheckinService
             var inboundOrder = await _inboundOrderRepository.GetByDocumentNumberAsync(trimmedDocument, cancellationToken);
             if (inboundOrder is null)
             {
-                return RequestResult<InboundOrder?>.Failure("gate_checkins.inbound_order.not_found", "Inbound order not found for the provided document.");
+                if (!warehouseId.HasValue || warehouseId.Value == Guid.Empty)
+                {
+                    return RequestResult<InboundOrder?>.Failure("gate_checkins.warehouse.required", "Warehouse is required to create an emergency inbound order.");
+                }
+
+                var emergencyOrder = await CreateEmergencyInboundOrderAsync(trimmedDocument, warehouseId.Value, cancellationToken);
+                return emergencyOrder;
             }
 
             return RequestResult<InboundOrder?>.Success(inboundOrder);
         }
 
         return RequestResult<InboundOrder?>.Success(null);
+    }
+
+    private async Task<RequestResult<InboundOrder?>> CreateEmergencyInboundOrderAsync(
+        string documentNumber,
+        Guid warehouseId,
+        CancellationToken cancellationToken)
+    {
+        var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, cancellationToken);
+        if (warehouse is null)
+        {
+            return RequestResult<InboundOrder?>.Failure("gate_checkins.warehouse.not_found", "Warehouse not found.");
+        }
+
+        var asnNumber = await BuildEmergencyAsnNumberAsync(cancellationToken);
+        var asn = new Asn
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = _customerContext.CustomerId!.Value,
+            WarehouseId = warehouseId,
+            AsnNumber = asnNumber,
+            DocumentNumber = documentNumber,
+            SupplierName = null,
+            ExpectedArrivalDate = DateOnly.FromDateTime(_dateTimeProvider.UtcNow.Date),
+            Notes = "Emergency ASN created from gate check-in.",
+            Status = AsnStatus.Registered
+        };
+
+        await _asnRepository.AddAsync(asn, cancellationToken);
+
+        var orderNumber = await BuildEmergencyOrderNumberAsync(asnNumber, cancellationToken);
+        var order = new InboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = _customerContext.CustomerId!.Value,
+            WarehouseId = warehouseId,
+            AsnId = asn.Id,
+            OrderNumber = orderNumber,
+            SupplierName = null,
+            DocumentNumber = documentNumber,
+            ExpectedArrivalDate = asn.ExpectedArrivalDate,
+            Notes = "Emergency inbound order created from gate check-in.",
+            Status = InboundOrderStatus.Scheduled,
+            Priority = InboundOrderPriority.Normal,
+            InspectionLevel = InboundOrderInspectionLevel.None,
+            IsEmergency = true
+        };
+
+        await _inboundOrderRepository.AddAsync(order, cancellationToken);
+
+        order.Asn = asn;
+        order.Warehouse = warehouse;
+
+        return RequestResult<InboundOrder?>.Success(order);
+    }
+
+    private async Task<string> BuildEmergencyAsnNumberAsync(CancellationToken cancellationToken)
+    {
+        var seed = _dateTimeProvider.UtcNow.ToString("yyyyMMddHHmmss");
+        var candidate = $"ASN-EMG-{seed}";
+        var exists = await _asnRepository.AsnNumberExistsAsync(candidate, cancellationToken);
+        if (!exists)
+        {
+            return candidate;
+        }
+
+        var fallback = $"ASN-EMG-{seed}-{Guid.NewGuid():N}".Substring(0, 20);
+        return fallback.Length <= 32 ? fallback : fallback.Substring(0, 32);
+    }
+
+    private async Task<string> BuildEmergencyOrderNumberAsync(string asnNumber, CancellationToken cancellationToken)
+    {
+        var candidate = $"OE-EMG-{asnNumber}";
+        var exists = await _inboundOrderRepository.OrderNumberExistsAsync(candidate, cancellationToken);
+        if (!exists)
+        {
+            return candidate.Length <= 32 ? candidate : candidate.Substring(0, 32);
+        }
+
+        var suffix = _dateTimeProvider.UtcNow.ToString("yyyyMMddHHmmss");
+        var fallback = $"OE-EMG-{suffix}";
+        return fallback.Length <= 32 ? fallback : fallback.Substring(0, 32);
     }
 
     private static string? NormalizeOptional(string? value)

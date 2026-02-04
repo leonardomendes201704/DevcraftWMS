@@ -14,6 +14,7 @@ public static class InboundOrderMapping
             order.Priority,
             order.ExpectedArrivalDate,
             order.CreatedAtUtc,
+            order.IsEmergency,
             order.IsActive);
 
     public static InboundOrderDetailDto MapDetail(
@@ -34,6 +35,7 @@ public static class InboundOrderMapping
             order.Status,
             order.Priority,
             order.InspectionLevel,
+            order.IsEmergency,
             order.SuggestedDock,
             order.CancelReason,
             order.CanceledAtUtc,

@@ -43,11 +43,16 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
 
         var lines = BuildLines(expected, received);
 
+        var pendingLines = lines.Where(x => x.Variance < 0).ToList();
+        var pendingQuantity = pendingLines.Sum(x => Math.Abs(x.Variance));
+
         var summary = new InboundOrderReceiptReportSummaryDto(
             lines.Sum(x => x.ExpectedQuantity),
             lines.Sum(x => x.ReceivedQuantity),
             lines.Sum(x => x.Variance),
             lines.Count,
+            pendingLines.Count,
+            pendingQuantity,
             divergences.Count);
 
         var divergenceDtos = divergences
@@ -73,6 +78,7 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
             order.CreatedAtUtc,
             summary,
             lines,
+            pendingLines,
             divergenceDtos);
 
         return RequestResult<InboundOrderReceiptReportDto>.Success(report);

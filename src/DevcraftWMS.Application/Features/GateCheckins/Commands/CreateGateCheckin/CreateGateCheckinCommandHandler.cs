@@ -21,5 +21,6 @@ public sealed class CreateGateCheckinCommandHandler : IRequestHandler<CreateGate
             request.CarrierName,
             request.ArrivalAtUtc,
             request.Notes,
+            request.WarehouseId,
             cancellationToken);
 }

@@ -57,7 +57,8 @@ public sealed record GateCheckinCreateRequest(
     string DriverName,
     string? CarrierName,
     DateTime? ArrivalAtUtc,
-    string? Notes);
+    string? Notes,
+    Guid? WarehouseId);
 
 public sealed record GateCheckinUpdateRequest(
     Guid? InboundOrderId,
