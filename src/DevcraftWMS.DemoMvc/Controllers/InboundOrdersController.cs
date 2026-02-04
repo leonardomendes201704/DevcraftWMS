@@ -107,6 +107,44 @@ public sealed class InboundOrdersController : Controller
         return RedirectToAction("Details", "Receipts", new { id = result.Data.Id });
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Report(Guid id, CancellationToken cancellationToken)
+    {
+        if (!HasCustomerContext())
+        {
+            TempData["Warning"] = "Select a customer to view reports.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await _ordersClient.GetReportAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Inbound order report not available.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(new InboundOrderReportPageViewModel { Report = result.Data });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportExport(Guid id, CancellationToken cancellationToken)
+    {
+        if (!HasCustomerContext())
+        {
+            TempData["Warning"] = "Select a customer to export reports.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await _ordersClient.ExportReportAsync(id, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to export inbound order report.";
+            return RedirectToAction(nameof(Report), new { id });
+        }
+
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
     private bool HasCustomerContext()
         => !string.IsNullOrWhiteSpace(HttpContext.Session.GetStringValue(SessionKeys.CustomerId));
 }

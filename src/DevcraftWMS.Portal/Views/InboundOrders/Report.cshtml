@@ -1,0 +1,219 @@
+@model DevcraftWMS.Portal.ViewModels.InboundOrders.InboundOrderReportViewModel
+@{
+    ViewData["Title"] = "Inbound Order Receipt Report";
+
+    string FormatStatus(int status) => status switch
+    {
+        0 => "Issued",
+        1 => "Scheduled",
+        2 => "In Progress",
+        3 => "Completed",
+        4 => "Canceled",
+        5 => "Partially completed",
+        _ => $"Status {status}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Receipt Report</h1>
+        <div class="text-muted">Final receiving summary for the inbound order.</div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.Report is not null)
+        {
+            <a class="btn btn-outline-primary" asp-action="ReportExport" asp-route-id="@Model.Report.InboundOrderId">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+        }
+        <a class="btn btn-outline-secondary" href="#receiptReportHelp" data-bs-toggle="modal">
+            <i class="bi bi-question-circle"></i> Help
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Report?.InboundOrderId">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+@if (Model.Report is null)
+{
+    <div class="alert alert-warning">Report data is not available.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Order</div>
+                    <div class="fw-semibold">@Model.Report.OrderNumber</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">ASN</div>
+                    <div class="fw-semibold">@Model.Report.AsnNumber</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Warehouse</div>
+                    <div class="fw-semibold">@Model.Report.WarehouseName</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Status</div>
+                    <span class="badge bg-primary-subtle text-primary">@FormatStatus(Model.Report.Status)</span>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Supplier</div>
+                    <div class="fw-semibold">@Model.Report.SupplierName</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Document</div>
+                    <div class="fw-semibold">@Model.Report.DocumentNumber</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Expected Arrival</div>
+                    <div class="fw-semibold">@Model.Report.ExpectedArrivalDate?.ToString("yyyy-MM-dd")</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="text-muted small">Created</div>
+                    <div class="fw-semibold">@Model.Report.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Total Expected</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.TotalExpected</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Total Received</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.TotalReceived</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Variance</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.TotalVariance</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Divergences</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.DivergenceCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Receipt Lines</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>UoM</th>
+                            <th>Lot</th>
+                            <th>Expiry</th>
+                            <th class="text-end">Expected</th>
+                            <th class="text-end">Received</th>
+                            <th class="text-end">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.Lines.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No receipt lines available.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var line in Model.Report.Lines)
+                            {
+                                <tr>
+                                    <td>@line.ProductCode - @line.ProductName</td>
+                                    <td>@line.UomCode</td>
+                                    <td>@line.LotCode</td>
+                                    <td>@line.ExpirationDate?.ToString("yyyy-MM-dd")</td>
+                                    <td class="text-end">@line.ExpectedQuantity</td>
+                                    <td class="text-end">@line.ReceivedQuantity</td>
+                                    <td class="text-end">@line.Variance</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Divergences</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Notes</th>
+                            <th>Evidence</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.Divergences.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No divergences recorded.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var divergence in Model.Report.Divergences)
+                            {
+                                <tr>
+                                    <td>@divergence.Type</td>
+                                    <td>@divergence.Notes</td>
+                                    <td>@divergence.EvidenceCount</td>
+                                    <td>@divergence.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="receiptReportHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Receipt Report Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This report compares expected quantities from the OE against the received quantities recorded in receipts.</p>
+                <ul>
+                    <li><strong>Summary cards</strong> show expected, received, variance, and divergence counts.</li>
+                    <li><strong>Receipt Lines</strong> list products by lot/expiry when applicable.</li>
+                    <li><strong>Divergences</strong> show exceptions logged during receiving.</li>
+                    <li><strong>Export CSV</strong> downloads the report for external sharing.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

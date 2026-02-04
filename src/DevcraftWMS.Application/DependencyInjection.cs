@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IZoneService, ZoneService>();
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();
+        services.AddScoped<IInboundOrderReportService, InboundOrderReportService>();
         services.AddScoped<IGateCheckinService, GateCheckinService>();
         services.AddScoped<IUnitLoadService, UnitLoadService>();
         services.AddScoped<IReceiptCountService, ReceiptCountService>();

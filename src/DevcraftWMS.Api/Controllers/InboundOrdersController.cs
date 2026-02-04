@@ -9,6 +9,8 @@ using DevcraftWMS.Application.Features.InboundOrders.Commands.CancelInboundOrder
 using DevcraftWMS.Application.Features.InboundOrders.Commands.CompleteInboundOrder;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.ListInboundOrders;
 using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrder;
+using DevcraftWMS.Application.Features.InboundOrders.Queries.GetInboundOrderReceiptReport;
+using DevcraftWMS.Application.Features.InboundOrders.Queries.ExportInboundOrderReceiptReport;
 using DevcraftWMS.Application.Features.ReceiptDivergences.Queries.ListInboundOrderDivergences;
 using DevcraftWMS.Domain.Enums;
 
@@ -82,6 +84,25 @@ public sealed class InboundOrdersController : ControllerBase
     {
         var result = await _mediator.Send(new ListInboundOrderDivergencesQuery(id), cancellationToken);
         return this.ToActionResult(result);
+    }
+
+    [HttpGet("inbound-orders/{id:guid}/report")]
+    public async Task<IActionResult> GetReceiptReport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetInboundOrderReceiptReportQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("inbound-orders/{id:guid}/report/export")]
+    public async Task<IActionResult> ExportReceiptReport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ExportInboundOrderReceiptReportQuery(id), cancellationToken);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
     }
 
     [HttpPut("inbound-orders/{id:guid}/parameters")]

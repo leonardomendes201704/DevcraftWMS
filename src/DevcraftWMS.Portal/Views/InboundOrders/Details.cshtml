@@ -34,9 +34,17 @@
         <h1 class="h3 mb-1">Inbound Order @Model.Order?.OrderNumber</h1>
         <div class="text-muted">Order execution plan from ASN.</div>
     </div>
-    <a class="btn btn-outline-secondary" asp-action="Index">
-        <i class="bi bi-arrow-left"></i> Back
-    </a>
+    <div class="d-flex gap-2">
+        @if (Model.Order is not null)
+        {
+            <a class="btn btn-outline-primary" asp-action="Report" asp-route-id="@Model.Order.Id">
+                <i class="bi bi-file-earmark-text"></i> Receipt Report
+            </a>
+        }
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 </div>
 
 @if (Model.Order is null)

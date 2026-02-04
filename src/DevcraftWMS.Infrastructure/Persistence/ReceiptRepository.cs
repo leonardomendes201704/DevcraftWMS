@@ -69,6 +69,12 @@ public sealed class ReceiptRepository : IReceiptRepository
         return await _dbContext.Receipts
             .AsNoTracking()
             .Include(r => r.InboundOrder)
+            .Include(r => r.Items)
+                .ThenInclude(i => i.Product)
+            .Include(r => r.Items)
+                .ThenInclude(i => i.Uom)
+            .Include(r => r.Items)
+                .ThenInclude(i => i.Lot)
             .Where(r => r.CustomerId == customerId && r.InboundOrderId == inboundOrderId)
             .ToListAsync(cancellationToken);
     }

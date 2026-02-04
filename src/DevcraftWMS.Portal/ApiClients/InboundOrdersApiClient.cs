@@ -48,4 +48,10 @@ public sealed class InboundOrdersApiClient : ApiClientBase
 
     public Task<ApiResult<InboundOrderDetailDto>> CompleteAsync(Guid id, CompleteInboundOrderRequest request, CancellationToken cancellationToken)
         => PostAsync<InboundOrderDetailDto>($"/api/inbound-orders/{id}/complete", request, cancellationToken);
+
+    public Task<ApiResult<InboundOrderReceiptReportDto>> GetReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetAsync<InboundOrderReceiptReportDto>($"/api/inbound-orders/{id}/report", cancellationToken);
+
+    public Task<ApiFileResult> ExportReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetFileAsync($"/api/inbound-orders/{id}/report/export", cancellationToken);
 }

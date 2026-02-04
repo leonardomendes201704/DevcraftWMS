@@ -29,4 +29,11 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Exportacao funcional
 
 ## Status
-PENDENTE
+CONCLUIDO
+
+## Como testar
+1. Inicie a API e o Portal/DemoMvc.
+2. No Portal, abra uma OE (Inbound Order) e clique em "Receipt Report".
+3. Verifique o resumo (expected/received/variance) e as linhas do relatorio.
+4. Clique em "Export CSV" e valide o download do arquivo.
+5. No Backoffice (DemoMvc), abra "Inbound Orders" e clique em "Report" para a mesma OE.

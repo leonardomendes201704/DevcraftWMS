@@ -53,6 +53,50 @@ public abstract class ApiClientBase
         return await SendAsync<T>(request, cancellationToken);
     }
 
+    protected async Task<ApiFileResult> GetFileAsync(string path, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, BuildUri(path));
+        AddAuthHeader(request);
+        AddCustomerContextHeader(request);
+
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            var statusCode = (int)response.StatusCode;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = response.Content is null
+                    ? null
+                    : await response.Content.ReadAsStringAsync(cancellationToken);
+                var error = ExtractProblemDetails(content) ?? $"{response.ReasonPhrase} ({statusCode})";
+                return ApiFileResult.Failure(error, statusCode);
+            }
+
+            var bytes = response.Content is null
+                ? Array.Empty<byte>()
+                : await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            var contentType = response.Content?.Headers.ContentType?.ToString() ?? "application/octet-stream";
+            var fileName = response.Content?.Headers.ContentDisposition?.FileNameStar
+                           ?? response.Content?.Headers.ContentDisposition?.FileName
+                           ?? "download";
+
+            return ApiFileResult.Success(bytes, contentType, fileName.Trim('"'), statusCode);
+        }
+        catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return ApiFileResult.Failure("Request canceled by client.", 499);
+        }
+        catch (TaskCanceledException)
+        {
+            return ApiFileResult.Failure("Request timed out while contacting the API.", 504);
+        }
+        catch (HttpRequestException)
+        {
+            return ApiFileResult.Failure("Unable to reach the API.", 503);
+        }
+    }
+
     private Uri BuildUri(string path)
     {
         var baseUrl = _urlProvider.GetBaseUrl().TrimEnd('/');

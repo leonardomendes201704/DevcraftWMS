@@ -139,6 +139,11 @@
             item => item.Status is 3 or 4 or 5 ? null : Url.Action("StartReceipt", "InboundOrders", new { id = item.Id }),
             "btn btn-sm btn-outline-success",
             "bi bi-box-arrow-in-right")
+        .AddAction(
+            "Report",
+            item => Url.Action("Report", "InboundOrders", new { id = item.Id }),
+            "btn btn-sm btn-outline-primary",
+            "bi bi-file-earmark-text")
         .Build();
 }
 
@@ -168,6 +173,7 @@
                     <li><strong>Status and Priority</strong>: focus on urgent inbound operations first.</li>
                     <li><strong>Warehouse</strong>: see orders by site.</li>
                     <li><strong>Start Receipt</strong>: open a receiving session linked to the selected inbound order.</li>
+                    <li><strong>Report</strong>: review the final receiving summary and export the CSV.</li>
                 </ul>
                 <p>Subscreens:</p>
                 <ul>

@@ -62,6 +62,30 @@ public sealed class InboundOrdersController : Controller
         });
     }
 
+    public async Task<IActionResult> Report(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.GetReportAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Inbound order report not available.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        return View(new InboundOrderReportViewModel { Report = result.Data });
+    }
+
+    public async Task<IActionResult> ReportExport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.ExportReportAsync(id, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to export inbound order report.";
+            return RedirectToAction(nameof(Report), new { id });
+        }
+
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
     [HttpPost]
     public async Task<IActionResult> ConvertFromAsn(Guid asnId, string? notes, CancellationToken cancellationToken)
     {

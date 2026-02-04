@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0080 - OE receipt report completed.
+  - Key changes: added receipt report service/queries + export endpoint, Portal/DemoMvc report views and CSV download, updated receipt repository includes, and integration tests for report/export.
 - TASK-0079 - OE completion validations completed.
   - Key changes: added inbound order completion endpoint/command, status events, partial completion status, putaway/unit load validations, updated Portal/DemoMvc UI, and integration tests with migration AddInboundOrderStatusEvents.
 - TASK-0078 - Putaway manual reassignment completed.

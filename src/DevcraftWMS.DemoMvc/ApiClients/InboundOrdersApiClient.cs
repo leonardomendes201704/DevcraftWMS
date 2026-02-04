@@ -37,4 +37,10 @@ public sealed class InboundOrdersApiClient : ApiClientBase
         var url = BuildUrl(basePath, queryParams);
         return GetAsync<PagedResultDto<InboundOrderListItemViewModel>>(url, cancellationToken);
     }
+
+    public Task<ApiResult<InboundOrderReceiptReportViewModel>> GetReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetAsync<InboundOrderReceiptReportViewModel>($"/api/inbound-orders/{id}/report", cancellationToken);
+
+    public Task<ApiFileResult> ExportReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetFileAsync($"/api/inbound-orders/{id}/report/export", cancellationToken);
 }
