@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0085 - UL/SSCC relabel completed.
+  - Key changes: added UnitLoadRelabelEvent history, relabel endpoint + validation, DemoMvc relabel form + history table, and migration AddUnitLoadRelabelEvents with tests.
+- TASK-0083 - Alternative inbound flows completed.
+  - Key changes: emergency inbound order creation from gate check-in with approval, pending lines in OE receipt report, and UI updates for emergency flow.
 - TASK-0084 - Cross-dock exception flow completed.
   - Key changes: added cross-dock zone seed/locations, skipped putaway generation for cross-dock receipts, excluded cross-dock receipts from OE close validation, and added cross-dock section in receipt report UI.
 - TASK-0082 - Inbound KPIs completed.

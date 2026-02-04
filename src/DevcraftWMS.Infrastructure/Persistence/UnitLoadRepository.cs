@@ -36,6 +36,7 @@ public sealed class UnitLoadRepository : IUnitLoadRepository
             .AsNoTracking()
             .Include(u => u.Warehouse)
             .Include(u => u.Receipt)
+            .Include(u => u.RelabelHistory)
             .Where(u => u.CustomerId == customerId)
             .SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
@@ -46,8 +47,15 @@ public sealed class UnitLoadRepository : IUnitLoadRepository
         return await _dbContext.UnitLoads
             .Include(u => u.Warehouse)
             .Include(u => u.Receipt)
+            .Include(u => u.RelabelHistory)
             .Where(u => u.CustomerId == customerId)
             .SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
+
+    public async Task AddRelabelEventAsync(UnitLoadRelabelEvent relabelEvent, CancellationToken cancellationToken = default)
+    {
+        _dbContext.UnitLoadRelabelEvents.Add(relabelEvent);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<bool> SsccExistsAsync(string ssccInternal, CancellationToken cancellationToken = default)

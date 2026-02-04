@@ -33,5 +33,19 @@ public static class UnitLoadMapping
             unitLoad.Notes,
             unitLoad.IsActive,
             unitLoad.CreatedAtUtc,
-            unitLoad.UpdatedAtUtc);
+            unitLoad.UpdatedAtUtc,
+            unitLoad.RelabelHistory
+                .OrderByDescending(x => x.RelabeledAtUtc)
+                .Select(MapRelabelEvent)
+                .ToList());
+
+    private static UnitLoadRelabelEventDto MapRelabelEvent(UnitLoadRelabelEvent relabelEvent)
+        => new(
+            relabelEvent.Id,
+            relabelEvent.UnitLoadId,
+            relabelEvent.OldSsccInternal,
+            relabelEvent.NewSsccInternal,
+            relabelEvent.Reason,
+            relabelEvent.Notes,
+            relabelEvent.RelabeledAtUtc);
 }

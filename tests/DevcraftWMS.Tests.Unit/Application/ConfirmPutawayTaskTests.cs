@@ -136,6 +136,7 @@ public sealed class ConfirmPutawayTaskTests
         public Task UpdateAsync(UnitLoad unitLoad, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<UnitLoad?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(id == _unitLoad.Id ? _unitLoad : null);
         public Task<UnitLoad?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(id == _unitLoad.Id ? _unitLoad : null);
+        public Task AddRelabelEventAsync(UnitLoadRelabelEvent relabelEvent, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<bool> SsccExistsAsync(string ssccInternal, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> AnyNotPutawayCompletedByReceiptIdsAsync(IReadOnlyCollection<Guid> receiptIds, CancellationToken cancellationToken = default)
             => Task.FromResult(receiptIds.Contains(_unitLoad.ReceiptId) && _unitLoad.Status != UnitLoadStatus.PutawayCompleted);

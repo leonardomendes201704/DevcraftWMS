@@ -28,5 +28,13 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Entrada parcial registrada
 - Pendencias visiveis
 
+## Como testar
+1) Portaria: criar check-in com documento e selecionar Warehouse (sem OE existente).
+2) Verificar que uma OE emergencial foi criada com status Scheduled e flag Emergency.
+3) Backoffice: usar “Approve Emergency” para liberar a OE.
+4) Iniciar Receipt e registrar apenas parte das quantidades.
+5) Fechar OE com allowPartial = true e validar status PartiallyCompleted.
+6) Abrir o relatório da OE e conferir Pending Lines/quantidade pendente.
+
 ## Status
-PENDENTE
+DONE

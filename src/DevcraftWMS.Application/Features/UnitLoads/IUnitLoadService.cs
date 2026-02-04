@@ -24,4 +24,5 @@ public interface IUnitLoadService
         string orderDir,
         CancellationToken cancellationToken);
     Task<RequestResult<UnitLoadLabelDto>> PrintLabelAsync(Guid id, CancellationToken cancellationToken);
+    Task<RequestResult<UnitLoadLabelDto>> RelabelAsync(Guid id, string reason, string? notes, CancellationToken cancellationToken);
 }

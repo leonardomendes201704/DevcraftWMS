@@ -15,4 +15,5 @@ public sealed class UnitLoad : AuditableEntity
 
     public Warehouse? Warehouse { get; set; }
     public Receipt? Receipt { get; set; }
+    public ICollection<UnitLoadRelabelEvent> RelabelHistory { get; set; } = new List<UnitLoadRelabelEvent>();
 }

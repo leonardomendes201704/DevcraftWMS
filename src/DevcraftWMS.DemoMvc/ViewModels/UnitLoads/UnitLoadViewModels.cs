@@ -44,7 +44,17 @@ public sealed record UnitLoadDetailViewModel(
     string? Notes,
     bool IsActive,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    IReadOnlyList<UnitLoadRelabelEventViewModel> RelabelHistory);
+
+public sealed record UnitLoadRelabelEventViewModel(
+    Guid Id,
+    Guid UnitLoadId,
+    string OldSsccInternal,
+    string NewSsccInternal,
+    string? Reason,
+    string? Notes,
+    DateTime RelabeledAtUtc);
 
 public sealed record UnitLoadLabelViewModel(
     Guid UnitLoadId,
@@ -68,6 +78,16 @@ public sealed class UnitLoadFormViewModel
     public IReadOnlyList<SelectListItem> Receipts { get; set; } = Array.Empty<SelectListItem>();
 }
 
+public sealed class UnitLoadRelabelFormViewModel
+{
+    [Required]
+    [MaxLength(200)]
+    public string Reason { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Notes { get; set; }
+}
+
 public sealed class UnitLoadListPageViewModel
 {
     public IReadOnlyList<UnitLoadListItemViewModel> Items { get; init; } = Array.Empty<UnitLoadListItemViewModel>();
@@ -80,4 +100,5 @@ public sealed class UnitLoadDetailsPageViewModel
 {
     public UnitLoadDetailViewModel UnitLoad { get; init; } = default!;
     public UnitLoadLabelViewModel? Label { get; init; }
+    public UnitLoadRelabelFormViewModel RelabelForm { get; init; } = new();
 }

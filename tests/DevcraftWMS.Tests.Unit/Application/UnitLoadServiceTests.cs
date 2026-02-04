@@ -151,9 +151,42 @@ public sealed class UnitLoadServiceTests
         putawayRepository.Stored.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task Relabel_Should_Generate_New_Sscc_And_Preserve_History()
+    {
+        var unitLoad = new UnitLoad
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptId = Guid.NewGuid(),
+            SsccInternal = "251231235959999003",
+            Status = UnitLoadStatus.Created
+        };
+
+        var repository = new FakeUnitLoadRepository(unitLoad);
+        var service = new UnitLoadService(
+            repository,
+            new FakeReceiptRepository(null),
+            new FakePutawayTaskRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.RelabelAsync(unitLoad.Id, "Damaged label", "Reprint required", CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        repository.Stored.Should().ContainSingle();
+        repository.Stored[0].SsccInternal.Should().NotBe("251231235959999003");
+        repository.Stored[0].Status.Should().Be(UnitLoadStatus.Printed);
+        repository.RelabelEvents.Should().ContainSingle();
+        repository.RelabelEvents[0].OldSsccInternal.Should().Be("251231235959999003");
+        repository.RelabelEvents[0].NewSsccInternal.Should().Be(repository.Stored[0].SsccInternal);
+    }
+
     private sealed class FakeUnitLoadRepository : IUnitLoadRepository
     {
         public List<UnitLoad> Stored { get; } = new();
+        public List<UnitLoadRelabelEvent> RelabelEvents { get; } = new();
 
         public FakeUnitLoadRepository(UnitLoad? initial = null)
         {
@@ -188,6 +221,12 @@ public sealed class UnitLoadServiceTests
 
         public Task<UnitLoad?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.SingleOrDefault(u => u.Id == id));
+
+        public Task AddRelabelEventAsync(UnitLoadRelabelEvent relabelEvent, CancellationToken cancellationToken = default)
+        {
+            RelabelEvents.Add(relabelEvent);
+            return Task.CompletedTask;
+        }
 
         public Task<bool> SsccExistsAsync(string ssccInternal, CancellationToken cancellationToken = default)
             => Task.FromResult(Stored.Any(u => u.SsccInternal == ssccInternal));

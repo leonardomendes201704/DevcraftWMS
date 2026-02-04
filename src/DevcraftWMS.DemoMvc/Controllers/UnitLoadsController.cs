@@ -175,7 +175,8 @@ public sealed class UnitLoadsController : Controller
         var model = new UnitLoadDetailsPageViewModel
         {
             UnitLoad = result.Data,
-            Label = label
+            Label = label,
+            RelabelForm = new UnitLoadRelabelFormViewModel()
         };
 
         return View(model);
@@ -192,6 +193,26 @@ public sealed class UnitLoadsController : Controller
         }
 
         TempData["Success"] = "Label generated successfully.";
+        TempData[TempDataLabelKey] = JsonSerializer.Serialize(result.Data);
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Relabel(Guid id, UnitLoadRelabelFormViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return await RenderDetailsWithFormAsync(id, model, cancellationToken);
+        }
+
+        var result = await _unitLoadsClient.RelabelAsync(id, model, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            ModelState.AddModelError(string.Empty, result.Error ?? "Failed to re-label unit load.");
+            return await RenderDetailsWithFormAsync(id, model, cancellationToken);
+        }
+
+        TempData["Success"] = "Unit load re-labeled successfully.";
         TempData[TempDataLabelKey] = JsonSerializer.Serialize(result.Data);
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -263,6 +284,25 @@ public sealed class UnitLoadsController : Controller
         }
 
         return null;
+    }
+
+    private async Task<IActionResult> RenderDetailsWithFormAsync(Guid id, UnitLoadRelabelFormViewModel form, CancellationToken cancellationToken)
+    {
+        var result = await _unitLoadsClient.GetByIdAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Unit load not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var model = new UnitLoadDetailsPageViewModel
+        {
+            UnitLoad = result.Data,
+            Label = ReadLabelFromTempData(),
+            RelabelForm = form
+        };
+
+        return View("Details", model);
     }
 
     private bool HasCustomerContext()

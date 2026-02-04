@@ -50,9 +50,18 @@ public sealed class UnitLoadsApiClient : ApiClientBase
 
     public Task<ApiResult<UnitLoadLabelViewModel>> PrintLabelAsync(Guid id, CancellationToken cancellationToken)
         => PostAsync<UnitLoadLabelViewModel>($"/api/unit-loads/{id}/print", new { }, cancellationToken);
+
+    public Task<ApiResult<UnitLoadLabelViewModel>> RelabelAsync(Guid id, UnitLoadRelabelFormViewModel payload, CancellationToken cancellationToken)
+        => PostAsync<UnitLoadLabelViewModel>($"/api/unit-loads/{id}/relabel", new RelabelUnitLoadRequest(
+            payload.Reason,
+            payload.Notes), cancellationToken);
 }
 
 public sealed record CreateUnitLoadRequest(
     Guid ReceiptId,
     string? SsccExternal,
+    string? Notes);
+
+public sealed record RelabelUnitLoadRequest(
+    string Reason,
     string? Notes);

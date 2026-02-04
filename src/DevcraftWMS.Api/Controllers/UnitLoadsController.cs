@@ -5,6 +5,7 @@ using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.UnitLoads.Commands.CreateUnitLoad;
 using DevcraftWMS.Application.Features.UnitLoads.Commands.PrintUnitLoadLabel;
+using DevcraftWMS.Application.Features.UnitLoads.Commands.RelabelUnitLoadLabel;
 using DevcraftWMS.Application.Features.UnitLoads.Queries.GetUnitLoadById;
 using DevcraftWMS.Application.Features.UnitLoads.Queries.ListUnitLoadsPaged;
 using DevcraftWMS.Domain.Enums;
@@ -80,6 +81,13 @@ public sealed class UnitLoadsController : ControllerBase
     public async Task<IActionResult> PrintLabel(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new PrintUnitLoadLabelCommand(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("unit-loads/{id:guid}/relabel")]
+    public async Task<IActionResult> Relabel(Guid id, [FromBody] RelabelUnitLoadRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new RelabelUnitLoadLabelCommand(id, request.Reason, request.Notes), cancellationToken);
         return this.ToActionResult(result);
     }
 }

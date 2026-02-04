@@ -165,6 +165,62 @@ public sealed class UnitLoadService : IUnitLoadService
         return RequestResult<UnitLoadLabelDto>.Success(dto);
     }
 
+    public async Task<RequestResult<UnitLoadLabelDto>> RelabelAsync(Guid id, string reason, string? notes, CancellationToken cancellationToken)
+    {
+        var unitLoad = await _unitLoadRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (unitLoad is null)
+        {
+            return RequestResult<UnitLoadLabelDto>.Failure("unit_loads.unit_load.not_found", "Unit load not found.");
+        }
+
+        if (unitLoad.Status == UnitLoadStatus.Canceled)
+        {
+            return RequestResult<UnitLoadLabelDto>.Failure("unit_loads.unit_load.status_locked", "Canceled unit loads cannot be re-labeled.");
+        }
+
+        var newSscc = await GenerateUniqueSsccAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(newSscc))
+        {
+            return RequestResult<UnitLoadLabelDto>.Failure("unit_loads.sscc.unavailable", "Unable to generate a unique SSCC.");
+        }
+
+        var relabelEvent = new UnitLoadRelabelEvent
+        {
+            Id = Guid.NewGuid(),
+            UnitLoadId = unitLoad.Id,
+            CustomerId = unitLoad.CustomerId,
+            OldSsccInternal = unitLoad.SsccInternal,
+            NewSsccInternal = newSscc,
+            Reason = reason.Trim(),
+            Notes = NormalizeOptional(notes),
+            RelabeledAtUtc = _dateTimeProvider.UtcNow
+        };
+
+        unitLoad.SsccInternal = newSscc;
+        unitLoad.PrintedAtUtc = relabelEvent.RelabeledAtUtc;
+        unitLoad.Status = UnitLoadStatus.Printed;
+
+        await _unitLoadRepository.UpdateAsync(unitLoad, cancellationToken);
+        await _unitLoadRepository.AddRelabelEventAsync(relabelEvent, cancellationToken);
+
+        await EnsurePutawayTaskAsync(unitLoad, cancellationToken);
+
+        var printedAt = unitLoad.PrintedAtUtc ?? _dateTimeProvider.UtcNow;
+        var receiptNumber = unitLoad.Receipt?.ReceiptNumber ?? "-";
+        var warehouseName = unitLoad.Warehouse?.Name ?? "-";
+
+        var labelContent = BuildLabelContent(unitLoad.SsccInternal, receiptNumber, warehouseName, printedAt);
+        var dto = new UnitLoadLabelDto(
+            unitLoad.Id,
+            unitLoad.SsccInternal,
+            receiptNumber,
+            warehouseName,
+            printedAt,
+            labelContent);
+
+        return RequestResult<UnitLoadLabelDto>.Success(dto);
+    }
+
     private async Task EnsurePutawayTaskAsync(UnitLoad unitLoad, CancellationToken cancellationToken)
     {
         if (await IsCrossDockReceiptAsync(unitLoad.ReceiptId, cancellationToken))

@@ -39,8 +39,26 @@ public sealed class UnitLoadCrudTests : IClassFixture<CustomWebApplicationFactor
         printResponse.IsSuccessStatusCode.Should().BeTrue(printBody);
 
         using var printDoc = JsonDocument.Parse(printBody);
-        printDoc.RootElement.GetProperty("ssccInternal").GetString().Should().NotBeNullOrWhiteSpace();
+        var printedSscc = printDoc.RootElement.GetProperty("ssccInternal").GetString();
+        printedSscc.Should().NotBeNullOrWhiteSpace();
         printDoc.RootElement.GetProperty("content").GetString().Should().Contain("UNIT LOAD LABEL");
+
+        var relabelPayload = JsonSerializer.Serialize(new
+        {
+            reason = "Label damaged",
+            notes = "Reprinted during QA"
+        });
+
+        var relabelResponse = await client.PostAsync(
+            $"/api/unit-loads/{unitLoadId}/relabel",
+            new StringContent(relabelPayload, Encoding.UTF8, "application/json"));
+        var relabelBody = await relabelResponse.Content.ReadAsStringAsync();
+        relabelResponse.IsSuccessStatusCode.Should().BeTrue(relabelBody);
+
+        using var relabelDoc = JsonDocument.Parse(relabelBody);
+        var relabeledSscc = relabelDoc.RootElement.GetProperty("ssccInternal").GetString();
+        relabeledSscc.Should().NotBeNullOrWhiteSpace();
+        relabeledSscc.Should().NotBe(printedSscc);
     }
 
     private static async Task<Guid> CreateReceiptAsync(HttpClient client)

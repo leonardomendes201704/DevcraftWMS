@@ -29,7 +29,17 @@ public sealed record UnitLoadDetailDto(
     string? Notes,
     bool IsActive,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    IReadOnlyList<UnitLoadRelabelEventDto> RelabelHistory);
+
+public sealed record UnitLoadRelabelEventDto(
+    Guid Id,
+    Guid UnitLoadId,
+    string OldSsccInternal,
+    string NewSsccInternal,
+    string? Reason,
+    string? Notes,
+    DateTime RelabeledAtUtc);
 
 public sealed record UnitLoadLabelDto(
     Guid UnitLoadId,
