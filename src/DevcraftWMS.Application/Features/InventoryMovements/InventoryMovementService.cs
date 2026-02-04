@@ -103,12 +103,22 @@ public sealed class InventoryMovementService : IInventoryMovementService
             {
                 return RequestResult<InventoryMovementDto>.Failure("inventory.lot.mismatch", "Lot does not belong to the selected product.");
             }
+
+            if (lot.Status == LotStatus.Quarantined)
+            {
+                return RequestResult<InventoryMovementDto>.Failure("inventory.movement.quarantine_blocked", "Quarantined inventory cannot be moved.");
+            }
         }
 
         var originBalance = await _balanceRepository.GetTrackedByKeyAsync(fromLocationId, productId, lotId, cancellationToken);
         if (originBalance is null)
         {
             return RequestResult<InventoryMovementDto>.Failure("inventory.balance.not_found", "No inventory balance found for the origin location.");
+        }
+
+        if (originBalance.Status == InventoryBalanceStatus.Blocked)
+        {
+            return RequestResult<InventoryMovementDto>.Failure("inventory.movement.quarantine_blocked", "Quarantined inventory cannot be moved.");
         }
 
         if (originBalance.QuantityOnHand < quantity)

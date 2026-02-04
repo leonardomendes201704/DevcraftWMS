@@ -51,6 +51,95 @@ public sealed class InventoryMovementServiceTests
     }
 
     [Fact]
+    public async Task CreateMovement_Should_Return_Failure_When_OriginBalance_Is_Blocked()
+    {
+        var customerContext = new FakeCustomerContext(Guid.NewGuid());
+        var fromLocationId = Guid.NewGuid();
+        var toLocationId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var originBalance = new InventoryBalance
+        {
+            Id = Guid.NewGuid(),
+            LocationId = fromLocationId,
+            ProductId = productId,
+            LotId = null,
+            QuantityOnHand = 5,
+            QuantityReserved = 0,
+            Status = InventoryBalanceStatus.Blocked
+        };
+        var balances = new List<InventoryBalance> { originBalance };
+
+        var service = new InventoryMovementService(
+            new FakeInventoryMovementRepository(),
+            new FakeInventoryBalanceRepository(balances),
+            new FakeLocationRepository(fromLocationId, toLocationId),
+            new FakeProductRepository(productId),
+            new FakeLotRepository(null),
+            customerContext,
+            new FakeDateTimeProvider());
+
+        var result = await service.CreateAsync(
+            fromLocationId,
+            toLocationId,
+            productId,
+            null,
+            1,
+            "Relocation",
+            "REF-01",
+            DateTime.UtcNow,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("inventory.movement.quarantine_blocked");
+    }
+
+    [Fact]
+    public async Task CreateMovement_Should_Return_Failure_When_Lot_Is_Quarantined()
+    {
+        var customerContext = new FakeCustomerContext(Guid.NewGuid());
+        var fromLocationId = Guid.NewGuid();
+        var toLocationId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        var lotId = Guid.NewGuid();
+
+        var originBalance = new InventoryBalance
+        {
+            Id = Guid.NewGuid(),
+            LocationId = fromLocationId,
+            ProductId = productId,
+            LotId = lotId,
+            QuantityOnHand = 5,
+            QuantityReserved = 0,
+            Status = InventoryBalanceStatus.Available
+        };
+        var balances = new List<InventoryBalance> { originBalance };
+
+        var service = new InventoryMovementService(
+            new FakeInventoryMovementRepository(),
+            new FakeInventoryBalanceRepository(balances),
+            new FakeLocationRepository(fromLocationId, toLocationId),
+            new FakeProductRepository(productId),
+            new FakeLotRepository(new Lot { Id = lotId, ProductId = productId, Status = LotStatus.Quarantined }),
+            customerContext,
+            new FakeDateTimeProvider());
+
+        var result = await service.CreateAsync(
+            fromLocationId,
+            toLocationId,
+            productId,
+            lotId,
+            1,
+            "Relocation",
+            "REF-01",
+            DateTime.UtcNow,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("inventory.movement.quarantine_blocked");
+    }
+
+    [Fact]
     public async Task CreateMovement_Should_Decrease_Origin_And_Create_Destination_Balance()
     {
         var customerContext = new FakeCustomerContext(Guid.NewGuid());

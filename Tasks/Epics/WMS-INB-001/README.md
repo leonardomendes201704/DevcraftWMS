@@ -44,7 +44,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0071] Validade minima: quarentena automatica | Prioridade: P0 | Dependencias: TASK-0048,TASK-0070 | Estimativa: 4h
 - [DONE-TASK-0072] Qualidade: fila de inspecao | Prioridade: P1 | Dependencias: TASK-0068 | Estimativa: 5h
 - [DONE-TASK-0073] Qualidade: registrar inspecao e decisao | Prioridade: P1 | Dependencias: TASK-0072 | Estimativa: 6h
-- [TASK-0074] Quarentena: bloqueio de estoque | Prioridade: P0 | Dependencias: TASK-0071,TASK-0073 | Estimativa: 5h
+- [DONE-TASK-0074] Quarentena: bloqueio de estoque | Prioridade: P0 | Dependencias: TASK-0071,TASK-0073 | Estimativa: 5h
 - [TASK-0075] Putaway: modelo e geracao de tarefas | Prioridade: P0 | Dependencias: TASK-0067,TASK-0049,TASK-0050 | Estimativa: 6h
 - [TASK-0076] Putaway: motor de sugestao de endereco | Prioridade: P0 | Dependencias: TASK-0075 | Estimativa: 6h
 - [TASK-0077] Putaway: execucao e confirmacao | Prioridade: P0 | Dependencias: TASK-0075 | Estimativa: 6h

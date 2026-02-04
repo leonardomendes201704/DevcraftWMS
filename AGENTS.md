@@ -113,6 +113,8 @@ When implementing a new endpoint:
 - HistoryLog updated (`HistoryLog.md`) for every code change.
 - Commit and push messages include a clear title and a complete description of what was done.
 - No hardcoded external URLs; all external endpoints come from validated Options.
+- When a task is completed, the chat response must include a short "How to test" section with concrete steps/commands.
+- The completed task file must include a "How to test" section with the same concrete steps/commands.
 
 ## Change log rule (MANDATORY)
 Every code change must append an entry to `HistoryLog.md` at solution root with:

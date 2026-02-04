@@ -28,5 +28,13 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Picking ignora quarentena
 - Logs registrados
 
+## How to test
+1) Garanta um lote em quarentena (ex: produto com shelf-life minimo e recebimento que dispare quarentena).
+2) No DemoMvc: Inventory Movements -> Create, selecione o lote em quarentena e tente movimentar.
+   - Esperado: erro "Quarantined inventory cannot be moved."
+3) Opcional via API: POST /api/inventory-movements com lotId em quarentena.
+   - Esperado: 400 com error code `inventory.movement.quarantine_blocked`.
+4) Verifique Inventory Balances: saldo do lote com Status=Blocked deve exibir Available=0.
+
 ## Status
-PENDENTE
+DONE

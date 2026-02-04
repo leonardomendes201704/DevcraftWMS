@@ -12,7 +12,7 @@ public static class InventoryBalanceMapping
             balance.LotId,
             balance.QuantityOnHand,
             balance.QuantityReserved,
-            balance.QuantityOnHand - balance.QuantityReserved,
+            GetAvailableQuantity(balance),
             balance.Status,
             balance.IsActive,
             balance.CreatedAtUtc);
@@ -25,8 +25,13 @@ public static class InventoryBalanceMapping
             balance.LotId,
             balance.QuantityOnHand,
             balance.QuantityReserved,
-            balance.QuantityOnHand - balance.QuantityReserved,
+            GetAvailableQuantity(balance),
             balance.Status,
             balance.IsActive,
             balance.CreatedAtUtc);
+
+    private static decimal GetAvailableQuantity(InventoryBalance balance)
+        => balance.Status == Domain.Enums.InventoryBalanceStatus.Blocked
+            ? 0
+            : balance.QuantityOnHand - balance.QuantityReserved;
 }

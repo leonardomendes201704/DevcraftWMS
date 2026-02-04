@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-04
+- Guideline - Require "How to test" steps in chat after completing tasks.
+  - Key changes: added PR checklist rule to include concrete testing steps in the response and in the completed task file.
+- TASK-0074 - Quarantine stock blocking completed.
+  - Key changes: blocked inventory movements for quarantined lots or blocked balances, set available quantity to zero for blocked balances, added unit tests, and marked task as done.
 - TASK-0071/0072/0073 - Quarantine and quality inspections completed.
   - Key changes: added quarantine enforcement on receipt items, quality inspection entities/CQRS/API, DemoMvc queue/detail UI with evidence download, quarantine seed zone/location, and unit/integration tests.
 - TASK-0070 - Recebimento: captura lote/validade completed.
