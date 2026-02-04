@@ -150,7 +150,9 @@ public sealed class ReceiptsController : ControllerBase
                 request.LocationId,
                 request.UomId,
                 request.Quantity,
-                request.UnitCost),
+                request.UnitCost,
+                request.ActualWeightKg,
+                request.ActualVolumeCm3),
             cancellationToken);
 
         return this.ToActionResult(result);

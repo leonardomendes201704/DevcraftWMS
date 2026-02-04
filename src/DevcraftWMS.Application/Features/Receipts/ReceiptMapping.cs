@@ -54,6 +54,13 @@ public static class ReceiptMapping
             item.Uom?.Code ?? "-",
             item.Quantity,
             item.UnitCost,
+            item.ExpectedWeightKg,
+            item.ExpectedVolumeCm3,
+            item.ActualWeightKg,
+            item.ActualVolumeCm3,
+            item.WeightDeviationPercent,
+            item.VolumeDeviationPercent,
+            item.IsMeasurementOutOfRange,
             item.IsActive,
             item.CreatedAtUtc);
 }

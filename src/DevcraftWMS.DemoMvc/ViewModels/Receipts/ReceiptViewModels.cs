@@ -101,6 +101,13 @@ public sealed record ReceiptItemListItemViewModel(
     string UomCode,
     decimal Quantity,
     decimal? UnitCost,
+    decimal? ExpectedWeightKg,
+    decimal? ExpectedVolumeCm3,
+    decimal? ActualWeightKg,
+    decimal? ActualVolumeCm3,
+    decimal? WeightDeviationPercent,
+    decimal? VolumeDeviationPercent,
+    bool IsMeasurementOutOfRange,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -134,6 +141,12 @@ public sealed class ReceiptItemFormViewModel
 
     [Range(0, double.MaxValue)]
     public decimal? UnitCost { get; set; }
+
+    [Range(0.0001, double.MaxValue)]
+    public decimal? ActualWeightKg { get; set; }
+
+    [Range(0.0001, double.MaxValue)]
+    public decimal? ActualVolumeCm3 { get; set; }
 
     public IReadOnlyList<SelectListItem> Sectors { get; set; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sections { get; set; } = Array.Empty<SelectListItem>();

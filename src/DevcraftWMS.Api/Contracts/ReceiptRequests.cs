@@ -22,4 +22,6 @@ public sealed record AddReceiptItemRequest(
     Guid LocationId,
     Guid UomId,
     decimal Quantity,
-    decimal? UnitCost);
+    decimal? UnitCost,
+    decimal? ActualWeightKg,
+    decimal? ActualVolumeCm3);

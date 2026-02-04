@@ -1,10 +1,11 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Application.Features.Receipts;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Tests.Unit.Application;
 
@@ -24,7 +25,7 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
         var result = await service.CreateReceiptAsync(
             Guid.NewGuid(),
@@ -61,9 +62,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, Guid.NewGuid(), null, null, null, Guid.NewGuid(), Guid.NewGuid(), 0, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, Guid.NewGuid(), null, null, null, Guid.NewGuid(), Guid.NewGuid(), 0, null, null, null, CancellationToken.None);
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.item.invalid_quantity");
     }
@@ -101,9 +102,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, null, null, null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, null, null, null, Guid.NewGuid(), Guid.NewGuid(), 1, null, null, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.lot.required");
@@ -147,9 +148,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-NEW", expiration, locationId, uomId, 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-NEW", expiration, locationId, uomId, 1, null, null, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         lotRepository.AddedLot.Should().NotBeNull();
@@ -190,9 +191,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-EXP", null, Guid.NewGuid(), Guid.NewGuid(), 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, null, "LOT-EXP", null, Guid.NewGuid(), Guid.NewGuid(), 1, null, null, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.lot.expiration_required");
@@ -250,9 +251,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, lotId, null, null, location.Id, uomId, 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, lotId, null, null, location.Id, uomId, 1, null, null, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("locations.location.tracking_not_allowed");
@@ -311,9 +312,9 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
-        var result = await service.AddItemAsync(receipt.Id, productId, lot.Id, null, null, locationId, uomId, 1, null, CancellationToken.None);
+        var result = await service.AddItemAsync(receipt.Id, productId, lot.Id, null, null, locationId, uomId, 1, null, null, null, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         lot.Status.Should().Be(LotStatus.Quarantined);
@@ -373,7 +374,7 @@ public sealed class ReceiptServiceTests
             balanceRepository,
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
         var result = await service.CompleteAsync(receipt.Id, CancellationToken.None);
 
@@ -405,11 +406,66 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
         var result = await service.CompleteAsync(receipt.Id, CancellationToken.None);
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("receipts.receipt.no_items");
+    }
+
+    [Fact]
+    public async Task AddItem_Should_Block_When_Measurement_Out_Of_Range_And_Blocking_Enabled()
+    {
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-010",
+            Status = ReceiptStatus.Draft
+        };
+
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            CustomerId = Guid.NewGuid(),
+            Code = "SKU",
+            Name = "Item",
+            WeightKg = 1m,
+            VolumeCm3 = 1000m
+        };
+
+        var service = new ReceiptService(
+            new FakeReceiptRepository(receipt),
+            new FakeWarehouseRepository(new Warehouse { Id = receipt.WarehouseId, Name = "WH" }),
+            new FakeInboundOrderRepository(null),
+            new FakeProductRepository(product),
+            new FakeLotRepository(null),
+            new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
+            new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
+            new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider(),
+            BuildMeasurementOptions(blockOnDeviation: true, maxWeightDeviation: 5, maxVolumeDeviation: 5));
+
+        var result = await service.AddItemAsync(
+            receipt.Id,
+            productId,
+            null,
+            null,
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1,
+            null,
+            3m,
+            2000m,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("receipts.item.measurement_out_of_range");
     }
 
     [Fact]
@@ -426,7 +482,7 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
         var result = await service.StartFromInboundOrderAsync(Guid.NewGuid(), CancellationToken.None);
 
@@ -463,7 +519,7 @@ public sealed class ReceiptServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
-            new FakeDateTimeProvider());
+            new FakeDateTimeProvider(), BuildMeasurementOptions());
 
         var result = await service.StartFromInboundOrderAsync(orderId, CancellationToken.None);
 
@@ -714,6 +770,18 @@ public sealed class ReceiptServiceTests
     {
         public DateTime UtcNow => new DateTime(2026, 2, 2, 12, 0, 0, DateTimeKind.Utc);
     }
+
+    private static IOptions<ReceiptMeasurementOptions> BuildMeasurementOptions(
+        bool blockOnDeviation = false,
+        decimal maxWeightDeviation = 10m,
+        decimal maxVolumeDeviation = 10m)
+        => Options.Create(new ReceiptMeasurementOptions
+        {
+            BlockOnDeviation = blockOnDeviation,
+            MaxWeightDeviationPercent = maxWeightDeviation,
+            MaxVolumeDeviationPercent = maxVolumeDeviation
+        });
 }
+
 
 

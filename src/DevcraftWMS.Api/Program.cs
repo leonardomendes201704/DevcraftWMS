@@ -76,6 +76,9 @@ builder.Services.AddOptions<DevcraftWMS.Application.Features.ReceiptDivergences.
     .Bind(builder.Configuration.GetSection(DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions.SectionName))
     .Validate(options => options.MaxEvidenceBytes > 0, "ReceiptDivergences:MaxEvidenceBytes must be greater than zero.")
     .ValidateOnStart();
+builder.Services.AddOptions<DevcraftWMS.Application.Features.Receipts.ReceiptMeasurementOptions>()
+    .Bind(builder.Configuration.GetSection(DevcraftWMS.Application.Features.Receipts.ReceiptMeasurementOptions.SectionName))
+    .ValidateOnStart();
 builder.Services.AddOptions<DevcraftWMS.Application.Features.InboundOrderNotifications.InboundOrderNotificationOptions>()
     .Bind(builder.Configuration.GetSection("Notifications:InboundOrders"))
     .Validate(options => !options.WebhookEnabled || !string.IsNullOrWhiteSpace(options.WebhookUrl),
@@ -89,6 +92,7 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOpti
 builder.Services.AddSingleton<IAppSettingsReader, ApiSettingsReader>();
 builder.Services.AddScoped<ICorrelationContext, CorrelationContext>();
 builder.Services.AddScoped<DevcraftWMS.Application.Abstractions.Customers.ICustomerContext, CustomerContext>();
+builder.Services.AddSingleton<IValidateOptions<DevcraftWMS.Application.Features.Receipts.ReceiptMeasurementOptions>, DevcraftWMS.Application.Features.Receipts.ReceiptMeasurementOptionsValidation>();
 
 // --------------------------
 // DI (Application + Infrastructure)

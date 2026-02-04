@@ -13,4 +13,6 @@ public sealed record AddReceiptItemCommand(
     Guid LocationId,
     Guid UomId,
     decimal Quantity,
-    decimal? UnitCost) : IRequest<RequestResult<ReceiptItemDto>>;
+    decimal? UnitCost,
+    decimal? ActualWeightKg,
+    decimal? ActualVolumeCm3) : IRequest<RequestResult<ReceiptItemDto>>;

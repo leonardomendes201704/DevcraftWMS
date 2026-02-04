@@ -383,6 +383,9 @@ Notifications:InboundOrders:WebhookUrl -> Webhook endpoint for inbound order not
 Notifications:InboundOrders:WebhookTimeoutSeconds -> Webhook timeout in seconds
 ReceiptDivergences:EvidenceRequiredTypes -> Divergence types that require evidence photo
 ReceiptDivergences:MaxEvidenceBytes     -> Max evidence file size (bytes)
+ReceiptMeasurements:BlockOnDeviation   -> Block item creation when measurement deviation exceeds limits
+ReceiptMeasurements:MaxWeightDeviationPercent -> Max allowed weight deviation (%)
+ReceiptMeasurements:MaxVolumeDeviationPercent -> Max allowed volume deviation (%)
 ApiBaseUrl                          -> Demo MVC API base URL
 Telemetry:EndpointPath              -> Demo MVC telemetry endpoint path
 Telemetry:BatchSize                 -> Demo MVC telemetry batch size

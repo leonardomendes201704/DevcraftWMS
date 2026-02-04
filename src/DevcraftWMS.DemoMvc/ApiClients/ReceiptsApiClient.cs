@@ -98,7 +98,9 @@ public sealed class ReceiptsApiClient : ApiClientBase
             payload.LocationId,
             payload.UomId,
             payload.Quantity,
-            payload.UnitCost), cancellationToken);
+            payload.UnitCost,
+            payload.ActualWeightKg,
+            payload.ActualVolumeCm3), cancellationToken);
 
     public Task<ApiResult<IReadOnlyList<ReceiptExpectedItemViewModel>>> ListExpectedItemsAsync(Guid receiptId, CancellationToken cancellationToken)
         => GetAsync<IReadOnlyList<ReceiptExpectedItemViewModel>>($"/api/receipts/{receiptId}/expected-items", cancellationToken);
@@ -164,7 +166,9 @@ public sealed record AddReceiptItemRequest(
     Guid LocationId,
     Guid UomId,
     decimal Quantity,
-    decimal? UnitCost);
+    decimal? UnitCost,
+    decimal? ActualWeightKg,
+    decimal? ActualVolumeCm3);
 
 public sealed record RegisterReceiptCountRequest(
     Guid InboundOrderItemId,

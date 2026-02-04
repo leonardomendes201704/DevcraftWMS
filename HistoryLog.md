@@ -1,6 +1,10 @@
 ﻿# History Log
 
 ## 2026-02-04
+- Fix - Receipts help updated for measurements.
+  - Key changes: documented actual weight/volume capture and deviation blocking in Receipts help modal.
+- TASK-0086 - Receipt measurements (weight/volume) completed.
+  - Key changes: added expected/actual measurement fields, deviation calculation with optional blocking, DemoMvc capture + grid comparison, and migration AddReceiptItemMeasurements with tests.
 - TASK-0085 - UL/SSCC relabel completed.
   - Key changes: added UnitLoadRelabelEvent history, relabel endpoint + validation, DemoMvc relabel form + history table, and migration AddUnitLoadRelabelEvents with tests.
 - TASK-0083 - Alternative inbound flows completed.

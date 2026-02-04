@@ -52,12 +52,18 @@ public sealed class ReceiptCrudTests : IClassFixture<CustomWebApplicationFactory
             locationId,
             uomId,
             quantity = 10.5m,
-            unitCost = 2.35m
+            unitCost = 2.35m,
+            actualWeightKg = 11.8m,
+            actualVolumeCm3 = 1600m
         });
 
         var addItemResponse = await client.PostAsync($"/api/receipts/{receiptId}/items", new StringContent(itemPayload, Encoding.UTF8, "application/json"));
         var addItemBody = await addItemResponse.Content.ReadAsStringAsync();
         addItemResponse.IsSuccessStatusCode.Should().BeTrue(addItemBody);
+
+        using var addItemDoc = JsonDocument.Parse(addItemBody);
+        addItemDoc.RootElement.GetProperty("actualWeightKg").GetDecimal().Should().Be(11.8m);
+        addItemDoc.RootElement.GetProperty("actualVolumeCm3").GetDecimal().Should().Be(1600m);
 
         var completeResponse = await client.PostAsync($"/api/receipts/{receiptId}/complete", new StringContent("{}", Encoding.UTF8, "application/json"));
         completeResponse.IsSuccessStatusCode.Should().BeTrue();

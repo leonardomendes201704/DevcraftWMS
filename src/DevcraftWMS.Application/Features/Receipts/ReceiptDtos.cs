@@ -49,5 +49,12 @@ public sealed record ReceiptItemDto(
     string UomCode,
     decimal Quantity,
     decimal? UnitCost,
+    decimal? ExpectedWeightKg,
+    decimal? ExpectedVolumeCm3,
+    decimal? ActualWeightKg,
+    decimal? ActualVolumeCm3,
+    decimal? WeightDeviationPercent,
+    decimal? VolumeDeviationPercent,
+    bool IsMeasurementOutOfRange,
     bool IsActive,
     DateTime CreatedAtUtc);

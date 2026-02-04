@@ -9,6 +9,13 @@ public sealed class ReceiptItem : AuditableEntity
     public Guid UomId { get; set; }
     public decimal Quantity { get; set; }
     public decimal? UnitCost { get; set; }
+    public decimal? ExpectedWeightKg { get; set; }
+    public decimal? ExpectedVolumeCm3 { get; set; }
+    public decimal? ActualWeightKg { get; set; }
+    public decimal? ActualVolumeCm3 { get; set; }
+    public decimal? WeightDeviationPercent { get; set; }
+    public decimal? VolumeDeviationPercent { get; set; }
+    public bool IsMeasurementOutOfRange { get; set; }
 
     public Receipt? Receipt { get; set; }
     public Product? Product { get; set; }

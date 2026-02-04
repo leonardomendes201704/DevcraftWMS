@@ -15,5 +15,7 @@ public sealed class AddReceiptItemCommandValidator : AbstractValidator<AddReceip
         RuleFor(x => x.UomId).NotEmpty();
         RuleFor(x => x.Quantity).GreaterThan(0);
         RuleFor(x => x.UnitCost).GreaterThanOrEqualTo(0).When(x => x.UnitCost.HasValue);
+        RuleFor(x => x.ActualWeightKg).GreaterThan(0).When(x => x.ActualWeightKg.HasValue);
+        RuleFor(x => x.ActualVolumeCm3).GreaterThan(0).When(x => x.ActualVolumeCm3.HasValue);
     }
 }

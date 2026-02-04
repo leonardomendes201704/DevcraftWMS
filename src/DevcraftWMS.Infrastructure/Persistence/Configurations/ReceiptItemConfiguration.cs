@@ -21,6 +21,18 @@ public sealed class ReceiptItemConfiguration : AuditableEntityConfiguration<Rece
             .IsRequired();
         builder.Property(i => i.UnitCost)
             .HasPrecision(18, 4);
+        builder.Property(i => i.ExpectedWeightKg)
+            .HasPrecision(18, 3);
+        builder.Property(i => i.ExpectedVolumeCm3)
+            .HasPrecision(18, 3);
+        builder.Property(i => i.ActualWeightKg)
+            .HasPrecision(18, 3);
+        builder.Property(i => i.ActualVolumeCm3)
+            .HasPrecision(18, 3);
+        builder.Property(i => i.WeightDeviationPercent)
+            .HasPrecision(9, 2);
+        builder.Property(i => i.VolumeDeviationPercent)
+            .HasPrecision(9, 2);
 
         builder.HasOne(i => i.Product)
             .WithMany()

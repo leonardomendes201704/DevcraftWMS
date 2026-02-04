@@ -3,6 +3,7 @@ using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Application.Features.Receipts;
 
@@ -19,6 +20,7 @@ public sealed class ReceiptService : IReceiptService
     private readonly IQualityInspectionRepository _qualityInspectionRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ReceiptMeasurementOptions _measurementOptions;
 
     public ReceiptService(
         IReceiptRepository receiptRepository,
@@ -31,7 +33,8 @@ public sealed class ReceiptService : IReceiptService
         IInventoryBalanceRepository balanceRepository,
         IQualityInspectionRepository qualityInspectionRepository,
         ICustomerContext customerContext,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IOptions<ReceiptMeasurementOptions> measurementOptions)
     {
         _receiptRepository = receiptRepository;
         _warehouseRepository = warehouseRepository;
@@ -44,6 +47,7 @@ public sealed class ReceiptService : IReceiptService
         _qualityInspectionRepository = qualityInspectionRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
+        _measurementOptions = measurementOptions.Value;
     }
 
     public async Task<RequestResult<ReceiptDetailDto>> CreateReceiptAsync(
@@ -148,6 +152,8 @@ public sealed class ReceiptService : IReceiptService
         Guid uomId,
         decimal quantity,
         decimal? unitCost,
+        decimal? actualWeightKg,
+        decimal? actualVolumeCm3,
         CancellationToken cancellationToken)
     {
         if (quantity <= 0)
@@ -170,6 +176,14 @@ public sealed class ReceiptService : IReceiptService
         if (product is null)
         {
             return RequestResult<ReceiptItemDto>.Failure("receipts.product.not_found", "Product not found.");
+        }
+
+        var measurement = BuildReceiptMeasurements(product, quantity, actualWeightKg, actualVolumeCm3);
+        if (measurement.IsOutOfRange && _measurementOptions.BlockOnDeviation)
+        {
+            return RequestResult<ReceiptItemDto>.Failure(
+                "receipts.item.measurement_out_of_range",
+                "Actual weight or volume exceeds the allowed deviation threshold.");
         }
 
         lotCode = string.IsNullOrWhiteSpace(lotCode) ? null : lotCode.Trim();
@@ -291,7 +305,14 @@ public sealed class ReceiptService : IReceiptService
             LocationId = locationId,
             UomId = uomId,
             Quantity = quantity,
-            UnitCost = unitCost
+            UnitCost = unitCost,
+            ExpectedWeightKg = measurement.ExpectedWeightKg,
+            ExpectedVolumeCm3 = measurement.ExpectedVolumeCm3,
+            ActualWeightKg = measurement.ActualWeightKg,
+            ActualVolumeCm3 = measurement.ActualVolumeCm3,
+            WeightDeviationPercent = measurement.WeightDeviationPercent,
+            VolumeDeviationPercent = measurement.VolumeDeviationPercent,
+            IsMeasurementOutOfRange = measurement.IsOutOfRange
         };
 
         if (receipt.Status == ReceiptStatus.Draft)
@@ -532,4 +553,68 @@ public sealed class ReceiptService : IReceiptService
 
         await _qualityInspectionRepository.AddAsync(inspection, cancellationToken);
     }
+
+    private MeasurementSnapshot BuildReceiptMeasurements(Product product, decimal quantity, decimal? actualWeightKg, decimal? actualVolumeCm3)
+    {
+        decimal? expectedWeightKg = null;
+        decimal? expectedVolumeCm3 = null;
+        decimal? weightDeviation = null;
+        decimal? volumeDeviation = null;
+        var isOutOfRange = false;
+
+        if (product.WeightKg.HasValue)
+        {
+            expectedWeightKg = product.WeightKg.Value * quantity;
+            if (actualWeightKg.HasValue && expectedWeightKg.Value > 0)
+            {
+                weightDeviation = CalculateDeviationPercent(expectedWeightKg.Value, actualWeightKg.Value);
+                if (weightDeviation.HasValue && weightDeviation.Value > _measurementOptions.MaxWeightDeviationPercent)
+                {
+                    isOutOfRange = true;
+                }
+            }
+        }
+
+        if (product.VolumeCm3.HasValue)
+        {
+            expectedVolumeCm3 = product.VolumeCm3.Value * quantity;
+            if (actualVolumeCm3.HasValue && expectedVolumeCm3.Value > 0)
+            {
+                volumeDeviation = CalculateDeviationPercent(expectedVolumeCm3.Value, actualVolumeCm3.Value);
+                if (volumeDeviation.HasValue && volumeDeviation.Value > _measurementOptions.MaxVolumeDeviationPercent)
+                {
+                    isOutOfRange = true;
+                }
+            }
+        }
+
+        return new MeasurementSnapshot(
+            expectedWeightKg,
+            expectedVolumeCm3,
+            actualWeightKg,
+            actualVolumeCm3,
+            weightDeviation,
+            volumeDeviation,
+            isOutOfRange);
+    }
+
+    private static decimal? CalculateDeviationPercent(decimal expected, decimal actual)
+    {
+        if (expected <= 0)
+        {
+            return null;
+        }
+
+        var deviation = Math.Abs(actual - expected) / expected * 100m;
+        return Math.Round(deviation, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private sealed record MeasurementSnapshot(
+        decimal? ExpectedWeightKg,
+        decimal? ExpectedVolumeCm3,
+        decimal? ActualWeightKg,
+        decimal? ActualVolumeCm3,
+        decimal? WeightDeviationPercent,
+        decimal? VolumeDeviationPercent,
+        bool IsOutOfRange);
 }

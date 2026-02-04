@@ -30,6 +30,8 @@ public interface IReceiptService
         Guid uomId,
         decimal quantity,
         decimal? unitCost,
+        decimal? actualWeightKg,
+        decimal? actualVolumeCm3,
         CancellationToken cancellationToken);
     Task<RequestResult<ReceiptDetailDto>> StartFromInboundOrderAsync(Guid inboundOrderId, CancellationToken cancellationToken);
     Task<RequestResult<ReceiptDetailDto>> CompleteAsync(Guid receiptId, CancellationToken cancellationToken);

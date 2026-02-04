@@ -24,5 +24,7 @@ public sealed class AddReceiptItemCommandHandler : IRequestHandler<AddReceiptIte
             request.UomId,
             request.Quantity,
             request.UnitCost,
+            request.ActualWeightKg,
+            request.ActualVolumeCm3,
             cancellationToken);
 }

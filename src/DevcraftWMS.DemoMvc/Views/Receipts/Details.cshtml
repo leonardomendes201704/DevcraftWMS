@@ -36,6 +36,23 @@
         .AddColumn("UoM", item => new HtmlString(HtmlEncoder.Default.Encode(item.UomCode)), "UomId")
         .AddColumn("Quantity", item => new HtmlString(item.Quantity.ToString("N3")), "Quantity")
         .AddColumn("Unit Cost", item => new HtmlString(item.UnitCost?.ToString("N4") ?? "-"), "UnitCost")
+        .AddColumn("Expected Weight (kg)", item => new HtmlString(item.ExpectedWeightKg?.ToString("N3") ?? "-"), "ExpectedWeightKg")
+        .AddColumn("Expected Volume (cm³)", item => new HtmlString(item.ExpectedVolumeCm3?.ToString("N3") ?? "-"), "ExpectedVolumeCm3")
+        .AddColumn("Actual Weight (kg)", item => new HtmlString(item.ActualWeightKg?.ToString("N3") ?? "-"), "ActualWeightKg")
+        .AddColumn("Actual Volume (cm³)", item => new HtmlString(item.ActualVolumeCm3?.ToString("N3") ?? "-"), "ActualVolumeCm3")
+        .AddColumn("Deviation", item =>
+        {
+            if (!item.WeightDeviationPercent.HasValue && !item.VolumeDeviationPercent.HasValue)
+            {
+                return new HtmlString("-");
+            }
+
+            var weight = item.WeightDeviationPercent.HasValue ? $"{item.WeightDeviationPercent.Value:N2}%" : "-";
+            var volume = item.VolumeDeviationPercent.HasValue ? $"{item.VolumeDeviationPercent.Value:N2}%" : "-";
+            var badge = item.IsMeasurementOutOfRange ? "text-bg-danger" : "text-bg-success";
+            var content = $"W: {weight} | V: {volume}";
+            return new HtmlString($"<span class=\"badge {badge}\">{HtmlEncoder.Default.Encode(content)}</span>");
+        }, "WeightDeviationPercent")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .Build();
 }
@@ -202,6 +219,22 @@
                     </div>
                     <span class="text-danger small" asp-validation-for="NewItem.UnitCost"></span>
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">Actual Weight (kg)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+                        <input asp-for="NewItem.ActualWeightKg" class="form-control" type="number" step="0.001" min="0.001" inputmode="decimal" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.ActualWeightKg"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Actual Volume (cm³)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-box"></i></span>
+                        <input asp-for="NewItem.ActualVolumeCm3" class="form-control" type="number" step="0.001" min="0.001" inputmode="decimal" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="NewItem.ActualVolumeCm3"></span>
+                </div>
             </div>
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Add Item</button>
@@ -294,6 +327,8 @@
 
                 normalizeDecimal(document.getElementById('NewItem_Quantity'));
                 normalizeDecimal(document.getElementById('NewItem_UnitCost'));
+                normalizeDecimal(document.getElementById('NewItem_ActualWeightKg'));
+                normalizeDecimal(document.getElementById('NewItem_ActualVolumeCm3'));
             });
         })();
     </script>
