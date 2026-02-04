@@ -65,9 +65,15 @@ public sealed class PutawayTasksController : Controller
             return RedirectToAction("Index");
         }
 
+        var suggestions = await _client.GetSuggestionsAsync(id, 5, cancellationToken);
+        var suggestionItems = suggestions.IsSuccess && suggestions.Data is not null
+            ? suggestions.Data
+            : Array.Empty<PutawaySuggestionViewModel>();
+
         return View(new PutawayTaskDetailsPageViewModel
         {
-            Task = result.Data
+            Task = result.Data,
+            Suggestions = suggestionItems
         });
     }
 }

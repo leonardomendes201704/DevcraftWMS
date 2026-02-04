@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskById;
+using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskSuggestions;
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.ListPutawayTasksPaged;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Domain.Enums;
@@ -54,6 +55,14 @@ public sealed class PutawayTasksController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetPutawayTaskByIdQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{id:guid}/suggestions")]
+    [Authorize(Policy = "Role:Backoffice")]
+    public async Task<IActionResult> GetSuggestions(Guid id, [FromQuery] int limit = 5, CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(new GetPutawayTaskSuggestionsQuery(id, limit), cancellationToken);
         return this.ToActionResult(result);
     }
 }

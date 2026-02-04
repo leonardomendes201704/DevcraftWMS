@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0076 - Putaway suggestion engine completed.
+  - Key changes: added suggestion query/endpoint, ranking and compatibility filters (zone/capacity/tracking), DemoMvc suggestions on task details, ensured putaway tasks persist on label print, and unit/integration tests.
 - TASK-0075 - Putaway task model and generation completed.
   - Key changes: added PutawayTask entity/repository/queries, created task on UL label print, added API + DemoMvc list/details UI, migration AddPutawayTasks, and unit test coverage.
 - Guideline - Require "How to test" steps in chat after completing tasks.

@@ -49,4 +49,9 @@ public interface IStructureRepository
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Structure>> ListByWarehouseAsync(
+        Guid warehouseId,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default);
 }

@@ -40,4 +40,14 @@ public sealed class PutawayTasksApiClient : ApiClientBase
 
     public Task<ApiResult<PutawayTaskDetailViewModel>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         => GetAsync<PutawayTaskDetailViewModel>($"/api/putaway-tasks/{id}", cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<PutawaySuggestionViewModel>>> GetSuggestionsAsync(Guid id, int limit, CancellationToken cancellationToken)
+    {
+        var url = BuildUrl($"/api/putaway-tasks/{id}/suggestions", new Dictionary<string, string?>
+        {
+            ["limit"] = limit.ToString()
+        });
+
+        return GetAsync<IReadOnlyList<PutawaySuggestionViewModel>>(url, cancellationToken);
+    }
 }

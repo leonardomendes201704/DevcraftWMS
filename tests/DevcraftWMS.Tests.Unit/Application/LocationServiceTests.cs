@@ -175,6 +175,13 @@ public sealed class LocationServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
+
+        public Task<IReadOnlyList<Location>> ListByStructureAsync(
+            Guid structureId,
+            Guid? zoneId,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
     }
 
     private sealed class FakeStructureRepository : IStructureRepository
@@ -236,6 +243,12 @@ public sealed class LocationServiceTests
             string? code,
             string? name,
             StructureType? structureType,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
+
+        public Task<IReadOnlyList<Structure>> ListByWarehouseAsync(
+            Guid warehouseId,
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());

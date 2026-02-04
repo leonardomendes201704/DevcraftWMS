@@ -145,6 +145,12 @@ public sealed class StructureServiceTests
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
+
+        public Task<IReadOnlyList<Structure>> ListByWarehouseAsync(
+            Guid warehouseId,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
     }
 
     private sealed class FakeSectionRepository : ISectionRepository

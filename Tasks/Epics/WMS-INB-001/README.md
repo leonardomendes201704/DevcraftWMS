@@ -46,7 +46,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0073] Qualidade: registrar inspecao e decisao | Prioridade: P1 | Dependencias: TASK-0072 | Estimativa: 6h
 - [DONE-TASK-0074] Quarentena: bloqueio de estoque | Prioridade: P0 | Dependencias: TASK-0071,TASK-0073 | Estimativa: 5h
 - [DONE-TASK-0075] Putaway: modelo e geracao de tarefas | Prioridade: P0 | Dependencias: TASK-0067,TASK-0049,TASK-0050 | Estimativa: 6h
-- [TASK-0076] Putaway: motor de sugestao de endereco | Prioridade: P0 | Dependencias: TASK-0075 | Estimativa: 6h
+- [DONE-TASK-0076] Putaway: motor de sugestao de endereco | Prioridade: P0 | Dependencias: TASK-0075 | Estimativa: 6h
 - [TASK-0077] Putaway: execucao e confirmacao | Prioridade: P0 | Dependencias: TASK-0075 | Estimativa: 6h
 - [TASK-0078] Putaway: reatribuicao manual | Prioridade: P1 | Dependencias: TASK-0075 | Estimativa: 4h
 - [TASK-0079] OE: validacoes de encerramento | Prioridade: P0 | Dependencias: TASK-0077,TASK-0074 | Estimativa: 5h

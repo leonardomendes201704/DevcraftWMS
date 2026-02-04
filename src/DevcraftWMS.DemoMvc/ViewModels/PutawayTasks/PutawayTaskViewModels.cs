@@ -40,6 +40,14 @@ public sealed record PutawayTaskDetailViewModel(
     bool IsActive,
     DateTime CreatedAtUtc);
 
+public sealed record PutawaySuggestionViewModel(
+    Guid LocationId,
+    string LocationCode,
+    string ZoneName,
+    DevcraftWMS.DemoMvc.Enums.ZoneType? ZoneType,
+    int Score,
+    string Reason);
+
 public sealed class PutawayTaskListPageViewModel
 {
     public IReadOnlyList<PutawayTaskListItemViewModel> Items { get; init; } = Array.Empty<PutawayTaskListItemViewModel>();
@@ -50,4 +58,5 @@ public sealed class PutawayTaskListPageViewModel
 public sealed class PutawayTaskDetailsPageViewModel
 {
     public PutawayTaskDetailViewModel Task { get; init; } = default!;
+    public IReadOnlyList<PutawaySuggestionViewModel> Suggestions { get; init; } = Array.Empty<PutawaySuggestionViewModel>();
 }

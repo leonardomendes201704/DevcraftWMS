@@ -20,13 +20,13 @@ public sealed class PutawayTaskRepository : IPutawayTaskRepository
     public Task AddAsync(PutawayTask task, CancellationToken cancellationToken = default)
     {
         _dbContext.PutawayTasks.Add(task);
-        return Task.CompletedTask;
+        return _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public Task UpdateAsync(PutawayTask task, CancellationToken cancellationToken = default)
     {
         _dbContext.PutawayTasks.Update(task);
-        return Task.CompletedTask;
+        return _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<PutawayTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

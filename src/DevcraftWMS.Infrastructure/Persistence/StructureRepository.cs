@@ -126,6 +126,34 @@ public sealed class StructureRepository : IStructureRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Structure>> ListByWarehouseAsync(
+        Guid warehouseId,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        var query = _dbContext.Structures
+            .AsNoTracking()
+            .Include(s => s.Section)
+            .ThenInclude(section => section!.Sector)
+            .Where(s => s.Section != null
+                && s.Section.Sector != null
+                && s.Section.Sector.WarehouseId == warehouseId
+                && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(s => s.IsActive == isActive.Value);
+        }
+        else if (!includeInactive)
+        {
+            query = query.Where(s => s.IsActive);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
     private IQueryable<Structure> BuildQuery(
         Guid sectionId,
         string? code,

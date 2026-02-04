@@ -30,4 +30,10 @@ public interface ILocationRepository
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Location>> ListByStructureAsync(
+        Guid structureId,
+        Guid? zoneId,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default);
 }

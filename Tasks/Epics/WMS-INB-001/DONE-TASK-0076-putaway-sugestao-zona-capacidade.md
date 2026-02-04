@@ -28,5 +28,12 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Enderecos incompativeis excluidos
 - Explicacao de escolha
 
+## How to test
+1) Gere uma Putaway Task (crie UL e Print Label).
+2) DemoMvc -> Putaway Tasks -> Details.
+   - Esperado: lista de sugestoes com zonas nao-quarentena e justificativa.
+3) API: GET /api/putaway-tasks/{id}/suggestions?limit=5 (com X-Customer-Id).
+   - Esperado: lista sem zonas Quarantine e sem locais incompativeis.
+
 ## Status
-PENDENTE
+DONE

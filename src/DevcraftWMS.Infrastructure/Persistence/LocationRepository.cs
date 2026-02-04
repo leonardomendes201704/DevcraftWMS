@@ -94,6 +94,17 @@ public sealed class LocationRepository : ILocationRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Location>> ListByStructureAsync(
+        Guid structureId,
+        Guid? zoneId,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        var query = BuildQuery(structureId, zoneId, null, null, isActive, includeInactive);
+        return await query.ToListAsync(cancellationToken);
+    }
+
     private IQueryable<Location> BuildQuery(
         Guid structureId,
         Guid? zoneId,
