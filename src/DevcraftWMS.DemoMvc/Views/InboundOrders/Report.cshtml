@@ -116,6 +116,14 @@ else
         <div class="col-12 col-lg-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
+                    <div class="text-muted small">Cross-dock Qty</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.CrossDockQuantity</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
                     <div class="text-muted small">Divergences</div>
                     <div class="h4 mb-0">@Model.Report.Summary.DivergenceCount</div>
                 </div>
@@ -211,6 +219,48 @@ else
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Cross-dock Lines</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Location</th>
+                            <th>UoM</th>
+                            <th>Lot</th>
+                            <th>Expiry</th>
+                            <th class="text-end">Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.CrossDockLines.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No cross-dock lines identified.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var line in Model.Report.CrossDockLines)
+                            {
+                                <tr>
+                                    <td>@line.ProductCode - @line.ProductName</td>
+                                    <td>@line.LocationCode</td>
+                                    <td>@line.UomCode</td>
+                                    <td>@line.LotCode</td>
+                                    <td>@line.ExpirationDate?.ToString("yyyy-MM-dd")</td>
+                                    <td class="text-end">@line.Quantity</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <h2 class="h6 mb-3">Divergences</h2>
@@ -263,6 +313,7 @@ else
                     <li><strong>Summary cards</strong> show the totals and variance.</li>
                     <li><strong>Receipt Lines</strong> list received quantities by lot/expiry.</li>
                     <li><strong>Pending Lines</strong> highlight quantities still missing (partial receipts).</li>
+                    <li><strong>Cross-dock Lines</strong> highlight items stored in cross-dock zones for immediate dispatch.</li>
                     <li><strong>Divergences</strong> highlight receiving exceptions and evidence counts.</li>
                     <li><strong>Export CSV</strong> provides a downloadable file for sharing.</li>
                 </ul>

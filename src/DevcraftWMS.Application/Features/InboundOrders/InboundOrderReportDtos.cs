@@ -15,6 +15,7 @@ public sealed record InboundOrderReceiptReportDto(
     InboundOrderReceiptReportSummaryDto Summary,
     IReadOnlyList<InboundOrderReceiptReportLineDto> Lines,
     IReadOnlyList<InboundOrderReceiptReportLineDto> PendingLines,
+    IReadOnlyList<InboundOrderReceiptCrossDockLineDto> CrossDockLines,
     IReadOnlyList<InboundOrderReceiptDivergenceDto> Divergences);
 
 public sealed record InboundOrderReceiptReportSummaryDto(
@@ -24,6 +25,8 @@ public sealed record InboundOrderReceiptReportSummaryDto(
     int LineCount,
     int PendingLineCount,
     decimal PendingQuantity,
+    int CrossDockLineCount,
+    decimal CrossDockQuantity,
     int DivergenceCount);
 
 public sealed record InboundOrderReceiptReportLineDto(
@@ -37,6 +40,17 @@ public sealed record InboundOrderReceiptReportLineDto(
     decimal ExpectedQuantity,
     decimal ReceivedQuantity,
     decimal Variance);
+
+public sealed record InboundOrderReceiptCrossDockLineDto(
+    Guid ProductId,
+    string ProductCode,
+    string ProductName,
+    Guid UomId,
+    string UomCode,
+    string? LotCode,
+    DateOnly? ExpirationDate,
+    string LocationCode,
+    decimal Quantity);
 
 public sealed record InboundOrderReceiptDivergenceDto(
     Guid Id,

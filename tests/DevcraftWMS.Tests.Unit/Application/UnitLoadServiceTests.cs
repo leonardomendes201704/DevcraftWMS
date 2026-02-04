@@ -86,6 +86,71 @@ public sealed class UnitLoadServiceTests
         putawayRepository.Stored[0].Status.Should().Be(PutawayTaskStatus.Pending);
     }
 
+    [Fact]
+    public async Task Print_Should_Skip_Putaway_For_CrossDock_Receipt()
+    {
+        var zone = new Zone
+        {
+            Id = Guid.NewGuid(),
+            ZoneType = ZoneType.CrossDock,
+            Code = "ZON-CD",
+            Name = "Cross-dock"
+        };
+
+        var location = new Location
+        {
+            Id = Guid.NewGuid(),
+            ZoneId = zone.Id,
+            Zone = zone,
+            Code = "CD-01"
+        };
+
+        var receipt = new Receipt
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = Guid.NewGuid(),
+            WarehouseId = Guid.NewGuid(),
+            ReceiptNumber = "RCV-CD-01",
+            Status = ReceiptStatus.InProgress,
+            Items =
+            {
+                new ReceiptItem
+                {
+                    Id = Guid.NewGuid(),
+                    LocationId = location.Id,
+                    Location = location,
+                    ProductId = Guid.NewGuid(),
+                    UomId = Guid.NewGuid(),
+                    Quantity = 1
+                }
+            }
+        };
+
+        var unitLoad = new UnitLoad
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = receipt.CustomerId,
+            WarehouseId = receipt.WarehouseId,
+            ReceiptId = receipt.Id,
+            SsccInternal = "251231235959999002",
+            Status = UnitLoadStatus.Created
+        };
+
+        var repository = new FakeUnitLoadRepository(unitLoad);
+        var putawayRepository = new FakePutawayTaskRepository();
+        var service = new UnitLoadService(
+            repository,
+            new FakeReceiptRepository(receipt),
+            putawayRepository,
+            new FakeCustomerContext(),
+            new FakeDateTimeProvider());
+
+        var result = await service.PrintLabelAsync(unitLoad.Id, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        putawayRepository.Stored.Should().BeEmpty();
+    }
+
     private sealed class FakeUnitLoadRepository : IUnitLoadRepository
     {
         public List<UnitLoad> Stored { get; } = new();

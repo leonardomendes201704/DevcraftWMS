@@ -167,6 +167,11 @@ public sealed class UnitLoadService : IUnitLoadService
 
     private async Task EnsurePutawayTaskAsync(UnitLoad unitLoad, CancellationToken cancellationToken)
     {
+        if (await IsCrossDockReceiptAsync(unitLoad.ReceiptId, cancellationToken))
+        {
+            return;
+        }
+
         if (await _putawayTaskRepository.ExistsByUnitLoadIdAsync(unitLoad.Id, cancellationToken))
         {
             return;
@@ -183,6 +188,17 @@ public sealed class UnitLoadService : IUnitLoadService
         };
 
         await _putawayTaskRepository.AddAsync(task, cancellationToken);
+    }
+
+    private async Task<bool> IsCrossDockReceiptAsync(Guid receiptId, CancellationToken cancellationToken)
+    {
+        var receipt = await _receiptRepository.GetByIdAsync(receiptId, cancellationToken);
+        if (receipt is null || receipt.Items.Count == 0)
+        {
+            return false;
+        }
+
+        return receipt.Items.All(item => item.Location?.Zone?.ZoneType == ZoneType.CrossDock);
     }
 
     private async Task<string?> GenerateUniqueSsccAsync(CancellationToken cancellationToken)

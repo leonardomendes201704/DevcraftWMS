@@ -37,6 +37,8 @@ public sealed class ReceiptRepository : IReceiptRepository
             .Include(r => r.Warehouse)
             .Include(r => r.InboundOrder)
             .Include(r => r.Items)
+                .ThenInclude(i => i.Location)
+                    .ThenInclude(l => l.Zone)
             .Where(r => r.CustomerId == customerId)
             .SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
@@ -46,6 +48,8 @@ public sealed class ReceiptRepository : IReceiptRepository
         var customerId = GetCustomerId();
         return await _dbContext.Receipts
             .Include(r => r.Items)
+                .ThenInclude(i => i.Location)
+                    .ThenInclude(l => l.Zone)
             .Include(r => r.InboundOrder)
             .Where(r => r.CustomerId == customerId)
             .SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
@@ -59,6 +63,8 @@ public sealed class ReceiptRepository : IReceiptRepository
             .Include(r => r.Warehouse)
             .Include(r => r.InboundOrder)
             .Include(r => r.Items)
+                .ThenInclude(i => i.Location)
+                    .ThenInclude(l => l.Zone)
             .Where(r => r.CustomerId == customerId)
             .SingleOrDefaultAsync(r => r.InboundOrderId == inboundOrderId, cancellationToken);
     }
@@ -75,6 +81,9 @@ public sealed class ReceiptRepository : IReceiptRepository
                 .ThenInclude(i => i.Uom)
             .Include(r => r.Items)
                 .ThenInclude(i => i.Lot)
+            .Include(r => r.Items)
+                .ThenInclude(i => i.Location)
+                    .ThenInclude(l => l.Zone)
             .Where(r => r.CustomerId == customerId && r.InboundOrderId == inboundOrderId)
             .ToListAsync(cancellationToken);
     }

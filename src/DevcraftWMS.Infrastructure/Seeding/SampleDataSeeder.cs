@@ -41,8 +41,10 @@ public sealed class SampleDataSeeder
         var aisle = await EnsureAisleAsync(section.Id, cancellationToken);
         var zone = await EnsureZoneAsync(warehouse.Id, cancellationToken);
         var quarantineZone = await EnsureQuarantineZoneAsync(warehouse.Id, cancellationToken);
+        var crossDockZone = await EnsureCrossDockZoneAsync(warehouse.Id, cancellationToken);
         var locations = await EnsureLocationsAsync(structure.Id, zone.Id, cancellationToken);
         var quarantineLocations = await EnsureQuarantineLocationsAsync(structure.Id, quarantineZone.Id, cancellationToken);
+        var crossDockLocations = await EnsureCrossDockLocationsAsync(structure.Id, crossDockZone.Id, cancellationToken);
 
         await EnsureSectorAccessAsync(sector, customer.Id, cancellationToken);
         await EnsureSectionAccessAsync(section, customer.Id, cancellationToken);
@@ -50,8 +52,10 @@ public sealed class SampleDataSeeder
         await EnsureAisleAccessAsync(aisle, customer.Id, cancellationToken);
         await EnsureZoneAccessAsync(zone, customer.Id, cancellationToken);
         await EnsureZoneAccessAsync(quarantineZone, customer.Id, cancellationToken);
+        await EnsureZoneAccessAsync(crossDockZone, customer.Id, cancellationToken);
         await EnsureLocationAccessAsync(locations, customer.Id, cancellationToken);
         await EnsureLocationAccessAsync(quarantineLocations, customer.Id, cancellationToken);
+        await EnsureLocationAccessAsync(crossDockLocations, customer.Id, cancellationToken);
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
         await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
@@ -280,6 +284,17 @@ public sealed class SampleDataSeeder
             ZoneType = ZoneType.Quarantine
         };
 
+    private static Zone BuildCrossDockZone(Guid warehouseId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            Code = "ZON-CD",
+            Name = "Cross-dock",
+            Description = "Cross-dock zone for immediate dispatch.",
+            ZoneType = ZoneType.CrossDock
+        };
+
     private static List<Location> BuildQuarantineLocations(Guid structureId, Guid zoneId)
         => new()
         {
@@ -293,6 +308,41 @@ public sealed class SampleDataSeeder
                 Level = 0,
                 Row = 0,
                 Column = 1,
+                MaxWeightKg = 500,
+                MaxVolumeM3 = 1.5m,
+                AllowLotTracking = true,
+                AllowExpiryTracking = true
+            }
+        };
+
+    private static List<Location> BuildCrossDockLocations(Guid structureId, Guid zoneId)
+        => new()
+        {
+            new Location
+            {
+                Id = Guid.NewGuid(),
+                StructureId = structureId,
+                ZoneId = zoneId,
+                Code = "CD-01",
+                Barcode = "CD-01",
+                Level = 1,
+                Row = 1,
+                Column = 1,
+                MaxWeightKg = 500,
+                MaxVolumeM3 = 1.5m,
+                AllowLotTracking = true,
+                AllowExpiryTracking = true
+            },
+            new Location
+            {
+                Id = Guid.NewGuid(),
+                StructureId = structureId,
+                ZoneId = zoneId,
+                Code = "CD-02",
+                Barcode = "CD-02",
+                Level = 1,
+                Row = 1,
+                Column = 2,
                 MaxWeightKg = 500,
                 MaxVolumeM3 = 1.5m,
                 AllowLotTracking = true,
@@ -496,9 +546,46 @@ public sealed class SampleDataSeeder
         return zone;
     }
 
+    private async Task<Zone> EnsureCrossDockZoneAsync(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var zone = await _dbContext.Zones
+            .FirstOrDefaultAsync(z => z.WarehouseId == warehouseId && z.ZoneType == ZoneType.CrossDock, cancellationToken);
+
+        if (zone is not null)
+        {
+            return zone;
+        }
+
+        zone = BuildCrossDockZone(warehouseId);
+        _dbContext.Zones.Add(zone);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return zone;
+    }
+
     private async Task<List<Location>> EnsureQuarantineLocationsAsync(Guid structureId, Guid zoneId, CancellationToken cancellationToken)
     {
         var expected = BuildQuarantineLocations(structureId, zoneId);
+        var existing = await _dbContext.Locations
+            .Include(l => l.CustomerAccesses)
+            .Where(l => l.StructureId == structureId && l.ZoneId == zoneId)
+            .ToListAsync(cancellationToken);
+
+        var existingCodes = existing.Select(l => l.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = expected.Where(l => !existingCodes.Contains(l.Code)).ToList();
+
+        if (missing.Count > 0)
+        {
+            _dbContext.Locations.AddRange(missing);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            existing.AddRange(missing);
+        }
+
+        return existing;
+    }
+
+    private async Task<List<Location>> EnsureCrossDockLocationsAsync(Guid structureId, Guid zoneId, CancellationToken cancellationToken)
+    {
+        var expected = BuildCrossDockLocations(structureId, zoneId);
         var existing = await _dbContext.Locations
             .Include(l => l.CustomerAccesses)
             .Where(l => l.StructureId == structureId && l.ZoneId == zoneId)

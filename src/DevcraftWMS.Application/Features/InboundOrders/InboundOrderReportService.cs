@@ -3,6 +3,7 @@ using System.Text;
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
+using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Application.Features.InboundOrders;
 
@@ -46,6 +47,9 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
         var pendingLines = lines.Where(x => x.Variance < 0).ToList();
         var pendingQuantity = pendingLines.Sum(x => Math.Abs(x.Variance));
 
+        var crossDockLines = BuildCrossDockLines(receipts);
+        var crossDockQuantity = crossDockLines.Sum(x => x.Quantity);
+
         var summary = new InboundOrderReceiptReportSummaryDto(
             lines.Sum(x => x.ExpectedQuantity),
             lines.Sum(x => x.ReceivedQuantity),
@@ -53,6 +57,8 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
             lines.Count,
             pendingLines.Count,
             pendingQuantity,
+            crossDockLines.Count,
+            crossDockQuantity,
             divergences.Count);
 
         var divergenceDtos = divergences
@@ -79,6 +85,7 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
             summary,
             lines,
             pendingLines,
+            crossDockLines,
             divergenceDtos);
 
         return RequestResult<InboundOrderReceiptReportDto>.Success(report);
@@ -159,6 +166,61 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
         }
 
         return map;
+    }
+
+    private static List<InboundOrderReceiptCrossDockLineDto> BuildCrossDockLines(IReadOnlyList<Domain.Entities.Receipt> receipts)
+    {
+        var lines = new Dictionary<CrossDockLineKey, decimal>();
+        var lineInfo = new Dictionary<CrossDockLineKey, CrossDockLineInfo>();
+
+        foreach (var receipt in receipts)
+        {
+            foreach (var item in receipt.Items)
+            {
+                if (item.Location?.Zone?.ZoneType != ZoneType.CrossDock)
+                {
+                    continue;
+                }
+
+                var key = new CrossDockLineKey(
+                    item.ProductId,
+                    item.UomId,
+                    item.Lot?.Code,
+                    item.Lot?.ExpirationDate,
+                    item.LocationId);
+
+                if (!lines.ContainsKey(key))
+                {
+                    lines[key] = 0m;
+                    lineInfo[key] = new CrossDockLineInfo(
+                        item.Product?.Code ?? string.Empty,
+                        item.Product?.Name ?? string.Empty,
+                        item.Uom?.Code ?? string.Empty,
+                        item.Location?.Code ?? string.Empty);
+                }
+
+                lines[key] += item.Quantity;
+            }
+        }
+
+        return lines
+            .Select(kvp =>
+            {
+                var info = lineInfo[kvp.Key];
+                return new InboundOrderReceiptCrossDockLineDto(
+                    kvp.Key.ProductId,
+                    info.ProductCode,
+                    info.ProductName,
+                    kvp.Key.UomId,
+                    info.UomCode,
+                    kvp.Key.LotCode,
+                    kvp.Key.ExpirationDate,
+                    info.LocationCode,
+                    kvp.Value);
+            })
+            .OrderBy(l => l.ProductCode)
+            .ThenBy(l => l.LocationCode)
+            .ToList();
     }
 
     private static List<InboundOrderReceiptReportLineDto> BuildLines(
@@ -244,4 +306,8 @@ public sealed class InboundOrderReportService : IInboundOrderReportService
     private readonly record struct ReportLineKey(Guid ProductId, Guid UomId, string? LotCode, DateOnly? ExpirationDate);
 
     private readonly record struct ReportLineValue(string ProductCode, string ProductName, string UomCode, decimal Quantity);
+
+    private readonly record struct CrossDockLineKey(Guid ProductId, Guid UomId, string? LotCode, DateOnly? ExpirationDate, Guid LocationId);
+
+    private readonly record struct CrossDockLineInfo(string ProductCode, string ProductName, string UomCode, string LocationCode);
 }

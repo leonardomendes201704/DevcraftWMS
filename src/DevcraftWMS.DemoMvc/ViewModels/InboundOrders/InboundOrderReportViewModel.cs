@@ -18,6 +18,7 @@ public sealed record InboundOrderReceiptReportViewModel(
     InboundOrderReceiptReportSummaryViewModel Summary,
     IReadOnlyList<InboundOrderReceiptReportLineViewModel> Lines,
     IReadOnlyList<InboundOrderReceiptReportLineViewModel> PendingLines,
+    IReadOnlyList<InboundOrderReceiptCrossDockLineViewModel> CrossDockLines,
     IReadOnlyList<InboundOrderReceiptDivergenceViewModel> Divergences);
 
 public sealed record InboundOrderReceiptReportSummaryViewModel(
@@ -27,6 +28,8 @@ public sealed record InboundOrderReceiptReportSummaryViewModel(
     int LineCount,
     int PendingLineCount,
     decimal PendingQuantity,
+    int CrossDockLineCount,
+    decimal CrossDockQuantity,
     int DivergenceCount);
 
 public sealed record InboundOrderReceiptReportLineViewModel(
@@ -40,6 +43,17 @@ public sealed record InboundOrderReceiptReportLineViewModel(
     decimal ExpectedQuantity,
     decimal ReceivedQuantity,
     decimal Variance);
+
+public sealed record InboundOrderReceiptCrossDockLineViewModel(
+    Guid ProductId,
+    string ProductCode,
+    string ProductName,
+    Guid UomId,
+    string UomCode,
+    string? LotCode,
+    DateOnly? ExpirationDate,
+    string LocationCode,
+    decimal Quantity);
 
 public sealed record InboundOrderReceiptDivergenceViewModel(
     Guid Id,

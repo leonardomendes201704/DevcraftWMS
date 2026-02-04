@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0084 - Cross-dock exception flow completed.
+  - Key changes: added cross-dock zone seed/locations, skipped putaway generation for cross-dock receipts, excluded cross-dock receipts from OE close validation, and added cross-dock section in receipt report UI.
 - TASK-0082 - Inbound KPIs completed.
   - Key changes: added inbound KPI endpoint + repository, dashboard filter and stat cards, integration test for inbound KPIs, and updated README/Help.
 - TASK-0081 - Inbound order notifications completed.

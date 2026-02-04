@@ -28,5 +28,13 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Status correto
 - Relatorio indica cross-dock
 
+## Como testar
+1) Garanta que existe uma zona Cross-dock e locations CD-01/CD-02 (seed ou cadastro manual).
+2) Crie/abra uma OE e inicie um Receipt.
+3) Adicione itens do receipt usando uma Location da zona Cross-dock.
+4) Imprima a etiqueta do Unit Load (não deve criar Putaway Task).
+5) Finalize o Receipt e feche a OE (não deve bloquear por putaway/unit load).
+6) Abra o relatório da OE e valide a seção “Cross-dock Lines”.
+
 ## Status
-PENDENTE
+DONE

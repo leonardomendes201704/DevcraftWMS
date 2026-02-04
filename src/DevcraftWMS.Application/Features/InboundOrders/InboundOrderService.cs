@@ -279,13 +279,18 @@ public sealed class InboundOrderService : IInboundOrderService
         }
 
         var receiptIds = receipts.Select(r => r.Id).ToArray();
-        var hasPendingPutaway = await _putawayTaskRepository.AnyPendingByReceiptIdsAsync(receiptIds, cancellationToken);
+        var crossDockReceiptIds = GetCrossDockReceiptIds(receipts);
+        var receiptIdsToCheck = receiptIds.Where(id => !crossDockReceiptIds.Contains(id)).ToArray();
+
+        var hasPendingPutaway = receiptIdsToCheck.Length > 0
+            && await _putawayTaskRepository.AnyPendingByReceiptIdsAsync(receiptIdsToCheck, cancellationToken);
         if (hasPendingPutaway && !allowPartial)
         {
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.putaway_incomplete", "Putaway tasks must be completed before closing the inbound order.");
         }
 
-        var hasUnitLoadsPending = await _unitLoadRepository.AnyNotPutawayCompletedByReceiptIdsAsync(receiptIds, cancellationToken);
+        var hasUnitLoadsPending = receiptIdsToCheck.Length > 0
+            && await _unitLoadRepository.AnyNotPutawayCompletedByReceiptIdsAsync(receiptIdsToCheck, cancellationToken);
         if (hasUnitLoadsPending && !allowPartial)
         {
             return RequestResult<InboundOrderDetailDto>.Failure("inbound_orders.order.unit_loads_not_putaway", "All unit loads must be in a valid destination before closing the inbound order.");
@@ -390,5 +395,25 @@ public sealed class InboundOrderService : IInboundOrderService
         var suffix = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
         var fallback = $"OE-{asnNumber}-{suffix}";
         return fallback.Length <= 32 ? fallback : fallback.Substring(0, 32);
+    }
+
+    private static HashSet<Guid> GetCrossDockReceiptIds(IReadOnlyCollection<Receipt> receipts)
+    {
+        var crossDock = new HashSet<Guid>();
+
+        foreach (var receipt in receipts)
+        {
+            if (receipt.Items.Count == 0)
+            {
+                continue;
+            }
+
+            if (receipt.Items.All(item => item.Location?.Zone?.ZoneType == ZoneType.CrossDock))
+            {
+                crossDock.Add(receipt.Id);
+            }
+        }
+
+        return crossDock;
     }
 }
