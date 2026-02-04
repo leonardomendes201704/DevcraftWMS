@@ -19,6 +19,9 @@ public sealed class LotConfiguration : AuditableEntityConfiguration<Lot>
         builder.Property(l => l.ExpirationDate);
         builder.Property(l => l.Status)
             .IsRequired();
+        builder.Property(l => l.QuarantinedAtUtc);
+        builder.Property(l => l.QuarantineReason)
+            .HasMaxLength(200);
 
         builder.HasOne(l => l.Product)
             .WithMany(p => p.Lots)

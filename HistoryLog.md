@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0071/0072/0073 - Quarantine and quality inspections completed.
+  - Key changes: added quarantine enforcement on receipt items, quality inspection entities/CQRS/API, DemoMvc queue/detail UI with evidence download, quarantine seed zone/location, and unit/integration tests.
 - TASK-0070 - Recebimento: captura lote/validade completed.
   - Key changes: added lot code/expiration capture on receipt items, auto-create lots when needed, updated UI/help, and unit test coverage.
 

@@ -53,6 +53,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<ReceiptCount> ReceiptCounts => Set<ReceiptCount>();
     public DbSet<ReceiptDivergence> ReceiptDivergences => Set<ReceiptDivergence>();
     public DbSet<ReceiptDivergenceEvidence> ReceiptDivergenceEvidence => Set<ReceiptDivergenceEvidence>();
+    public DbSet<QualityInspection> QualityInspections => Set<QualityInspection>();
+    public DbSet<QualityInspectionEvidence> QualityInspectionEvidence => Set<QualityInspectionEvidence>();
     public DbSet<UnitLoad> UnitLoads => Set<UnitLoad>();
     public DbSet<Uom> Uoms => Set<Uom>();
     public DbSet<ProductUom> ProductUoms => Set<ProductUom>();

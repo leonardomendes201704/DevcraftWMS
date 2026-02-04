@@ -1,0 +1,149 @@
+@using System.Text.Encodings.Web
+@model DevcraftWMS.DemoMvc.ViewModels.QualityInspections.QualityInspectionDetailPageViewModel
+@{
+    ViewData["Title"] = "Quality Inspection";
+    ViewData["Subtitle"] = "Review quarantined lots and decide release or rejection";
+
+    var statusBadge = Model.Inspection.Status switch
+    {
+        DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus.Approved => "text-bg-success",
+        DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus.Rejected => "text-bg-danger",
+        _ => "text-bg-warning"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="QualityInspections" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#qualityInspectionsHelp">
+            <i class="bi bi-question-circle me-1"></i>Help
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-muted small">Status</div>
+                <span class="badge @statusBadge">@Model.Inspection.Status</span>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Product</div>
+                <div class="fw-semibold">@Model.Inspection.ProductCode - @Model.Inspection.ProductName</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Lot</div>
+                <div class="fw-semibold">@(Model.Inspection.LotCode ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Location</div>
+                <div class="fw-semibold">@Model.Inspection.LocationCode</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Expiration</div>
+                <div class="fw-semibold">@(Model.Inspection.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-")</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Created</div>
+                <div class="fw-semibold">@Model.Inspection.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">Reason</div>
+                <div class="fw-semibold">@Model.Inspection.Reason</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">Decision Notes</div>
+                <div class="fw-semibold">@(Model.Inspection.DecisionNotes ?? "-")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Inspection.Status == DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus.Pending)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Decision</h5>
+            <form method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Decision.InspectionId" />
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Decision notes</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-pencil"></i></span>
+                            <textarea asp-for="Decision.Notes" class="form-control" rows="3" placeholder="Add decision notes"></textarea>
+                        </div>
+                        <span class="text-danger small" asp-validation-for="Decision.Notes"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Evidence file (optional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-paperclip"></i></span>
+                            <input asp-for="Decision.EvidenceFile" class="form-control" type="file" />
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-success" formaction="@Url.Action("Approve", "QualityInspections")">
+                        <i class="bi bi-check2-circle me-1"></i>Approve & Release
+                    </button>
+                    <button type="submit" class="btn btn-outline-danger" formaction="@Url.Action("Reject", "QualityInspections")">
+                        <i class="bi bi-x-circle me-1"></i>Reject & Keep Quarantine
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Evidence</h5>
+        @if (Model.Evidence.Count == 0)
+        {
+            <div class="empty-state">No evidence uploaded.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Created</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var evidence in Model.Evidence)
+                        {
+                            <tr>
+                                <td>@evidence.FileName</td>
+                                <td>@evidence.ContentType</td>
+                                <td>@(evidence.SizeBytes / 1024d).ToString("N1") KB</td>
+                                <td>@evidence.CreatedAtUtc.ToLocalTime().ToString("g")</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" asp-action="DownloadEvidence" asp-route-inspectionId="@Model.Inspection.Id" asp-route-evidenceId="@evidence.Id">
+                                        <i class="bi bi-download me-1"></i>Download
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<partial name="_QualityInspectionsHelp" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

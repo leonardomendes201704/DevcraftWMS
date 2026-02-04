@@ -23,6 +23,8 @@ public static class LotMapping
             lot.ManufactureDate,
             lot.ExpirationDate,
             lot.Status,
+            lot.QuarantinedAtUtc,
+            lot.QuarantineReason,
             lot.IsActive,
             lot.CreatedAtUtc);
 }

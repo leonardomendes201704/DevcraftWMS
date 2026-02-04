@@ -14,6 +14,8 @@
             new() { Label = "Manufacture date", Value = Model.ManufactureDate?.ToString("yyyy-MM-dd") ?? "-" },
             new() { Label = "Expiration date", Value = Model.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-" },
             new() { Label = "Status", Value = Model.Status.ToString(), BadgeText = Model.Status.ToString(), BadgeCssClass = "text-bg-info" },
+            new() { Label = "Quarantined at", Value = Model.QuarantinedAtUtc?.ToLocalTime().ToString("g") ?? "-" },
+            new() { Label = "Quarantine reason", Value = Model.QuarantineReason ?? "-" },
             new() { Label = "Active", Value = Model.IsActive ? "Active" : "Inactive", BadgeText = Model.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.IsActive ? "text-bg-success" : "text-bg-secondary" },
             new() { Label = "Created", Value = Model.CreatedAtUtc.ToLocalTime().ToString("g") }
         }

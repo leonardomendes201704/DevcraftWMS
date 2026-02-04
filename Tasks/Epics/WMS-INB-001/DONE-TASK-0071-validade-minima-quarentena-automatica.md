@@ -1,21 +1,21 @@
-﻿# TASK-0073 - Qualidade: registrar inspecao e decisao
+﻿# TASK-0071 - Validade minima: quarentena automatica
 
 ## Resumo
-Registrar inspecao e decisao (aprovar/reprovar).
+Validade minima dispara quarentena automatica.
 
 ## Objetivo
 Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX consistente com DemoMvc.
 
 ## Escopo
-- Form de inspecao
-- Evidencias
-- Atualizacao de status
+- Regra no recebimento
+- Destino quarentena
+- Motivo registrado
 
 ## Dependencias
-- TASK-0072
+- TASK-0048,TASK-0070
 
 ## Estimativa
-- 6h
+- 4h
 
 ## Entregaveis
 - CQRS + endpoints (quando aplicavel).
@@ -24,9 +24,9 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - README/ENVs atualizados se appsettings mudar.
 
 ## Criterios de Aceite
-- Aprovacao libera UL
-- Reprovacao mantem quarentena
-- Auditoria registrada
+- Validade abaixo do minimo bloqueia
+- Status quarentena aplicado
+- Motivo exibido
 
 ## Status
-PENDENTE
+DONE

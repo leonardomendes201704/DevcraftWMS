@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
@@ -22,6 +22,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(null),
             new FakeUomRepository(null),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -58,6 +59,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
             new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -97,6 +99,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01" }),
             new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -142,6 +145,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01", AllowLotTracking = true }),
             new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -184,6 +188,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(new Location { Id = Guid.NewGuid(), Code = "LOC-01", AllowExpiryTracking = true, AllowLotTracking = true }),
             new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -243,6 +248,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(location),
             new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -293,9 +299,17 @@ public sealed class ReceiptServiceTests
             new FakeInboundOrderRepository(null),
             new FakeProductRepository(product),
             new FakeLotRepository(lot),
-            new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
+            new FakeLocationRepository(new Location
+            {
+                Id = locationId,
+                Code = "LOC-01",
+                AllowLotTracking = true,
+                AllowExpiryTracking = true,
+                Zone = new Zone { ZoneType = ZoneType.Quarantine }
+            }),
             new FakeUomRepository(new Uom { Id = uomId, Code = "EA", Name = "Each", Type = UomType.Unit }),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -347,9 +361,17 @@ public sealed class ReceiptServiceTests
             new FakeInboundOrderRepository(null),
             new FakeProductRepository(new Product { Id = productId, CustomerId = Guid.NewGuid(), Code = "SKU", Name = "Item" }),
             new FakeLotRepository(lot),
-            new FakeLocationRepository(new Location { Id = locationId, Code = "LOC-01" }),
+            new FakeLocationRepository(new Location
+            {
+                Id = locationId,
+                Code = "LOC-01",
+                AllowLotTracking = true,
+                AllowExpiryTracking = true,
+                Zone = new Zone { ZoneType = ZoneType.Quarantine }
+            }),
             new FakeUomRepository(new Uom { Id = Guid.NewGuid(), Code = "EA", Name = "Each", Type = UomType.Unit }),
             balanceRepository,
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -381,6 +403,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(null),
             new FakeUomRepository(null),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -401,6 +424,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(null),
             new FakeUomRepository(null),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -437,6 +461,7 @@ public sealed class ReceiptServiceTests
             new FakeLocationRepository(null),
             new FakeUomRepository(null),
             new FakeInventoryBalanceRepository(),
+            new FakeQualityInspectionRepository(),
             new FakeCustomerContext(),
             new FakeDateTimeProvider());
 
@@ -648,6 +673,30 @@ public sealed class ReceiptServiceTests
         public Task<IReadOnlyList<InventoryBalance>> ListAsync(Guid? locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
         public Task<int> CountByLocationAsync(Guid locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<IReadOnlyList<InventoryBalance>> ListByLocationAsync(Guid locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
+        public Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(Guid lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
+    }
+
+    private sealed class FakeQualityInspectionRepository : IQualityInspectionRepository
+    {
+        public List<QualityInspection> Added { get; } = new();
+
+        public Task AddAsync(QualityInspection inspection, CancellationToken cancellationToken = default)
+        {
+            Added.Add(inspection);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(QualityInspection inspection, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<QualityInspection?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<QualityInspection?>(null);
+        public Task<QualityInspection?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<QualityInspection?>(null);
+        public Task<bool> ExistsOpenForLotAsync(Guid lotId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<int> CountAsync(QualityInspectionStatus? status, Guid? warehouseId, Guid? receiptId, Guid? productId, Guid? lotId, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<QualityInspection>> ListAsync(QualityInspectionStatus? status, Guid? warehouseId, Guid? receiptId, Guid? productId, Guid? lotId, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<QualityInspection>>(Array.Empty<QualityInspection>());
+        public Task AddEvidenceAsync(QualityInspectionEvidence evidence, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<QualityInspectionEvidence?> GetEvidenceByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<QualityInspectionEvidence?>(null);
+        public Task<IReadOnlyList<QualityInspectionEvidence>> ListEvidenceAsync(Guid inspectionId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<QualityInspectionEvidence>>(Array.Empty<QualityInspectionEvidence>());
     }
 
     private sealed class FakeCustomerContext : ICustomerContext

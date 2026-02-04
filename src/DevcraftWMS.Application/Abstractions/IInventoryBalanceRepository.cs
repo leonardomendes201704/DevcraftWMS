@@ -52,4 +52,10 @@ public interface IInventoryBalanceRepository
         string orderBy,
         string orderDir,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(
+        Guid lotId,
+        InventoryBalanceStatus? status,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default);
 }

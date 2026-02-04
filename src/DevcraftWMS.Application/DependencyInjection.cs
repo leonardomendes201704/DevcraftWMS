@@ -28,6 +28,7 @@ using DevcraftWMS.Application.Features.GateCheckins;
 using DevcraftWMS.Application.Features.UnitLoads;
 using DevcraftWMS.Application.Features.ReceiptCounts;
 using DevcraftWMS.Application.Features.ReceiptDivergences;
+using DevcraftWMS.Application.Features.QualityInspections;
 
 namespace DevcraftWMS.Application;
 
@@ -55,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IInventoryBalanceService, InventoryBalanceService>();
         services.AddScoped<IInventoryMovementService, InventoryMovementService>();
         services.AddScoped<IReceiptService, ReceiptService>();
+        services.AddScoped<IQualityInspectionService, QualityInspectionService>();
         services.AddScoped<IZoneService, ZoneService>();
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();

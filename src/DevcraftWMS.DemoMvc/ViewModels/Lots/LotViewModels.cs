@@ -22,6 +22,8 @@ public sealed record LotDetailViewModel(
     DateOnly? ManufactureDate,
     DateOnly? ExpirationDate,
     LotStatus Status,
+    DateTime? QuarantinedAtUtc,
+    string? QuarantineReason,
     bool IsActive,
     DateTime CreatedAtUtc);
 

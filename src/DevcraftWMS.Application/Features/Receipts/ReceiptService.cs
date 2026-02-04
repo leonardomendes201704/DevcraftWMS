@@ -16,6 +16,7 @@ public sealed class ReceiptService : IReceiptService
     private readonly ILocationRepository _locationRepository;
     private readonly IUomRepository _uomRepository;
     private readonly IInventoryBalanceRepository _balanceRepository;
+    private readonly IQualityInspectionRepository _qualityInspectionRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
 
@@ -28,6 +29,7 @@ public sealed class ReceiptService : IReceiptService
         ILocationRepository locationRepository,
         IUomRepository uomRepository,
         IInventoryBalanceRepository balanceRepository,
+        IQualityInspectionRepository qualityInspectionRepository,
         ICustomerContext customerContext,
         IDateTimeProvider dateTimeProvider)
     {
@@ -39,6 +41,7 @@ public sealed class ReceiptService : IReceiptService
         _locationRepository = locationRepository;
         _uomRepository = uomRepository;
         _balanceRepository = balanceRepository;
+        _qualityInspectionRepository = qualityInspectionRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
     }
@@ -249,6 +252,8 @@ public sealed class ReceiptService : IReceiptService
                 if (lot.Status != LotStatus.Quarantined)
                 {
                     lot.Status = LotStatus.Quarantined;
+                    lot.QuarantinedAtUtc = _dateTimeProvider.UtcNow;
+                    lot.QuarantineReason = $"Minimum shelf life not met. Remaining days: {remainingDays}. Minimum required: {product.MinimumShelfLifeDays.Value}.";
                     await _lotRepository.UpdateAsync(lot, cancellationToken);
                 }
             }
@@ -264,6 +269,11 @@ public sealed class ReceiptService : IReceiptService
         if (compatibilityFailure is not null)
         {
             return compatibilityFailure;
+        }
+
+        if (lot?.Status == LotStatus.Quarantined && location.Zone?.ZoneType != ZoneType.Quarantine)
+        {
+            return RequestResult<ReceiptItemDto>.Failure("receipts.lot.quarantine_location_required", "Quarantined lots must be stored in a quarantine location.");
         }
 
         var uom = await _uomRepository.GetByIdAsync(uomId, cancellationToken);
@@ -294,6 +304,11 @@ public sealed class ReceiptService : IReceiptService
         item.Lot = lot;
         item.Location = location;
         item.Uom = uom;
+
+        if (lot?.Status == LotStatus.Quarantined && lot.QuarantinedAtUtc.HasValue)
+        {
+            await EnsureQualityInspectionAsync(receipt, item, lot, location, cancellationToken);
+        }
 
         return RequestResult<ReceiptItemDto>.Success(ReceiptMapping.MapItem(item));
     }
@@ -486,5 +501,36 @@ public sealed class ReceiptService : IReceiptService
         }
 
         return null;
+    }
+
+    private async Task EnsureQualityInspectionAsync(Receipt receipt, ReceiptItem item, Lot lot, Location location, CancellationToken cancellationToken)
+    {
+        if (lot.Id == Guid.Empty || lot.Status != LotStatus.Quarantined)
+        {
+            return;
+        }
+
+        var exists = await _qualityInspectionRepository.ExistsOpenForLotAsync(lot.Id, cancellationToken);
+        if (exists)
+        {
+            return;
+        }
+
+        var inspection = new QualityInspection
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = receipt.CustomerId,
+            WarehouseId = receipt.WarehouseId,
+            ReceiptId = receipt.Id,
+            ReceiptItemId = item.Id,
+            ProductId = item.ProductId,
+            LotId = lot.Id,
+            LocationId = item.LocationId,
+            Status = QualityInspectionStatus.Pending,
+            Reason = lot.QuarantineReason ?? "Quarantine required.",
+            Notes = null
+        };
+
+        await _qualityInspectionRepository.AddAsync(inspection, cancellationToken);
     }
 }

@@ -151,6 +151,17 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(
+        Guid lotId,
+        InventoryBalanceStatus? status,
+        bool? isActive,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        var query = BuildQuery(null, null, lotId, status, isActive, includeInactive);
+        return await query.ToListAsync(cancellationToken);
+    }
+
     private IQueryable<InventoryBalance> BuildQuery(
         Guid? locationId,
         Guid? productId,

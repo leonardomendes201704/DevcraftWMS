@@ -19,5 +19,7 @@ public sealed record LotDto(
     DateOnly? ManufactureDate,
     DateOnly? ExpirationDate,
     LotStatus Status,
+    DateTime? QuarantinedAtUtc,
+    string? QuarantineReason,
     bool IsActive,
     DateTime CreatedAtUtc);

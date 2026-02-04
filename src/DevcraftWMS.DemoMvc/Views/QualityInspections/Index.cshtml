@@ -1,0 +1,135 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Infrastructure
+@model DevcraftWMS.DemoMvc.ViewModels.QualityInspections.QualityInspectionListPageViewModel
+@{
+    ViewData["Title"] = "Quality Inspections";
+    ViewData["Subtitle"] = "Queue of quarantined lots awaiting decision";
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.GetDisplayName(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "QualityInspections",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions, IconClass = "bi-clipboard-check" },
+            new() { Label = "Warehouse Id", Name = "WarehouseId", Value = Model.Query.WarehouseId?.ToString(), IconClass = "bi-building" },
+            new() { Label = "Receipt Id", Name = "ReceiptId", Value = Model.Query.ReceiptId?.ToString(), IconClass = "bi-receipt" },
+            new() { Label = "Product Id", Name = "ProductId", Value = Model.Query.ProductId?.ToString(), IconClass = "bi-upc" },
+            new() { Label = "Lot Id", Name = "LotId", Value = Model.Query.LotId?.ToString(), IconClass = "bi-collection" },
+            new() { Label = "Created From", Name = "CreatedFromUtc", Value = Model.Query.CreatedFromUtc?.ToString("yyyy-MM-dd"), Type = GridFilterType.Date },
+            new() { Label = "Created To", Name = "CreatedToUtc", Value = Model.Query.CreatedToUtc?.ToString("yyyy-MM-dd"), Type = GridFilterType.Date },
+            new() { Label = "Is Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions, IconClass = "bi-toggle-on" },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                },
+                IconClass = "bi-eye"
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "QualityInspections")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "qualityInspectionFilters",
+        Title = "Quality inspection filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "QualityInspections",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["ReceiptId"] = Model.Query.ReceiptId?.ToString(),
+            ["ProductId"] = Model.Query.ProductId?.ToString(),
+            ["LotId"] = Model.Query.LotId?.ToString(),
+            ["CreatedFromUtc"] = Model.Query.CreatedFromUtc?.ToString("O"),
+            ["CreatedToUtc"] = Model.Query.CreatedToUtc?.ToString("O"),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.QualityInspections.QualityInspectionListItemViewModel>()
+        .WithTitle("Quality Inspections")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Status", item => new HtmlString(item.Status switch
+        {
+            DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus.Approved => "<span class=\"badge text-bg-success\">Approved</span>",
+            DevcraftWMS.DemoMvc.Enums.QualityInspectionStatus.Rejected => "<span class=\"badge text-bg-danger\">Rejected</span>",
+            _ => "<span class=\"badge text-bg-warning\">Pending</span>"
+        }), "Status")
+        .AddColumn("Product", item => new HtmlString($"{HtmlEncoder.Default.Encode(item.ProductCode)} - {HtmlEncoder.Default.Encode(item.ProductName)}"), "ProductCode")
+        .AddColumn("Lot", item => new HtmlString(HtmlEncoder.Default.Encode(item.LotCode ?? "-")), "LotCode")
+        .AddColumn("Location", item => new HtmlString(HtmlEncoder.Default.Encode(item.LocationCode)), "LocationCode")
+        .AddColumn("Reason", item => new HtmlString(HtmlEncoder.Default.Encode(item.Reason)), "Reason")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddColumn("Decision", item => new HtmlString(item.DecisionAtUtc?.ToLocalTime().ToString("g") ?? "-"), "DecisionAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "QualityInspections", new { id = item.Id }), "btn btn-sm btn-outline-primary")
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#qualityInspectionsHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_QualityInspectionsHelp" />

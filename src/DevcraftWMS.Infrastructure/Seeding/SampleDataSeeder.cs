@@ -40,14 +40,18 @@ public sealed class SampleDataSeeder
         var structure = await EnsureStructureAsync(section.Id, cancellationToken);
         var aisle = await EnsureAisleAsync(section.Id, cancellationToken);
         var zone = await EnsureZoneAsync(warehouse.Id, cancellationToken);
+        var quarantineZone = await EnsureQuarantineZoneAsync(warehouse.Id, cancellationToken);
         var locations = await EnsureLocationsAsync(structure.Id, zone.Id, cancellationToken);
+        var quarantineLocations = await EnsureQuarantineLocationsAsync(structure.Id, quarantineZone.Id, cancellationToken);
 
         await EnsureSectorAccessAsync(sector, customer.Id, cancellationToken);
         await EnsureSectionAccessAsync(section, customer.Id, cancellationToken);
         await EnsureStructureAccessAsync(structure, customer.Id, cancellationToken);
         await EnsureAisleAccessAsync(aisle, customer.Id, cancellationToken);
         await EnsureZoneAccessAsync(zone, customer.Id, cancellationToken);
+        await EnsureZoneAccessAsync(quarantineZone, customer.Id, cancellationToken);
         await EnsureLocationAccessAsync(locations, customer.Id, cancellationToken);
+        await EnsureLocationAccessAsync(quarantineLocations, customer.Id, cancellationToken);
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
         await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
@@ -265,6 +269,37 @@ public sealed class SampleDataSeeder
             ZoneType = ZoneType.Storage
         };
 
+    private static Zone BuildQuarantineZone(Guid warehouseId)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            Code = "ZON-QA",
+            Name = "Quarantine",
+            Description = "Quarantine zone for quality inspections.",
+            ZoneType = ZoneType.Quarantine
+        };
+
+    private static List<Location> BuildQuarantineLocations(Guid structureId, Guid zoneId)
+        => new()
+        {
+            new Location
+            {
+                Id = Guid.NewGuid(),
+                StructureId = structureId,
+                ZoneId = zoneId,
+                Code = "Q-LOC-01",
+                Barcode = "Q-LOC-01",
+                Level = 0,
+                Row = 0,
+                Column = 1,
+                MaxWeightKg = 500,
+                MaxVolumeM3 = 1.5m,
+                AllowLotTracking = true,
+                AllowExpiryTracking = true
+            }
+        };
+
     private static (List<Product> Products, List<ProductUom> ProductUoms) BuildProducts(
         Guid customerId,
         Guid baseUomId,
@@ -443,6 +478,43 @@ public sealed class SampleDataSeeder
         _dbContext.Zones.Add(zone);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return zone;
+    }
+
+    private async Task<Zone> EnsureQuarantineZoneAsync(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var zone = await _dbContext.Zones
+            .FirstOrDefaultAsync(z => z.WarehouseId == warehouseId && z.ZoneType == ZoneType.Quarantine, cancellationToken);
+
+        if (zone is not null)
+        {
+            return zone;
+        }
+
+        zone = BuildQuarantineZone(warehouseId);
+        _dbContext.Zones.Add(zone);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return zone;
+    }
+
+    private async Task<List<Location>> EnsureQuarantineLocationsAsync(Guid structureId, Guid zoneId, CancellationToken cancellationToken)
+    {
+        var expected = BuildQuarantineLocations(structureId, zoneId);
+        var existing = await _dbContext.Locations
+            .Include(l => l.CustomerAccesses)
+            .Where(l => l.StructureId == structureId && l.ZoneId == zoneId)
+            .ToListAsync(cancellationToken);
+
+        var existingCodes = existing.Select(l => l.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = expected.Where(l => !existingCodes.Contains(l.Code)).ToList();
+
+        if (missing.Count > 0)
+        {
+            _dbContext.Locations.AddRange(missing);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            existing.AddRange(missing);
+        }
+
+        return existing;
     }
 
     private async Task EnsureSectorAccessAsync(Sector sector, Guid customerId, CancellationToken cancellationToken)
