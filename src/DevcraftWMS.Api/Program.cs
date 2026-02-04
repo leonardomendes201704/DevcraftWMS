@@ -70,6 +70,7 @@ builder.Services.AddOptions<CustomerContextOptions>()
 builder.Services.AddOptions<DashboardOptions>()
     .Bind(builder.Configuration.GetSection("Dashboard"))
     .Validate(options => options.ExpiringLotsDays > 0, "Dashboard:ExpiringLotsDays must be greater than zero.")
+    .Validate(options => options.InboundWindowDays > 0, "Dashboard:InboundWindowDays must be greater than zero.")
     .ValidateOnStart();
 builder.Services.AddOptions<DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions>()
     .Bind(builder.Configuration.GetSection(DevcraftWMS.Application.Features.ReceiptDivergences.ReceiptDivergenceOptions.SectionName))

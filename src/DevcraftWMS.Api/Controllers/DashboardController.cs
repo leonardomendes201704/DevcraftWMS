@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Api.Services;
 using DevcraftWMS.Application.Features.Dashboard.Queries.GetExpiringLotsKpi;
+using DevcraftWMS.Application.Features.Dashboard.Queries.GetInboundKpis;
 using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -32,6 +33,16 @@ public sealed class DashboardController : ControllerBase
         var windowDays = days ?? _options.ExpiringLotsDays;
 
         var result = await _mediator.Send(new GetExpiringLotsKpiQuery(windowDays, status), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("inbound-kpis")]
+    public async Task<IActionResult> GetInboundKpis(
+        [FromQuery] int? days = null,
+        CancellationToken cancellationToken = default)
+    {
+        var windowDays = days ?? _options.InboundWindowDays;
+        var result = await _mediator.Send(new GetInboundKpisQuery(windowDays), cancellationToken);
         return this.ToActionResult(result);
     }
 }

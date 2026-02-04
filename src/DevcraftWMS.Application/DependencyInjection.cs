@@ -30,6 +30,7 @@ using DevcraftWMS.Application.Features.UnitLoads;
 using DevcraftWMS.Application.Features.ReceiptCounts;
 using DevcraftWMS.Application.Features.ReceiptDivergences;
 using DevcraftWMS.Application.Features.QualityInspections;
+using DevcraftWMS.Application.Features.Dashboard;
 
 namespace DevcraftWMS.Application;
 

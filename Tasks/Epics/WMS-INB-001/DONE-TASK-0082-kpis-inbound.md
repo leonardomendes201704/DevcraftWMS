@@ -28,5 +28,10 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Filtros por periodo
 - Valores consistentes
 
+## Como testar
+1) API: `GET /api/dashboard/inbound-kpis?days=7` deve retornar contadores (arrivals/dockAssigned/receiptsCompleted/putawayCompleted).
+2) DemoMvc: abrir Dashboard, ajustar o seletor de periodo (7/14/30/90) e validar a atualizacao dos KPIs inbound.
+3) Logs: validar que nao ha erros no carregamento dos KPIs (Request/Client logs).
+
 ## Status
-PENDENTE
+DONE

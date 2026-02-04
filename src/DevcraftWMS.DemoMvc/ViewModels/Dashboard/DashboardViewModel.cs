@@ -9,6 +9,8 @@ public sealed class DashboardViewModel
     public IReadOnlyList<ErrorLogDto> RecentErrors { get; init; } = Array.Empty<ErrorLogDto>();
     public int ActiveWarehouses { get; init; }
     public ExpiringLotsKpiDto? ExpiringLots { get; init; }
+    public InboundKpiDto? InboundKpis { get; init; }
+    public int InboundWindowDays { get; init; }
 }
 
 

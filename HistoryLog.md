@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0082 - Inbound KPIs completed.
+  - Key changes: added inbound KPI endpoint + repository, dashboard filter and stat cards, integration test for inbound KPIs, and updated README/Help.
 - TASK-0081 - Inbound order notifications completed.
   - Key changes: added notification entity/repository, email/webhook/portal delivery with templates, Portal UI with resend, API endpoints, integration tests, and migration AddInboundOrderNotifications.
 - TASK-0080 - OE receipt report completed.

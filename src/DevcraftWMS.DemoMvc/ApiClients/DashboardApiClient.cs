@@ -27,4 +27,16 @@ public sealed class DashboardApiClient : ApiClientBase
         var url = BuildUrl(basePath, queryParams);
         return GetAsync<ExpiringLotsKpiDto>(url, cancellationToken);
     }
+
+    public Task<ApiResult<InboundKpiDto>> GetInboundKpisAsync(int? days, CancellationToken cancellationToken)
+    {
+        var basePath = "/api/dashboard/inbound-kpis";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["days"] = days?.ToString()
+        };
+
+        var url = BuildUrl(basePath, queryParams);
+        return GetAsync<InboundKpiDto>(url, cancellationToken);
+    }
 }

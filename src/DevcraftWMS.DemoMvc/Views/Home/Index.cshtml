@@ -47,6 +47,65 @@
         IconCssClass = expiringLotsCount > 0 ? "text-bg-warning-subtle text-warning" : "text-bg-success-subtle text-success"
     };
 
+    var inboundWindowDays = Model.InboundWindowDays > 0 ? Model.InboundWindowDays : 30;
+    var inboundKpis = Model.InboundKpis;
+    var inboundArrivals = inboundKpis?.Arrivals ?? 0;
+    var inboundDockAssigned = inboundKpis?.DockAssigned ?? 0;
+    var inboundReceiptsCompleted = inboundKpis?.ReceiptsCompleted ?? 0;
+    var inboundPutawayCompleted = inboundKpis?.PutawayCompleted ?? 0;
+
+    var inboundArrivalsCard = new StatCardViewModel
+    {
+        Title = "Gate Arrivals",
+        Value = inboundArrivals.ToString("N0"),
+        Subtitle = $"Last {inboundWindowDays} days",
+        BadgeText = inboundArrivals > 0 ? "Inbound" : "None",
+        BadgeCssClass = inboundArrivals > 0 ? "text-bg-primary" : "text-bg-secondary",
+        ActionText = "Portaria",
+        ActionUrl = Url.Action("Index", "GateCheckins"),
+        IconClass = "bi bi-door-open",
+        IconCssClass = inboundArrivals > 0 ? "text-bg-primary-subtle text-primary" : "text-bg-light border"
+    };
+
+    var inboundDockAssignedCard = new StatCardViewModel
+    {
+        Title = "Dock Assigned",
+        Value = inboundDockAssigned.ToString("N0"),
+        Subtitle = $"Last {inboundWindowDays} days",
+        BadgeText = inboundDockAssigned > 0 ? "At Dock" : "None",
+        BadgeCssClass = inboundDockAssigned > 0 ? "text-bg-info" : "text-bg-secondary",
+        ActionText = "Queue",
+        ActionUrl = Url.Action("Queue", "GateCheckins"),
+        IconClass = "bi bi-truck-front",
+        IconCssClass = inboundDockAssigned > 0 ? "text-bg-info-subtle text-info" : "text-bg-light border"
+    };
+
+    var inboundReceiptsCard = new StatCardViewModel
+    {
+        Title = "Receipts Completed",
+        Value = inboundReceiptsCompleted.ToString("N0"),
+        Subtitle = $"Last {inboundWindowDays} days",
+        BadgeText = inboundReceiptsCompleted > 0 ? "Completed" : "None",
+        BadgeCssClass = inboundReceiptsCompleted > 0 ? "text-bg-success" : "text-bg-secondary",
+        ActionText = "Receipts",
+        ActionUrl = Url.Action("Index", "Receipts"),
+        IconClass = "bi bi-receipt",
+        IconCssClass = inboundReceiptsCompleted > 0 ? "text-bg-success-subtle text-success" : "text-bg-light border"
+    };
+
+    var inboundPutawayCard = new StatCardViewModel
+    {
+        Title = "Putaway Completed",
+        Value = inboundPutawayCompleted.ToString("N0"),
+        Subtitle = $"Last {inboundWindowDays} days",
+        BadgeText = inboundPutawayCompleted > 0 ? "Stored" : "None",
+        BadgeCssClass = inboundPutawayCompleted > 0 ? "text-bg-warning" : "text-bg-secondary",
+        ActionText = "Putaway",
+        ActionUrl = Url.Action("Index", "PutawayTasks"),
+        IconClass = "bi bi-box-arrow-in-down",
+        IconCssClass = inboundPutawayCompleted > 0 ? "text-bg-warning-subtle text-warning" : "text-bg-light border"
+    };
+
     var quickLinks = new QuickLinksViewModel
     {
         Title = "Quick Links",
@@ -155,6 +214,40 @@
     </div>
     <div class="col-lg-6">
         <partial name="_Grid" model="requestGrid" />
+    </div>
+</div>
+
+<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
+    <div>
+        <h5 class="mb-1">Inbound KPIs</h5>
+        <div class="text-muted small">Track inbound flow performance for the selected window.</div>
+    </div>
+    <form method="get" class="d-flex align-items-center gap-2">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+            <select class="form-select" name="inboundDays" aria-label="Inbound window days">
+                <option value="7" selected="@(inboundWindowDays == 7)">Last 7 days</option>
+                <option value="14" selected="@(inboundWindowDays == 14)">Last 14 days</option>
+                <option value="30" selected="@(inboundWindowDays == 30)">Last 30 days</option>
+                <option value="90" selected="@(inboundWindowDays == 90)">Last 90 days</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="inboundArrivalsCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="inboundDockAssignedCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="inboundReceiptsCard" />
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <partial name="_StatCard" model="inboundPutawayCard" />
     </div>
 </div>
 
