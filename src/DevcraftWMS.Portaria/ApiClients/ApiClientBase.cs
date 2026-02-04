@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using DevcraftWMS.Portaria.Infrastructure;
@@ -135,6 +136,11 @@ public abstract class ApiClientBase
                 ? default
                 : JsonSerializer.Deserialize<T>(content, JsonOptions);
             return ApiResult<T>.Success(data!, statusCode);
+        }
+
+        if (statusCode == StatusCodes.Status403Forbidden)
+        {
+            return ApiResult<T>.Failure("You don't have permission to perform this action.", statusCode);
         }
 
         var error = ExtractProblemDetails(content) ?? $"{response.ReasonPhrase} ({statusCode})";

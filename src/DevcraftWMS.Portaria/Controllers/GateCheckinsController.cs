@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using DevcraftWMS.Portaria.ApiClients;
+using DevcraftWMS.Portaria.Infrastructure;
 using DevcraftWMS.Portaria.ViewModels.GateCheckins;
 using DevcraftWMS.Portaria.ViewModels.InboundOrders;
 using DevcraftWMS.Portaria.ViewModels.Shared;
@@ -12,15 +13,24 @@ public sealed class GateCheckinsController : Controller
     private readonly GateCheckinsApiClient _gateCheckinsApiClient;
     private readonly InboundOrdersApiClient _inboundOrdersApiClient;
     private readonly WarehousesApiClient _warehousesApiClient;
+    private readonly IPortariaAuthorizationService _authorizationService;
+    private readonly IPortariaUserContext _userContext;
+    private readonly ILogger<GateCheckinsController> _logger;
 
     public GateCheckinsController(
         GateCheckinsApiClient gateCheckinsApiClient,
         InboundOrdersApiClient inboundOrdersApiClient,
-        WarehousesApiClient warehousesApiClient)
+        WarehousesApiClient warehousesApiClient,
+        IPortariaAuthorizationService authorizationService,
+        IPortariaUserContext userContext,
+        ILogger<GateCheckinsController> logger)
     {
         _gateCheckinsApiClient = gateCheckinsApiClient;
         _inboundOrdersApiClient = inboundOrdersApiClient;
         _warehousesApiClient = warehousesApiClient;
+        _authorizationService = authorizationService;
+        _userContext = userContext;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -69,6 +79,11 @@ public sealed class GateCheckinsController : Controller
     [HttpGet]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         ViewData["Title"] = "New Check-in";
         ViewData["Subtitle"] = "Capture inbound vehicle arrival details.";
         ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "New Check-in");
@@ -83,6 +98,11 @@ public sealed class GateCheckinsController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(GateCheckinCreateViewModel model, CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         ViewData["Title"] = "New Check-in";
         ViewData["Subtitle"] = "Capture inbound vehicle arrival details.";
         ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "New Check-in");
@@ -137,6 +157,11 @@ public sealed class GateCheckinsController : Controller
     [HttpPost]
     public async Task<IActionResult> SendToQueue(Guid id, CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         var detailResult = await _gateCheckinsApiClient.GetByIdAsync(id, cancellationToken);
         if (!detailResult.IsSuccess || detailResult.Data is null)
         {
@@ -168,6 +193,11 @@ public sealed class GateCheckinsController : Controller
     [HttpGet]
     public async Task<IActionResult> AssignDock(Guid id, CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         var detailResult = await _gateCheckinsApiClient.GetByIdAsync(id, cancellationToken);
         if (!detailResult.IsSuccess || detailResult.Data is null)
         {
@@ -194,6 +224,11 @@ public sealed class GateCheckinsController : Controller
     [HttpPost]
     public async Task<IActionResult> AssignDock(GateCheckinAssignDockViewModel model, CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         ViewData["Title"] = "Assign Dock";
         ViewData["Subtitle"] = "Assign a dock and move the vehicle to the dock status.";
         ViewData["Breadcrumbs"] = BuildBreadcrumbs("Gate Check-ins", Url.Action(nameof(Index)) ?? "#", "Assign Dock");
@@ -217,6 +252,11 @@ public sealed class GateCheckinsController : Controller
     [HttpPost]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
+        if (!EnsureGateCheckinPermission())
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         var detailResult = await _gateCheckinsApiClient.GetByIdAsync(id, cancellationToken);
         if (!detailResult.IsSuccess || detailResult.Data is null)
         {
@@ -320,5 +360,21 @@ public sealed class GateCheckinsController : Controller
                 IsActive = true
             }
         };
+    }
+
+    private bool EnsureGateCheckinPermission()
+    {
+        if (_authorizationService.CanManageGateCheckins())
+        {
+            return true;
+        }
+
+        _logger.LogWarning(
+            "Portaria permission denied for user {UserId} ({Email})",
+            _userContext.UserId ?? "unknown",
+            _userContext.Email ?? "unknown");
+
+        TempData["Error"] = "You don't have permission to perform this action.";
+        return false;
     }
 }

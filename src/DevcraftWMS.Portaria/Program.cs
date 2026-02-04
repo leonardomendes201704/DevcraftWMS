@@ -17,6 +17,8 @@ builder.Services.AddOptions<PortariaOptions>()
     .Validate(options => Uri.TryCreate(options.ApiBaseUrl, UriKind.Absolute, out _), "Portaria ApiBaseUrl must be an absolute URL.")
     .ValidateOnStart();
 builder.Services.AddSingleton<ApiUrlProvider>();
+builder.Services.AddScoped<IPortariaUserContext, PortariaUserContext>();
+builder.Services.AddScoped<IPortariaAuthorizationService, PortariaAuthorizationService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<DevcraftWMS.Portaria.ApiClients.HealthApiClient>();

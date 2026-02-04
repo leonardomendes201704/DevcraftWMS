@@ -29,4 +29,15 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - UI indica falta de permissao
 
 ## Status
-PENDENTE
+DONE
+
+## Implementacao
+- Adicionado contexto de usuario no Portaria (roles a partir do JWT).
+- Bloqueio e log de acoes criticas (create, send to queue, assign dock, cancel).
+- UI indica falta de permissao e desabilita botoes.
+- Mensagens amigaveis para 403 no cliente HTTP.
+
+## Como testar
+1) Entre no Portaria com usuario sem role Portaria/Admin e tente criar/atualizar um check-in.
+2) Verifique que os botoes ficam desabilitados e aparece alerta de permissao.
+3) Com usuario Portaria/Admin, confirme que as acoes funcionam normalmente.
