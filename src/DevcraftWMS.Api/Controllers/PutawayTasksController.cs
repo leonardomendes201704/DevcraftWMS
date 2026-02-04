@@ -2,6 +2,7 @@ using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskById;
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.GetPutawayTaskSuggestions;
 using DevcraftWMS.Application.Features.PutawayTasks.Queries.ListPutawayTasksPaged;
 using DevcraftWMS.Application.Features.PutawayTasks.Commands.ConfirmPutawayTask;
+using DevcraftWMS.Application.Features.PutawayTasks.Commands.ReassignPutawayTask;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Domain.Enums;
@@ -74,6 +75,17 @@ public sealed class PutawayTasksController : ControllerBase
     {
         var result = await _mediator.Send(
             new ConfirmPutawayTaskCommand(id, request.LocationId, request.Notes),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/reassign")]
+    [Authorize(Policy = "Role:Backoffice")]
+    public async Task<IActionResult> Reassign(Guid id, [FromBody] ReassignPutawayTaskRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new ReassignPutawayTaskCommand(id, request.AssigneeEmail, request.Reason),
             cancellationToken);
 
         return this.ToActionResult(result);

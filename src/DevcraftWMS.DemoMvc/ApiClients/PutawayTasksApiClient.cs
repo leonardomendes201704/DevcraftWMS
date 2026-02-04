@@ -57,4 +57,11 @@ public sealed class PutawayTasksApiClient : ApiClientBase
             locationId,
             notes
         }, cancellationToken);
+
+    public Task<ApiResult<PutawayTaskDetailViewModel>> ReassignAsync(Guid id, string assigneeEmail, string reason, CancellationToken cancellationToken)
+        => PostAsync<PutawayTaskDetailViewModel>($"/api/putaway-tasks/{id}/reassign", new
+        {
+            assigneeEmail,
+            reason
+        }, cancellationToken);
 }

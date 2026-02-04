@@ -10,9 +10,19 @@ public sealed record PutawayTaskListItemDto(
     string SsccInternal,
     string ReceiptNumber,
     string WarehouseName,
+    string? AssignedToUserEmail,
     PutawayTaskStatus Status,
     bool IsActive,
     DateTime CreatedAtUtc);
+
+public sealed record PutawayTaskAssignmentEventDto(
+    Guid Id,
+    Guid? FromUserId,
+    string? FromUserEmail,
+    Guid? ToUserId,
+    string? ToUserEmail,
+    string Reason,
+    DateTime AssignedAtUtc);
 
 public sealed record PutawayTaskDetailDto(
     Guid Id,
@@ -23,6 +33,8 @@ public sealed record PutawayTaskDetailDto(
     string? SsccExternal,
     string ReceiptNumber,
     string WarehouseName,
+    string? AssignedToUserEmail,
     PutawayTaskStatus Status,
     bool IsActive,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    IReadOnlyList<PutawayTaskAssignmentEventDto> AssignmentHistory);

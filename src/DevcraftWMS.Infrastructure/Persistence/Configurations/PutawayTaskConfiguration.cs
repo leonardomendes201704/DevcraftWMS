@@ -21,6 +21,9 @@ public sealed class PutawayTaskConfiguration : AuditableEntityConfiguration<Puta
             .IsUnique();
         builder.HasIndex(x => x.Status);
 
+        builder.Property(x => x.AssignedToUserEmail)
+            .HasMaxLength(256);
+
         builder.HasOne(x => x.UnitLoad)
             .WithMany()
             .HasForeignKey(x => x.UnitLoadId)
@@ -35,5 +38,10 @@ public sealed class PutawayTaskConfiguration : AuditableEntityConfiguration<Puta
             .WithMany()
             .HasForeignKey(x => x.WarehouseId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.AssignmentEvents)
+            .WithOne(x => x.PutawayTask)
+            .HasForeignKey(x => x.PutawayTaskId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

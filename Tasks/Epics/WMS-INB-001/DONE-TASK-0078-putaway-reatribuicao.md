@@ -29,4 +29,11 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Historico visivel
 
 ## Status
-PENDENTE
+DONE
+
+## How to test
+1) Run API + DemoMvc.
+2) Go to Putaway Tasks > open a task details.
+3) Fill Assignee email (e.g., admin@admin.com.br) and a Reason, then submit.
+4) Verify Assigned To is updated and Assignment History shows the event.
+5) Try reassigning a completed task and confirm it is blocked.

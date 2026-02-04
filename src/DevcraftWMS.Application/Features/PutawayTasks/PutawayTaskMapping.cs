@@ -1,4 +1,5 @@
 using DevcraftWMS.Domain.Entities;
+using System.Linq;
 
 namespace DevcraftWMS.Application.Features.PutawayTasks;
 
@@ -13,6 +14,7 @@ public static class PutawayTaskMapping
             task.UnitLoad?.SsccInternal ?? "-",
             task.Receipt?.ReceiptNumber ?? "-",
             task.Warehouse?.Name ?? "-",
+            task.AssignedToUserEmail,
             task.Status,
             task.IsActive,
             task.CreatedAtUtc);
@@ -27,7 +29,19 @@ public static class PutawayTaskMapping
             task.UnitLoad?.SsccExternal,
             task.Receipt?.ReceiptNumber ?? "-",
             task.Warehouse?.Name ?? "-",
+            task.AssignedToUserEmail,
             task.Status,
             task.IsActive,
-            task.CreatedAtUtc);
+            task.CreatedAtUtc,
+            task.AssignmentEvents
+                .OrderByDescending(x => x.AssignedAtUtc)
+                .Select(x => new PutawayTaskAssignmentEventDto(
+                    x.Id,
+                    x.FromUserId,
+                    x.FromUserEmail,
+                    x.ToUserId,
+                    x.ToUserEmail,
+                    x.Reason,
+                    x.AssignedAtUtc))
+                .ToList());
 }

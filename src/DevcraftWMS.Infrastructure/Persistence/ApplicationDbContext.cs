@@ -57,6 +57,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<QualityInspectionEvidence> QualityInspectionEvidence => Set<QualityInspectionEvidence>();
     public DbSet<UnitLoad> UnitLoads => Set<UnitLoad>();
     public DbSet<PutawayTask> PutawayTasks => Set<PutawayTask>();
+    public DbSet<PutawayTaskAssignmentEvent> PutawayTaskAssignmentEvents => Set<PutawayTaskAssignmentEvent>();
     public DbSet<Uom> Uoms => Set<Uom>();
     public DbSet<ProductUom> ProductUoms => Set<ProductUom>();
 

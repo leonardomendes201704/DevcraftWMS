@@ -24,9 +24,19 @@ public sealed record PutawayTaskListItemViewModel(
     string SsccInternal,
     string ReceiptNumber,
     string WarehouseName,
+    string? AssignedToUserEmail,
     PutawayTaskStatus Status,
     bool IsActive,
     DateTime CreatedAtUtc);
+
+public sealed record PutawayTaskAssignmentEventViewModel(
+    Guid Id,
+    Guid? FromUserId,
+    string? FromUserEmail,
+    Guid? ToUserId,
+    string? ToUserEmail,
+    string Reason,
+    DateTime AssignedAtUtc);
 
 public sealed record PutawayTaskDetailViewModel(
     Guid Id,
@@ -37,9 +47,11 @@ public sealed record PutawayTaskDetailViewModel(
     string? SsccExternal,
     string ReceiptNumber,
     string WarehouseName,
+    string? AssignedToUserEmail,
     PutawayTaskStatus Status,
     bool IsActive,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    IReadOnlyList<PutawayTaskAssignmentEventViewModel> AssignmentHistory);
 
 public sealed record PutawaySuggestionViewModel(
     Guid LocationId,
@@ -61,6 +73,7 @@ public sealed class PutawayTaskDetailsPageViewModel
     public PutawayTaskDetailViewModel Task { get; init; } = default!;
     public IReadOnlyList<PutawaySuggestionViewModel> Suggestions { get; init; } = Array.Empty<PutawaySuggestionViewModel>();
     public PutawayTaskConfirmViewModel Confirm { get; init; } = new();
+    public PutawayTaskReassignViewModel Reassign { get; init; } = new();
 }
 
 public sealed class PutawayTaskConfirmViewModel
@@ -68,4 +81,10 @@ public sealed class PutawayTaskConfirmViewModel
     public Guid LocationId { get; set; }
     public string? Notes { get; set; }
     public IReadOnlyList<SelectListItem> LocationOptions { get; init; } = Array.Empty<SelectListItem>();
+}
+
+public sealed class PutawayTaskReassignViewModel
+{
+    public string AssigneeEmail { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
 }

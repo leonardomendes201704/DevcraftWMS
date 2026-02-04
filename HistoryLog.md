@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0078 - Putaway manual reassignment completed.
+  - Key changes: added assignment events, reassign endpoint/command/validator, DemoMvc reassignment UI + history, and unit/integration tests with migration AddPutawayTaskAssignments.
 - TASK-0077 - Putaway confirmation stabilization.
   - Key changes: avoid EF tracking conflicts in inventory movement response mapping, adjust tracked balance query includes, and disable integration test parallelization to prevent disposed provider failures.
 - TASK-0077 - Putaway execution and confirmation completed.

@@ -25,7 +25,11 @@ public sealed class PutawayTaskRepository : IPutawayTaskRepository
 
     public Task UpdateAsync(PutawayTask task, CancellationToken cancellationToken = default)
     {
-        _dbContext.PutawayTasks.Update(task);
+        if (_dbContext.Entry(task).State == EntityState.Detached)
+        {
+            _dbContext.PutawayTasks.Update(task);
+        }
+
         return _dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -35,6 +39,7 @@ public sealed class PutawayTaskRepository : IPutawayTaskRepository
             .Include(x => x.UnitLoad)
             .Include(x => x.Receipt)
             .Include(x => x.Warehouse)
+            .Include(x => x.AssignmentEvents)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<PutawayTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -42,6 +47,7 @@ public sealed class PutawayTaskRepository : IPutawayTaskRepository
             .Include(x => x.UnitLoad)
             .Include(x => x.Receipt)
             .Include(x => x.Warehouse)
+            .Include(x => x.AssignmentEvents)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<bool> ExistsByUnitLoadIdAsync(Guid unitLoadId, CancellationToken cancellationToken = default)

@@ -535,6 +535,18 @@ public static class ResultExtensions
                 Detail = result.ErrorMessage,
                 Status = StatusCodes.Status400BadRequest
             },
+            "putaway.assignee.not_found" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
+            "putaway.task.completed" => new ProblemDetails
+            {
+                Title = "Bad Request",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            },
             "emails.inbox.invalid_status" => new ProblemDetails
             {
                 Title = "Bad Request",

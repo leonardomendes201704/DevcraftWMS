@@ -104,6 +104,7 @@
         .AddColumn("SSCC", item => new HtmlString(HtmlEncoder.Default.Encode(item.SsccInternal)), "SsccInternal")
         .AddColumn("Receipt", item => new HtmlString(HtmlEncoder.Default.Encode(item.ReceiptNumber)), "ReceiptNumber")
         .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Assigned To", item => new HtmlString(HtmlEncoder.Default.Encode(item.AssignedToUserEmail ?? "Unassigned")), "AssignedToUserEmail")
         .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{item.Status}</span>"), "Status")
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")

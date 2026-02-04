@@ -87,7 +87,8 @@ public sealed class PutawayTasksController : Controller
             Confirm = new PutawayTaskConfirmViewModel
             {
                 LocationOptions = locationOptions
-            }
+            },
+            Reassign = new PutawayTaskReassignViewModel()
         });
     }
 
@@ -109,6 +110,33 @@ public sealed class PutawayTasksController : Controller
         }
 
         TempData["Success"] = "Putaway confirmed successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reassign(Guid id, PutawayTaskReassignViewModel model, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(model.AssigneeEmail))
+        {
+            TempData["Error"] = "Please provide an assignee email.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Reason))
+        {
+            TempData["Error"] = "Please provide a reassignment reason.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var result = await _client.ReassignAsync(id, model.AssigneeEmail.Trim(), model.Reason.Trim(), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to reassign putaway task.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["Success"] = "Putaway task reassigned successfully.";
         return RedirectToAction(nameof(Details), new { id });
     }
 }
