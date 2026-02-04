@@ -26,6 +26,8 @@ public sealed class InboundOrdersApiClient : ApiClientBase
             ["orderNumber"] = query.OrderNumber,
             ["status"] = query.Status?.ToString(),
             ["priority"] = query.Priority?.ToString(),
+            ["createdFromUtc"] = query.CreatedFromUtc.HasValue ? query.CreatedFromUtc.Value.ToString("yyyy-MM-dd") : null,
+            ["createdToUtc"] = query.CreatedToUtc.HasValue ? query.CreatedToUtc.Value.ToString("yyyy-MM-dd") : null,
             ["isActive"] = query.IsActive?.ToString().ToLowerInvariant(),
             ["includeInactive"] = query.IncludeInactive ? "true" : null
         };

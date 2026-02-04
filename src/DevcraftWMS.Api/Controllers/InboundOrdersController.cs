@@ -54,6 +54,8 @@ public sealed class InboundOrdersController : ControllerBase
         [FromQuery] string? orderNumber = null,
         [FromQuery] InboundOrderStatus? status = null,
         [FromQuery] InboundOrderPriority? priority = null,
+        [FromQuery] DateTime? createdFromUtc = null,
+        [FromQuery] DateTime? createdToUtc = null,
         [FromQuery] bool? isActive = null,
         [FromQuery] bool includeInactive = false,
         CancellationToken cancellationToken = default)
@@ -64,6 +66,8 @@ public sealed class InboundOrdersController : ControllerBase
                 orderNumber,
                 status,
                 priority,
+                createdFromUtc,
+                createdToUtc,
                 isActive,
                 includeInactive,
                 pageNumber,

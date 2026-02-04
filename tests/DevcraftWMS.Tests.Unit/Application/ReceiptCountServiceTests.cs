@@ -109,8 +109,8 @@ public sealed class ReceiptCountServiceTests
         public Task<InboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<InboundOrder?>(null);
         public Task<InboundOrder?> GetByDocumentNumberAsync(string documentNumber, CancellationToken cancellationToken = default) => Task.FromResult<InboundOrder?>(null);
         public Task<InboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<InboundOrder?>(null);
-        public Task<int> CountAsync(Guid? warehouseId, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
-        public Task<IReadOnlyList<InboundOrder>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+        public Task<int> CountAsync(Guid? warehouseId, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<InboundOrder>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? orderNumber, InboundOrderStatus? status, InboundOrderPriority? priority, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<InboundOrder>>(Array.Empty<InboundOrder>());
         public Task AddItemAsync(InboundOrderItem item, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<InboundOrderItem?> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default)

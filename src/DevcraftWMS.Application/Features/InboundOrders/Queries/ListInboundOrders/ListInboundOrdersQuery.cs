@@ -10,6 +10,8 @@ public sealed record ListInboundOrdersQuery(
     string? OrderNumber,
     InboundOrderStatus? Status,
     InboundOrderPriority? Priority,
+    DateTime? CreatedFromUtc,
+    DateTime? CreatedToUtc,
     bool? IsActive,
     bool IncludeInactive,
     int PageNumber,

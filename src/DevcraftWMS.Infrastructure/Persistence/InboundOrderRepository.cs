@@ -105,11 +105,13 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(warehouseId, orderNumber, status, priority, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, orderNumber, status, priority, createdFromUtc, createdToUtc, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
@@ -122,11 +124,13 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(warehouseId, orderNumber, status, priority, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, orderNumber, status, priority, createdFromUtc, createdToUtc, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -173,6 +177,8 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive)
     {
@@ -206,6 +212,18 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         if (priority.HasValue)
         {
             query = query.Where(o => o.Priority == priority.Value);
+        }
+
+        if (createdFromUtc.HasValue)
+        {
+            var from = createdFromUtc.Value.Date;
+            query = query.Where(o => o.CreatedAtUtc >= from);
+        }
+
+        if (createdToUtc.HasValue)
+        {
+            var toExclusive = createdToUtc.Value.Date.AddDays(1);
+            query = query.Where(o => o.CreatedAtUtc < toExclusive);
         }
 
         return query;

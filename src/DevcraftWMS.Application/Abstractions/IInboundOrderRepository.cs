@@ -19,6 +19,8 @@ public interface IInboundOrderRepository
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
@@ -31,6 +33,8 @@ public interface IInboundOrderRepository
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);

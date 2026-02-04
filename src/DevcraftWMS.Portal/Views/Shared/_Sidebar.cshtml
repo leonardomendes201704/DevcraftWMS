@@ -1,6 +1,15 @@
 @{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
-    string Active(string name) => controller.Equals(name, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    string Active(string name, string? actionName = null)
+    {
+        if (!controller.Equals(name, StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        return actionName is null || action.Equals(actionName, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+    }
 }
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -20,14 +29,14 @@
         <a class="nav-link @Active("Asns")" asp-controller="Asns" asp-action="Index">
             <i class="bi bi-file-earmark-text"></i> ASNs
         </a>
-        <a class="nav-link @Active("InboundOrders")" asp-controller="InboundOrders" asp-action="Index">
+        <a class="nav-link @Active("InboundOrders", "Index")" asp-controller="InboundOrders" asp-action="Index">
             <i class="bi bi-truck"></i> Inbound Orders
         </a>
         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
             <i class="bi bi-receipt"></i> Receipts
         </a>
         <div class="nav-section">Reports</div>
-        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+        <a class="nav-link @Active("InboundOrders", "Reports")" asp-controller="InboundOrders" asp-action="Reports">
             <i class="bi bi-bar-chart-line"></i> Receiving Reports
         </a>
     </nav>

@@ -12,6 +12,8 @@ public sealed record InboundOrderQuery(
     string? OrderNumber = null,
     int? Status = null,
     int? Priority = null,
+    DateTime? CreatedFromUtc = null,
+    DateTime? CreatedToUtc = null,
     bool? IsActive = null,
     bool IncludeInactive = false);
 

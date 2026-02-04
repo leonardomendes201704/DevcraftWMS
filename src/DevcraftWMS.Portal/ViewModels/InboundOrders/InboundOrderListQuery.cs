@@ -6,6 +6,8 @@ public sealed class InboundOrderListQuery
     public string? OrderNumber { get; set; }
     public int? Status { get; set; }
     public int? Priority { get; set; }
+    public DateTime? CreatedFromUtc { get; set; }
+    public DateTime? CreatedToUtc { get; set; }
     public bool? IsActive { get; set; }
     public bool IncludeInactive { get; set; }
     public int PageNumber { get; set; } = 1;

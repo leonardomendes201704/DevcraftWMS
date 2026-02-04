@@ -40,6 +40,8 @@ public sealed class InboundOrderService : IInboundOrderService
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         int pageNumber,
@@ -53,6 +55,8 @@ public sealed class InboundOrderService : IInboundOrderService
             orderNumber,
             status,
             priority,
+            createdFromUtc,
+            createdToUtc,
             isActive,
             includeInactive,
             cancellationToken);
@@ -66,6 +70,8 @@ public sealed class InboundOrderService : IInboundOrderService
             orderNumber,
             status,
             priority,
+            createdFromUtc,
+            createdToUtc,
             isActive,
             includeInactive,
             cancellationToken);

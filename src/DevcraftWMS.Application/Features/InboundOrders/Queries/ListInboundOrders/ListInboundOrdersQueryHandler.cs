@@ -19,6 +19,8 @@ public sealed class ListInboundOrdersQueryHandler : IRequestHandler<ListInboundO
             request.OrderNumber,
             request.Status,
             request.Priority,
+            request.CreatedFromUtc,
+            request.CreatedToUtc,
             request.IsActive,
             request.IncludeInactive,
             request.PageNumber,

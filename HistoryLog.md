@@ -1,6 +1,8 @@
 ﻿# History Log
 
 ## 2026-02-04
+- TASK-0087 - Portal receiving reports completed.
+  - Key changes: added Portal "Receiving Reports" screen with period filters, view/export actions, date filtering in inbound orders list, and help manual.
 - Fix - Receipts help updated for measurements.
   - Key changes: documented actual weight/volume capture and deviation blocking in Receipts help modal.
 - TASK-0086 - Receipt measurements (weight/volume) completed.

@@ -29,4 +29,16 @@ Entregar escopo pequeno e testavel, mantendo padrao Clean Architecture e UI/UX c
 - Download disponivel
 
 ## Status
-PENDENTE
+DONE
+
+## Implementacao
+- Adicionada tela "Receiving Reports" no Portal Cliente com filtros por periodo.
+- Listagem de OEs com acesso ao relatorio detalhado e download CSV.
+- Filtros de data adicionados no backend para listar OEs por CreatedAtUtc.
+- Help/manual da tela com instrucoes de uso.
+
+## Como testar
+1) Acesse Portal > Receiving Reports.
+2) Defina Created From/To e filtre.
+3) Clique em View para abrir o relatorio com divergencias.
+4) Clique em CSV para baixar o arquivo do relatorio.

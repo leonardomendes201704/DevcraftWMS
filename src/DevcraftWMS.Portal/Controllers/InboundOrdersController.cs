@@ -40,6 +40,28 @@ public sealed class InboundOrdersController : Controller
         return View(model);
     }
 
+    public async Task<IActionResult> Reports([FromQuery] InboundOrderListQuery query, CancellationToken cancellationToken)
+    {
+        var listResult = await _ordersClient.ListAsync(query, cancellationToken);
+        if (!listResult.IsSuccess)
+        {
+            TempData["Error"] = listResult.Error ?? "Unable to load receiving reports.";
+        }
+
+        var warehousesResult = await _warehousesClient.ListAsync(200, cancellationToken);
+        var warehouses = warehousesResult.Data?.Items ?? Array.Empty<WarehouseOptionDto>();
+
+        var model = new InboundOrderReportsViewModel
+        {
+            Query = query,
+            Items = listResult.Data?.Items ?? Array.Empty<InboundOrderListItemDto>(),
+            TotalCount = listResult.Data?.TotalCount ?? 0,
+            Warehouses = warehouses
+        };
+
+        return View(model);
+    }
+
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         var result = await _ordersClient.GetByIdAsync(id, cancellationToken);

@@ -248,6 +248,8 @@ public sealed class GateCheckinServiceTests
             string? orderNumber,
             InboundOrderStatus? status,
             InboundOrderPriority? priority,
+            DateTime? createdFromUtc,
+            DateTime? createdToUtc,
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult(0);
@@ -261,6 +263,8 @@ public sealed class GateCheckinServiceTests
             string? orderNumber,
             InboundOrderStatus? status,
             InboundOrderPriority? priority,
+            DateTime? createdFromUtc,
+            DateTime? createdToUtc,
             bool? isActive,
             bool includeInactive,
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InboundOrder>>(Array.Empty<InboundOrder>());

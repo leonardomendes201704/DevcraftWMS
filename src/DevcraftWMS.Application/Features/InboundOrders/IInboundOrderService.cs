@@ -11,6 +11,8 @@ public interface IInboundOrderService
         string? orderNumber,
         InboundOrderStatus? status,
         InboundOrderPriority? priority,
+        DateTime? createdFromUtc,
+        DateTime? createdToUtc,
         bool? isActive,
         bool includeInactive,
         int pageNumber,

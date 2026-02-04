@@ -57,7 +57,7 @@ Implementar o fluxo completo de entrada e armazenagem conforme o documento Espec
 - [DONE-TASK-0084] Cross-dock: excecao sem putaway | Prioridade: P2 | Dependencias: TASK-0075 | Estimativa: 6h
 - [DONE-TASK-0085] Reetiquetagem UL/SSCC | Prioridade: P2 | Dependencias: TASK-0067 | Estimativa: 4h
 - [DONE-TASK-0086] Cubagem/Pesagem real no recebimento | Prioridade: P2 | Dependencias: TASK-0047 | Estimativa: 6h
-- [TASK-0087] Portal Cliente: relatorios de recebimento | Prioridade: P2 | Dependencias: TASK-0080,TASK-0045 | Estimativa: 6h
+- [DONE-TASK-0087] Portal Cliente: relatorios de recebimento | Prioridade: P2 | Dependencias: TASK-0080,TASK-0045 | Estimativa: 6h
 - [TASK-0088] Portaria: permissoes por papel | Prioridade: P2 | Dependencias: TASK-0051,TASK-0063 | Estimativa: 4h
 - [TASK-0089] RBAC: modelo de perfis e permissoes (API) | Prioridade: P1 | Dependencias: DONE-TASK-0051 | Estimativa: 6h
 - [TASK-0090] RBAC: gestao de usuarios e perfis (API) | Prioridade: P1 | Dependencias: TASK-0089 | Estimativa: 6h
