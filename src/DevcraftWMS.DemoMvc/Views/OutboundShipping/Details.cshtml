@@ -1,0 +1,160 @@
+@model DevcraftWMS.DemoMvc.ViewModels.OutboundShipping.OutboundShippingDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Outbound Shipping {Model.Order.OrderNumber}";
+    ViewData["Subtitle"] = "Load packages and finalize shipment";
+
+    var statusLabel = Model.Order.Status switch
+    {
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        _ => "Unknown"
+    };
+
+    var priorityLabel = Model.Order.Priority switch
+    {
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => "Unknown"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="badge text-bg-primary">@Model.Order.WarehouseName</span>
+        <span class="badge text-bg-light">@statusLabel</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="OutboundShipping" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back to list
+        </a>
+    </div>
+</div>
+
+@if (Model.LastShipment.Count > 0)
+{
+    <div class="alert alert-success">
+        <div class="fw-semibold">Shipment registered</div>
+        <div class="small text-muted">Packages shipped in the last request are listed below.</div>
+    </div>
+    <div class="row g-3 mb-4">
+        @foreach (var package in Model.LastShipment)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold">@package.PackageNumber</div>
+                        <div class="text-muted small">@((package.WeightKg.HasValue ? $"{package.WeightKg} kg" : "Weight n/a"))</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Order Summary</div>
+                <dl class="row mb-0">
+                    <dt class="col-5">Order</dt>
+                    <dd class="col-7">@Model.Order.OrderNumber</dd>
+                    <dt class="col-5">Warehouse</dt>
+                    <dd class="col-7">@Model.Order.WarehouseName</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">@statusLabel</dd>
+                    <dt class="col-5">Priority</dt>
+                    <dd class="col-7">@priorityLabel</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Shipment</div>
+                <form asp-controller="OutboundShipping" asp-action="Ship" asp-route-id="@Model.Order.Id" method="post" class="vstack gap-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Dock Code</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-truck"></i></span>
+                                <input class="form-control" name="Shipping.DockCode" value="@Model.Shipping.DockCode" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Loading Start (UTC)</label>
+                            <input class="form-control" type="datetime-local" name="Shipping.LoadingStartedAtUtc" value="@(Model.Shipping.LoadingStartedAtUtc?.ToString("yyyy-MM-ddTHH:mm"))" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Loading End (UTC)</label>
+                            <input class="form-control" type="datetime-local" name="Shipping.LoadingCompletedAtUtc" value="@(Model.Shipping.LoadingCompletedAtUtc?.ToString("yyyy-MM-ddTHH:mm"))" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Shipped At (UTC)</label>
+                            <input class="form-control" type="datetime-local" name="Shipping.ShippedAtUtc" value="@(Model.Shipping.ShippedAtUtc?.ToString("yyyy-MM-ddTHH:mm"))" />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Notes</label>
+                            <input class="form-control" name="Shipping.Notes" value="@Model.Shipping.Notes" />
+                        </div>
+                    </div>
+
+                    <div class="border rounded p-3">
+                        <div class="fw-semibold mb-2">Packages to ship</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th></th>
+                                        <th>Package</th>
+                                        <th>Items</th>
+                                        <th class="text-end">Weight</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for (var index = 0; index < Model.Packages.Count; index++)
+                                {
+                                    var package = Model.Packages[index];
+                                    var selected = Model.Shipping.Packages.ElementAtOrDefault(index);
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="Shipping.Packages[@index].OutboundPackageId" value="@package.OutboundPackageId" />
+                                            <input type="hidden" name="Shipping.Packages[@index].PackageNumber" value="@package.PackageNumber" />
+                                            <input class="form-check-input" type="checkbox" name="Shipping.Packages[@index].Selected" value="true" @(selected?.Selected == true ? "checked" : "") />
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">@package.PackageNumber</div>
+                                            <div class="text-muted small">@(package.Items.Count) items</div>
+                                        </td>
+                                        <td>
+                                            <ul class="list-unstyled mb-0">
+                                                @foreach (var item in package.Items)
+                                                {
+                                                    <li class="small">
+                                                        <span class="fw-semibold">@item.ProductCode</span> - @item.ProductName (@item.UomCode) x @item.Quantity
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td class="text-end">@((package.WeightKg.HasValue ? $"{package.WeightKg} kg" : "-"))</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-check2-circle me-1"></i>Register Shipment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

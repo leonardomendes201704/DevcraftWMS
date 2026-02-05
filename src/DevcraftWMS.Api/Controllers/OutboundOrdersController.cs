@@ -7,6 +7,7 @@ using DevcraftWMS.Application.Features.OutboundChecks;
 using DevcraftWMS.Application.Features.OutboundChecks.Commands.RegisterOutboundCheck;
 using DevcraftWMS.Application.Features.OutboundPacking;
 using DevcraftWMS.Application.Features.OutboundPacking.Commands.RegisterOutboundPacking;
+using DevcraftWMS.Application.Features.OutboundPacking.Queries.ListOutboundPackages;
 using DevcraftWMS.Application.Features.OutboundShipping;
 using DevcraftWMS.Application.Features.OutboundShipping.Commands.RegisterOutboundShipment;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrder;
@@ -143,6 +144,13 @@ public sealed class OutboundOrdersController : ControllerBase
             new RegisterOutboundPackingCommand(id, packages),
             cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{id:guid}/packages")]
+    public async Task<IActionResult> ListPackages(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListOutboundPackagesQuery(id), cancellationToken);
         return this.ToActionResult(result);
     }
 

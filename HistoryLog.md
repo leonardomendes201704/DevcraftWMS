@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0114 - Outbound shipping DemoMvc UI completed.
+  - Key changes: added shipping queue/details screens, package selection via API, and test updates.
+
+## 2026-02-05
 - TASK-0113 - Outbound shipping API completed.
   - Key changes: added outbound shipment entities/configs/migration, shipping endpoint with status updates, and unit/integration tests.
 

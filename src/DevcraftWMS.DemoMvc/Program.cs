@@ -81,6 +81,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InboundOrdersApiClient
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundOrdersApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundChecksApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundPackingApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundShippingApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.PickingTasksApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.QualityInspectionsApiClient>();
 

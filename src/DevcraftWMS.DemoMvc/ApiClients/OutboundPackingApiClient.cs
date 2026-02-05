@@ -21,6 +21,9 @@ public sealed class OutboundPackingApiClient : ApiClientBase
 
     public Task<ApiResult<IReadOnlyList<OutboundPackageResponseViewModel>>> RegisterAsync(Guid outboundOrderId, OutboundPackingRequestViewModel request, CancellationToken cancellationToken)
         => PostAsync<IReadOnlyList<OutboundPackageResponseViewModel>>($"/api/outbound-orders/{outboundOrderId}/pack", request, cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<OutboundPackageResponseViewModel>>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<OutboundPackageResponseViewModel>>($"/api/outbound-orders/{outboundOrderId}/packages", cancellationToken);
 }
 
 public sealed record OutboundPackageResponseViewModel(
