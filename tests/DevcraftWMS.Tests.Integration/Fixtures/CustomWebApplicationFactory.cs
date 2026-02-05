@@ -102,6 +102,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             var adminSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.AdminUserSeeder>();
             adminSeeder.SeedAsync().GetAwaiter().GetResult();
+            var rbacSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.RbacSeeder>();
+            rbacSeeder.SeedAsync().GetAwaiter().GetResult();
 
             var defaultCustomerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             if (!db.Customers.Any(c => c.Id == defaultCustomerId))
@@ -135,12 +137,17 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         using var scope = Services.CreateScope();
         var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var userRoleRepository = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Application.Abstractions.IUserRoleAssignmentRepository>();
         var jwtTokenService = scope.ServiceProvider.GetRequiredService<IJwtTokenService>();
         var adminUser = userRepository.GetByEmailAsync("admin@admin.com.br").GetAwaiter().GetResult();
 
         if (adminUser is not null)
         {
-            var token = jwtTokenService.CreateToken(adminUser.Id, adminUser.Email, adminUser.Role.ToString());
+            var roles = userRoleRepository.ListRolesByUserIdAsync(adminUser.Id).GetAwaiter().GetResult();
+            IReadOnlyList<string> roleNames = roles.Count > 0
+                ? roles.Select(r => r.Name).ToList()
+                : new List<string> { adminUser.Role.ToString() };
+            var token = jwtTokenService.CreateToken(adminUser.Id, adminUser.Email, roleNames);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }

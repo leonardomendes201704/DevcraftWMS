@@ -27,5 +27,13 @@ Permitir criar/editar perfis e usuarios e atribuir roles via UI.
 - Admin consegue gerenciar usuarios e perfis via UI.
 - Validacoes amigaveis e logs de erros.
 
+
+## Testes
+- DemoMvc: criar/editar/desativar usuario e perfis nas telas de Usuarios/Perfis.
+- DemoMvc: atribuir perfis e confirmar permissoes refletidas no token.
+- Validacoes: conferir mensagens amigaveis e erros tratados.
+
+
 ## Status
-PENDENTE
+DONE
+

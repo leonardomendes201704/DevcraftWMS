@@ -73,6 +73,9 @@ public static class DependencyInjection
         services.AddScoped<IInboundOrderNotificationRepository, InboundOrderNotificationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserProviderRepository, UserProviderRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddHttpClient<IExternalAuthService, ExternalAuthService>();
         services.AddHttpClient<IWebhookSender, WebhookSender>()
@@ -88,6 +91,8 @@ public static class DependencyInjection
         services.Configure<AdminUserOptions>(options =>
             configuration.GetSection("AdminUser").Bind(options));
         services.AddScoped<AdminUserSeeder>();
+        services.AddScoped<RbacSeeder>();
+        services.AddScoped<RbacUserSeeder>();
 
         services.AddOptions<SampleDataOptions>()
             .Bind(configuration.GetSection("Seed:SampleData"))

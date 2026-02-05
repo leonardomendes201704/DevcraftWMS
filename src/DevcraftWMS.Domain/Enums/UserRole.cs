@@ -15,5 +15,15 @@ public enum UserRole
     [Display(Name = "Qualidade")]
     Qualidade = 4,
     [Display(Name = "Putaway")]
-    Putaway = 5
+    Putaway = 5,
+    [Display(Name = "Supervisor")]
+    Supervisor = 6,
+    [Display(Name = "Operador")]
+    Operador = 7,
+    [Display(Name = "Cliente")]
+    Cliente = 8,
+    [Display(Name = "Expedicao")]
+    Expedicao = 9,
+    [Display(Name = "Picking")]
+    Picking = 10
 }

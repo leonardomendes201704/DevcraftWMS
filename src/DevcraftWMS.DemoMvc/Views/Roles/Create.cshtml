@@ -1,0 +1,60 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Roles.RoleFormViewModel
+@{
+    ViewData["Title"] = "New Role";
+    ViewData["Subtitle"] = "Create access profile";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <label class="form-label">Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input class="form-control" asp-for="Name" />
+                    </div>
+                    <span class="text-danger" asp-validation-for="Name"></span>
+                </div>
+                <div class="col-lg-6">
+                    <label class="form-label">Description</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                        <input class="form-control" asp-for="Description" />
+                    </div>
+                    <span class="text-danger" asp-validation-for="Description"></span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="form-label">Permissions</label>
+                <div class="border rounded p-3 bg-light">
+                    @if (Model.AvailablePermissions.Count == 0)
+                    {
+                        <div class="text-muted">No permissions available.</div>
+                    }
+                    else
+                    {
+                        <div class="row g-2">
+                            @foreach (var permission in Model.AvailablePermissions)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="PermissionIds" value="@permission.Value" checked="@(permission.Selected)" />
+                                        <label class="form-check-label">@permission.Text</label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-light border" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

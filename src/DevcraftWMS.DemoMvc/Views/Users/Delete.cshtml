@@ -1,0 +1,26 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Users.UserDetailsPageViewModel
+@{
+    ViewData["Title"] = "Deactivate User";
+    ViewData["Subtitle"] = Model.User.Email;
+}
+
+<div class="card">
+    <div class="card-body">
+        <p>Are you sure you want to deactivate this user?</p>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.User.Email</dd>
+            <dt class="col-sm-3">Full name</dt>
+            <dd class="col-sm-9">@Model.User.FullName</dd>
+        </dl>
+
+        <form asp-action="DeleteConfirmed" method="post" class="mt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.User.Id" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Deactivate</button>
+                <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.User.Id">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

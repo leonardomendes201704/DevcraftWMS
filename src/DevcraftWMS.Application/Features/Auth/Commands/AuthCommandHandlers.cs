@@ -1,6 +1,7 @@
 using MediatR;
 using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Abstractions.Notifications;
+using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
@@ -10,17 +11,23 @@ namespace DevcraftWMS.Application.Features.Auth.Commands;
 public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, RequestResult<AuthResponse>>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUserRoleAssignmentRepository _userRoleRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOutboxEnqueuer _outboxEnqueuer;
 
     public RegisterUserCommandHandler(
         IUserRepository userRepository,
+        IUserRoleAssignmentRepository userRoleRepository,
+        IRoleRepository roleRepository,
         IPasswordHasher passwordHasher,
         IJwtTokenService jwtTokenService,
         IOutboxEnqueuer outboxEnqueuer)
     {
         _userRepository = userRepository;
+        _userRoleRepository = userRoleRepository;
+        _roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
         _outboxEnqueuer = outboxEnqueuer;
@@ -47,23 +54,61 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         await _userRepository.AddAsync(user, cancellationToken);
         await _outboxEnqueuer.EnqueueAsync("UserRegistered", $"{{\"userId\":\"{user.Id}\",\"email\":\"{user.Email}\"}}", cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
+        await AssignDefaultRoleAsync(user, cancellationToken);
+        var roles = await ResolveRolesAsync(user, cancellationToken);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, roles);
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
+    }
+
+    private async Task AssignDefaultRoleAsync(User user, CancellationToken cancellationToken)
+    {
+        var role = await _roleRepository.GetByNameAsync(user.Role.ToString(), cancellationToken);
+        if (role is null)
+        {
+            return;
+        }
+
+        var existing = await _userRoleRepository.ListByUserIdAsync(user.Id, cancellationToken);
+        if (existing.Any(r => r.RoleId == role.Id))
+        {
+            return;
+        }
+
+        await _userRoleRepository.AddAsync(new UserRoleAssignment
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RoleId = role.Id
+        }, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<string>> ResolveRolesAsync(User user, CancellationToken cancellationToken)
+    {
+        var roles = await _userRoleRepository.ListRolesByUserIdAsync(user.Id, cancellationToken);
+        if (roles.Count == 0)
+        {
+            return new[] { user.Role.ToString() };
+        }
+
+        return roles.Select(r => r.Name).ToList();
     }
 }
 
 public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, RequestResult<AuthResponse>>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUserRoleAssignmentRepository _userRoleRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
 
     public LoginUserCommandHandler(
         IUserRepository userRepository,
+        IUserRoleAssignmentRepository userRoleRepository,
         IPasswordHasher passwordHasher,
         IJwtTokenService jwtTokenService)
     {
         _userRepository = userRepository;
+        _userRoleRepository = userRoleRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
     }
@@ -79,8 +124,20 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         user.LastLoginUtc = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
+        var roles = await ResolveRolesAsync(user, cancellationToken);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, roles);
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
+    }
+
+    private async Task<IReadOnlyList<string>> ResolveRolesAsync(User user, CancellationToken cancellationToken)
+    {
+        var roles = await _userRoleRepository.ListRolesByUserIdAsync(user.Id, cancellationToken);
+        if (roles.Count == 0)
+        {
+            return new[] { user.Role.ToString() };
+        }
+
+        return roles.Select(r => r.Name).ToList();
     }
 }
 
@@ -89,6 +146,7 @@ public sealed class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginC
     private readonly IExternalAuthService _externalAuthService;
     private readonly IUserRepository _userRepository;
     private readonly IUserProviderRepository _userProviderRepository;
+    private readonly IUserRoleAssignmentRepository _userRoleRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOutboxEnqueuer _outboxEnqueuer;
 
@@ -96,12 +154,14 @@ public sealed class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginC
         IExternalAuthService externalAuthService,
         IUserRepository userRepository,
         IUserProviderRepository userProviderRepository,
+        IUserRoleAssignmentRepository userRoleRepository,
         IJwtTokenService jwtTokenService,
         IOutboxEnqueuer outboxEnqueuer)
     {
         _externalAuthService = externalAuthService;
         _userRepository = userRepository;
         _userProviderRepository = userProviderRepository;
+        _userRoleRepository = userRoleRepository;
         _jwtTokenService = jwtTokenService;
         _outboxEnqueuer = outboxEnqueuer;
     }
@@ -154,8 +214,20 @@ public sealed class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginC
         user.LastLoginUtc = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        var token = _jwtTokenService.CreateToken(user.Id, user.Email, user.Role.ToString());
+        var roles = await ResolveRolesAsync(user, cancellationToken);
+        var token = _jwtTokenService.CreateToken(user.Id, user.Email, roles);
         return RequestResult<AuthResponse>.Success(new AuthResponse(user.Id, user.Email, token));
+    }
+
+    private async Task<IReadOnlyList<string>> ResolveRolesAsync(User user, CancellationToken cancellationToken)
+    {
+        var roles = await _userRoleRepository.ListRolesByUserIdAsync(user.Id, cancellationToken);
+        if (roles.Count == 0)
+        {
+            return new[] { user.Role.ToString() };
+        }
+
+        return roles.Select(r => r.Name).ToList();
     }
 }
 

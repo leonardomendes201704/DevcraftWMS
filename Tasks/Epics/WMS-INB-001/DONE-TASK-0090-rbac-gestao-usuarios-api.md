@@ -21,12 +21,21 @@ Permitir criar/editar/desativar usuarios e atribuir perfis com rastreabilidade.
 ## Entregaveis
 - CQRS + endpoints.
 - Tests (unit + integration).
-- UI/ENVs se necess·rio.
+- UI/ENVs se necess√°rio.
 
 ## Criterios de Aceite
 - Admin consegue criar/editar usuarios e atribuir perfis.
 - Perfis impactam acesso (claims role no token).
 - Logs de alteracoes registradas.
 
+
+## Testes
+- API: criar usuario, editar, desativar e atribuir perfis via endpoints.
+- API: reset de senha admin (confirmar login com nova senha).
+- Autenticacao: confirmar roles do usuario no token.
+- Testes automatizados: `dotnet test DevcraftWMS.sln` (unit + integration).
+
+
 ## Status
-PENDENTE
+DONE
+

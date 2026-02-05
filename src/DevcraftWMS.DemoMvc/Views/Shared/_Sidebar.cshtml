@@ -73,6 +73,13 @@
         <a class="nav-link @Active("Email")" asp-controller="Email" asp-action="Index">
             <i class="bi bi-envelope"></i> Email Test
         </a>
+        <div class="nav-section">Administration</div>
+        <a class="nav-link @Active("Roles")" asp-controller="Roles" asp-action="Index">
+            <i class="bi bi-shield-lock"></i> Roles
+        </a>
+        <a class="nav-link @Active("Users")" asp-controller="Users" asp-action="Index">
+            <i class="bi bi-person-gear"></i> Users
+        </a>
         <div class="nav-section">Logs</div>
         <a class="nav-link @Active("Logs")" asp-controller="Logs" asp-action="Requests">
             <i class="bi bi-card-list"></i> Requests

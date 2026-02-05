@@ -18,6 +18,10 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserProvider> UserProviders => Set<UserProvider>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<UserRoleAssignment> UserRoles => Set<UserRoleAssignment>();
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
     public DbSet<EmailDeliveryAttempt> EmailDeliveryAttempts => Set<EmailDeliveryAttempt>();
     public DbSet<EmailInboxMessage> EmailInboxMessages => Set<EmailInboxMessage>();
@@ -77,6 +81,12 @@ public sealed class ApplicationDbContext : DbContext
 
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {
+            if (entry.State == EntityState.Deleted &&
+                entry.Entity is RolePermission or UserRoleAssignment)
+            {
+                continue;
+            }
+
             switch (entry.State)
             {
                 case EntityState.Added:

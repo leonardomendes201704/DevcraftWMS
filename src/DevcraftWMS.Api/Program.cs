@@ -326,6 +326,12 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.AdminUserSeeder>();
     await seeder.SeedAsync();
 
+    var rbacSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.RbacSeeder>();
+    await rbacSeeder.SeedAsync();
+
+    var rbacUserSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Auth.RbacUserSeeder>();
+    await rbacUserSeeder.SeedAsync();
+
     var sampleSeeder = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Seeding.SampleDataSeeder>();
     await sampleSeeder.SeedAsync();
 }

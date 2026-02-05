@@ -30,5 +30,11 @@ Permitir definir roles e permissoes via API (CRUD) e expor para o front.
 - Seeds criam perfis base.
 - Logs registram mudancas de permissao.
 
+## Testes
+- API: criar/listar/editar/desativar roles e permissoes no Swagger.
+- API: validar seeds (roles base e permissoes) ao iniciar a API.
+- Autenticacao: confirmar claims de roles no token.
+- Testes automatizados: `dotnet test DevcraftWMS.sln` (unit + integration).
+
 ## Status
-PENDENTE
+DONE
