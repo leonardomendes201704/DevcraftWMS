@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0106 - Picking tasks model completed.
+  - Key changes: added PickingTask/PickingTaskItem entities, status enum, EF configs, and migration AddPickingTasks.
+
+## 2026-02-05
 - TASK-0105 - Reserva de estoque ao liberar OS.
   - Key changes: added stock availability validation and inventory reservation during outbound release, plus unit/integration tests.
 

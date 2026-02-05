@@ -23,5 +23,9 @@ Rastrear tarefas de separacao com itens e quantidades.
 ## Criterios de Aceite
 - Tarefas persistidas e vinculadas a OS.
 
+## Como testar
+- Executar as migrations e verificar tabelas PickingTasks/PickingTaskItems criadas.
+- Criar uma OS e confirmar que a estrutura suporta o relacionamento (FKs) ao criar registros de picking via SQL ou seed.
+
 ## Status
-PENDENTE
+DONE
