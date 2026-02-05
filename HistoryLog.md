@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0107 - Picking task generation completed.
+  - Key changes: added picking task repository and generation on outbound release with single/batch/cluster grouping and FEFO ordering, plus tests.
+
+## 2026-02-05
 - TASK-0106 - Picking tasks model completed.
   - Key changes: added PickingTask/PickingTaskItem entities, status enum, EF configs, and migration AddPickingTasks.
 

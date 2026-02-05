@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using DevcraftWMS.Tests.Integration.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevcraftWMS.Tests.Integration;
 
@@ -71,6 +72,8 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
 
         using var releasedDoc = JsonDocument.Parse(releaseBody);
         releasedDoc.RootElement.GetProperty("status").GetInt32().Should().Be(2);
+
+        await AssertPickingTasksCreatedAsync(_factory, orderId);
 
         var listResponse = await client.GetAsync("/api/outbound-orders?pageNumber=1&pageSize=20&orderBy=CreatedAtUtc&orderDir=desc");
         var listBody = await listResponse.Content.ReadAsStringAsync();
@@ -252,5 +255,15 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
             Status = DevcraftWMS.Domain.Enums.InventoryBalanceStatus.Available
         });
         await db.SaveChangesAsync();
+    }
+
+    private static async Task AssertPickingTasksCreatedAsync(CustomWebApplicationFactory factory, Guid orderId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Persistence.ApplicationDbContext>();
+        var tasks = await db.PickingTasks.Where(t => t.OutboundOrderId == orderId).ToListAsync();
+        tasks.Should().NotBeEmpty();
+        var items = await db.PickingTaskItems.Where(i => tasks.Select(t => t.Id).Contains(i.PickingTaskId)).ToListAsync();
+        items.Should().NotBeEmpty();
     }
 }

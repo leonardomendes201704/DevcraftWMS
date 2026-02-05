@@ -19,6 +19,7 @@ public sealed class OutboundOrderServiceTests
             new FakeUomRepository(),
             new FakeInventoryBalanceRepository(),
             new FakeLotRepository(),
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(null));
 
         var result = await service.CreateAsync(
@@ -52,6 +53,7 @@ public sealed class OutboundOrderServiceTests
             new FakeUomRepository(uom),
             new FakeInventoryBalanceRepository(),
             new FakeLotRepository(),
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(Guid.NewGuid()));
 
         var result = await service.CreateAsync(
@@ -110,6 +112,7 @@ public sealed class OutboundOrderServiceTests
         };
 
         var repository = new FakeOutboundOrderRepository(order);
+        var pickingRepository = new FakePickingTaskRepository();
         var service = new OutboundOrderService(
             repository,
             new FakeWarehouseRepository(),
@@ -117,6 +120,7 @@ public sealed class OutboundOrderServiceTests
             new FakeUomRepository(),
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
+            pickingRepository,
             new FakeCustomerContext(customerId));
 
         var result = await service.ReleaseAsync(
@@ -132,6 +136,8 @@ public sealed class OutboundOrderServiceTests
         result.Value.Priority.Should().Be(OutboundOrderPriority.High);
         result.Value.PickingMethod.Should().Be(OutboundOrderPickingMethod.Batch);
         balances.Single().QuantityReserved.Should().Be(5);
+        pickingRepository.AddedTasks.Should().HaveCount(1);
+        pickingRepository.AddedTasks[0].Items.Should().HaveCount(1);
     }
 
     [Fact]
@@ -177,6 +183,7 @@ public sealed class OutboundOrderServiceTests
             new FakeUomRepository(),
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(customerId));
 
         var result = await service.ReleaseAsync(
@@ -233,6 +240,7 @@ public sealed class OutboundOrderServiceTests
             new FakeUomRepository(),
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(customerId));
 
         var result = await service.ReleaseAsync(
@@ -450,6 +458,17 @@ public sealed class OutboundOrderServiceTests
         }
 
         public Guid? CustomerId { get; }
+    }
+
+    private sealed class FakePickingTaskRepository : IPickingTaskRepository
+    {
+        public List<PickingTask> AddedTasks { get; } = new();
+
+        public Task AddRangeAsync(IReadOnlyList<PickingTask> tasks, CancellationToken cancellationToken = default)
+        {
+            AddedTasks.AddRange(tasks);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeInventoryBalanceRepository : IInventoryBalanceRepository

@@ -63,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitLoadRepository, UnitLoadRepository>();
         services.AddScoped<IPutawayTaskRepository, PutawayTaskRepository>();
         services.AddScoped<IPutawayTaskAssignmentRepository, PutawayTaskAssignmentRepository>();
+        services.AddScoped<IPickingTaskRepository, PickingTaskRepository>();
         services.AddScoped<IDashboardKpiRepository, DashboardKpiRepository>();
         services.AddScoped<IAsnRepository, AsnRepository>();
         services.AddScoped<IAsnAttachmentRepository, AsnAttachmentRepository>();

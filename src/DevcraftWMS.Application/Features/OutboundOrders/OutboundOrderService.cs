@@ -15,6 +15,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
     private readonly IUomRepository _uomRepository;
     private readonly IInventoryBalanceRepository _inventoryBalanceRepository;
     private readonly ILotRepository _lotRepository;
+    private readonly IPickingTaskRepository _pickingTaskRepository;
     private readonly ICustomerContext _customerContext;
 
     public OutboundOrderService(
@@ -24,6 +25,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
         IUomRepository uomRepository,
         IInventoryBalanceRepository inventoryBalanceRepository,
         ILotRepository lotRepository,
+        IPickingTaskRepository pickingTaskRepository,
         ICustomerContext customerContext)
     {
         _orderRepository = orderRepository;
@@ -32,6 +34,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
         _uomRepository = uomRepository;
         _inventoryBalanceRepository = inventoryBalanceRepository;
         _lotRepository = lotRepository;
+        _pickingTaskRepository = pickingTaskRepository;
         _customerContext = customerContext;
     }
 
@@ -234,6 +237,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
             return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.window_invalid", "Shipping window end must be after start.");
         }
 
+        var reservationItems = new List<ReservationItem>();
         foreach (var item in order.Items)
         {
             if (item.Quantity <= 0)
@@ -248,9 +252,10 @@ public sealed class OutboundOrderService : IOutboundOrderService
             }
 
             Guid? lotId = null;
+            Lot? lot = null;
             if (!string.IsNullOrWhiteSpace(item.LotCode))
             {
-                var lot = await _lotRepository.GetByCodeAsync(product.Id, item.LotCode.Trim(), cancellationToken);
+                lot = await _lotRepository.GetByCodeAsync(product.Id, item.LotCode.Trim(), cancellationToken);
                 if (lot is null)
                 {
                     return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.lot_not_found", "Lot not found.");
@@ -301,7 +306,11 @@ public sealed class OutboundOrderService : IOutboundOrderService
                 balance.QuantityReserved += reserve;
                 remaining -= reserve;
             }
+
+            reservationItems.Add(new ReservationItem(item, product, lotId, item.ExpirationDate ?? lot?.ExpirationDate));
         }
+
+        await CreatePickingTasksAsync(order, reservationItems, cancellationToken);
 
         order.Priority = priority;
         order.PickingMethod = pickingMethod;
@@ -326,6 +335,71 @@ public sealed class OutboundOrderService : IOutboundOrderService
         var items = order.Items.Select(OutboundOrderMapping.MapItem).ToList();
         return RequestResult<OutboundOrderDetailDto>.Success(OutboundOrderMapping.MapDetail(order, items));
     }
+
+    private async Task CreatePickingTasksAsync(
+        OutboundOrder order,
+        IReadOnlyList<ReservationItem> items,
+        CancellationToken cancellationToken)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var ordered = items
+            .OrderBy(i => i.ExpirationDate ?? DateOnly.MaxValue)
+            .ThenBy(i => i.Item.LotCode ?? string.Empty)
+            .ThenBy(i => i.Product.Code)
+            .ToList();
+
+        var groups = order.PickingMethod switch
+        {
+            OutboundOrderPickingMethod.Batch => ordered.GroupBy(i => i.Product.Id.ToString("N")),
+            OutboundOrderPickingMethod.Cluster => ordered.GroupBy(i => i.Item.Id.ToString("N")),
+            _ => ordered.GroupBy(_ => "all")
+        };
+
+        var tasks = new List<PickingTask>();
+        var sequence = 1;
+
+        foreach (var group in groups)
+        {
+            var task = new PickingTask
+            {
+                Id = Guid.NewGuid(),
+                OutboundOrderId = order.Id,
+                WarehouseId = order.WarehouseId,
+                Status = PickingTaskStatus.Pending,
+                Sequence = sequence++
+            };
+
+            foreach (var entry in group)
+            {
+                task.Items.Add(new PickingTaskItem
+                {
+                    Id = Guid.NewGuid(),
+                    PickingTaskId = task.Id,
+                    OutboundOrderItemId = entry.Item.Id,
+                    ProductId = entry.Product.Id,
+                    UomId = entry.Item.UomId,
+                    LotId = entry.LotId,
+                    LocationId = null,
+                    QuantityPlanned = entry.Item.Quantity,
+                    QuantityPicked = 0
+                });
+            }
+
+            tasks.Add(task);
+        }
+
+        await _pickingTaskRepository.AddRangeAsync(tasks, cancellationToken);
+    }
+
+    private sealed record ReservationItem(
+        OutboundOrderItem Item,
+        Product Product,
+        Guid? LotId,
+        DateOnly? ExpirationDate);
 
     private static RequestResult<OutboundOrderDetailDto>? ValidateTrackingMode(
         TrackingMode trackingMode,

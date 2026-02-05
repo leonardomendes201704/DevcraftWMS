@@ -23,5 +23,12 @@ Criar listas otimizadas para separacao.
 ## Criterios de Aceite
 - Tarefas criadas conforme metodo escolhido.
 
+## Como testar
+- Liberar uma OS com metodo Single/Batch/Cluster e verificar a quantidade de tarefas criadas:
+  - Single/Wave: 1 tarefa com todos os itens.
+  - Batch: 1 tarefa por produto.
+  - Cluster: 1 tarefa por item.
+- Confirmar que as tarefas e itens foram persistidos em PickingTasks/PickingTaskItems.
+
 ## Status
-PENDENTE
+DONE
