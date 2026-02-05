@@ -56,6 +56,9 @@ public sealed class AsnsApiClient : ApiClientBase
         return await PostMultipartAsync<AsnAttachmentDto>($"/api/asns/{asnId}/attachments", content, cancellationToken);
     }
 
+    public Task<ApiFileResult> DownloadAttachmentAsync(Guid asnId, Guid attachmentId, CancellationToken cancellationToken)
+        => GetFileAsync($"/api/asns/{asnId}/attachments/{attachmentId}/download", cancellationToken);
+
     public Task<ApiResult<IReadOnlyList<AsnItemDto>>> ListItemsAsync(Guid asnId, CancellationToken cancellationToken)
         => GetAsync<IReadOnlyList<AsnItemDto>>($"/api/asns/{asnId}/items", cancellationToken);
 

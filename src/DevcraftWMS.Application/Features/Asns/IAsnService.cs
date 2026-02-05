@@ -42,6 +42,10 @@ public interface IAsnService
         long sizeBytes,
         byte[] content,
         CancellationToken cancellationToken);
+    Task<RequestResult<AsnAttachmentDownloadDto>> DownloadAttachmentAsync(
+        Guid asnId,
+        Guid attachmentId,
+        CancellationToken cancellationToken);
 
     Task<RequestResult<AsnItemDto>> AddItemAsync(
         Guid asnId,

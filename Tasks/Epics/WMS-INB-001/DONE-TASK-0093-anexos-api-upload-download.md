@@ -4,7 +4,7 @@
 Atualizar endpoints de anexos para usar storage real e fornecer download seguro.
 
 ## Objetivo
-Permitir upload real para storage e download via URL assinada ou stream controlado.
+Permitir upload real para storage e download via stream controlado.
 
 ## Escopo
 - Atualizar POST /asns/{id}/attachments para enviar arquivo ao storage.
@@ -28,5 +28,12 @@ Permitir upload real para storage e download via URL assinada ou stream controla
 - Autorizacao e contexto de cliente respeitados.
 - Problemdetails amigavel.
 
+## Como testar
+1) Subir a API (`dotnet run --project src/DevcraftWMS.Api`).
+2) Usar o Portal para criar um ASN e anexar um arquivo (PDF).
+3) Confirmar que o anexo aparece na lista de anexos.
+4) Clicar em "Download" e validar o arquivo baixado.
+5) Testar com arquivo maior que `FileStorage:MaxFileSizeBytes` e validar erro amigavel.
+
 ## Status
-PENDENTE
+DONE

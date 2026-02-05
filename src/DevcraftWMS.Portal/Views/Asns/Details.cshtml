@@ -10,6 +10,9 @@
         4 => "Canceled",
         _ => $"Status {status}"
     };
+    bool SupportsPreview(string contentType) =>
+        contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(contentType, "application/pdf", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -235,6 +238,7 @@ else
                             <th>Type</th>
                             <th>Size</th>
                             <th>Uploaded</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -253,6 +257,26 @@ else
                                     <td>@attachment.ContentType</td>
                                     <td>@($"{attachment.SizeBytes / 1024.0:F1} KB")</td>
                                     <td>@attachment.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a class="btn btn-outline-primary"
+                                               asp-action="DownloadAttachment"
+                                               asp-route-id="@Model.Asn.Id"
+                                               asp-route-attachmentId="@attachment.Id">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                            @if (SupportsPreview(attachment.ContentType))
+                                            {
+                                                <a class="btn btn-outline-secondary"
+                                                   asp-action="PreviewAttachment"
+                                                   asp-route-id="@Model.Asn.Id"
+                                                   asp-route-attachmentId="@attachment.Id"
+                                                   target="_blank" rel="noopener">
+                                                    <i class="bi bi-eye"></i> Preview
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         }

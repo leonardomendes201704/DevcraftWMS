@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0092/0093/0094 - ASN attachments real storage completed.
+  - Key changes: added FileStorage abstraction + FileSystem provider, moved ASN attachments to external storage with metadata only, added download endpoint and Portal download/preview UI, updated tests, and migration UpdateAsnAttachmentsStorage.
+
+## 2026-02-05
 - TASK-0095 - Seed usuarios e perfis RBAC base.
   - Key changes: added RBAC user seeder with default passwords and role assignments for operational accounts.
 

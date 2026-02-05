@@ -6,4 +6,11 @@ public sealed record AsnAttachmentDto(
     string FileName,
     string ContentType,
     long SizeBytes,
+    string? StorageUrl,
     DateTime CreatedAtUtc);
+
+public sealed record AsnAttachmentDownloadDto(
+    Guid Id,
+    string FileName,
+    string ContentType,
+    byte[] Content);

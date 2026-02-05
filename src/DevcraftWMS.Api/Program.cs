@@ -15,6 +15,7 @@ using DevcraftWMS.Application;
 using DevcraftWMS.Application.Abstractions.Logging;
 using DevcraftWMS.Application.Abstractions.Settings;
 using DevcraftWMS.Application.Abstractions.Telemetry;
+using DevcraftWMS.Application.Abstractions.Storage;
 using DevcraftWMS.Infrastructure;
 using Serilog;
 
@@ -86,6 +87,15 @@ builder.Services.AddOptions<DevcraftWMS.Application.Features.InboundOrderNotific
     .Validate(options => !options.WebhookEnabled || Uri.IsWellFormedUriString(options.WebhookUrl, UriKind.Absolute),
         "Notifications:InboundOrders:WebhookUrl must be an absolute URI when WebhookEnabled is true.")
     .Validate(options => options.WebhookTimeoutSeconds > 0, "Notifications:InboundOrders:WebhookTimeoutSeconds must be greater than zero.")
+    .ValidateOnStart();
+builder.Services.AddOptions<FileStorageOptions>()
+    .Bind(builder.Configuration.GetSection(FileStorageOptions.SectionName))
+    .Validate(options => !string.IsNullOrWhiteSpace(options.Provider), "FileStorage:Provider is required.")
+    .Validate(options => !string.Equals(options.Provider, "FileSystem", StringComparison.OrdinalIgnoreCase) ||
+                         !string.IsNullOrWhiteSpace(options.BasePath), "FileStorage:BasePath is required for FileSystem provider.")
+    .Validate(options => string.IsNullOrWhiteSpace(options.BaseUrl) ||
+                         Uri.IsWellFormedUriString(options.BaseUrl, UriKind.Absolute), "FileStorage:BaseUrl must be an absolute URI when set.")
+    .Validate(options => options.MaxFileSizeBytes > 0, "FileStorage:MaxFileSizeBytes must be greater than zero.")
     .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoggingOptions>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TelemetryOptions>>().Value);

@@ -23,6 +23,8 @@ using DevcraftWMS.Infrastructure.Seeding;
 using DevcraftWMS.Infrastructure.Notifications;
 using Microsoft.Extensions.Options;
 using DevcraftWMS.Application.Features.InboundOrderNotifications;
+using DevcraftWMS.Application.Abstractions.Storage;
+using DevcraftWMS.Infrastructure.Storage;
 
 namespace DevcraftWMS.Infrastructure;
 
@@ -93,6 +95,11 @@ public static class DependencyInjection
         services.AddScoped<AdminUserSeeder>();
         services.AddScoped<RbacSeeder>();
         services.AddScoped<RbacUserSeeder>();
+        services.AddSingleton<IFileStorage>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+            return new FileSystemFileStorage(options);
+        });
 
         services.AddOptions<SampleDataOptions>()
             .Bind(configuration.GetSection("Seed:SampleData"))

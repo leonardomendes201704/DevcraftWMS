@@ -1,9 +1,11 @@
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
+using DevcraftWMS.Application.Abstractions.Storage;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Application.Common.Pagination;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Application.Features.Asns;
 
@@ -16,6 +18,8 @@ public sealed class AsnService : IAsnService
     private readonly IProductRepository _productRepository;
     private readonly IUomRepository _uomRepository;
     private readonly ICustomerContext _customerContext;
+    private readonly IFileStorage _fileStorage;
+    private readonly FileStorageOptions _storageOptions;
 
     public AsnService(
         IAsnRepository asnRepository,
@@ -24,7 +28,9 @@ public sealed class AsnService : IAsnService
         IWarehouseRepository warehouseRepository,
         IProductRepository productRepository,
         IUomRepository uomRepository,
-        ICustomerContext customerContext)
+        ICustomerContext customerContext,
+        IFileStorage fileStorage,
+        IOptions<FileStorageOptions> storageOptions)
     {
         _asnRepository = asnRepository;
         _attachmentRepository = attachmentRepository;
@@ -33,6 +39,8 @@ public sealed class AsnService : IAsnService
         _productRepository = productRepository;
         _uomRepository = uomRepository;
         _customerContext = customerContext;
+        _fileStorage = fileStorage;
+        _storageOptions = storageOptions.Value;
     }
 
     public async Task<RequestResult<AsnDetailDto>> CreateAsync(
@@ -181,6 +189,21 @@ public sealed class AsnService : IAsnService
             return RequestResult<AsnAttachmentDto>.Failure("asns.attachment.empty", "Attachment content is required.");
         }
 
+        if (sizeBytes > _storageOptions.MaxFileSizeBytes)
+        {
+            return RequestResult<AsnAttachmentDto>.Failure("asns.attachment.file_too_large", "Attachment exceeds the maximum size.");
+        }
+
+        if (_storageOptions.AllowedContentTypes.Length > 0 &&
+            !_storageOptions.AllowedContentTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase))
+        {
+            return RequestResult<AsnAttachmentDto>.Failure("asns.attachment.invalid_type", "Attachment content type is not allowed.");
+        }
+
+        var storageResult = await _fileStorage.SaveAsync(
+            new FileSaveRequest(fileName, contentType, content, _storageOptions.AsnAttachmentsPath),
+            cancellationToken);
+
         var attachment = new AsnAttachment
         {
             Id = Guid.NewGuid(),
@@ -188,11 +211,44 @@ public sealed class AsnService : IAsnService
             FileName = fileName,
             ContentType = contentType,
             SizeBytes = sizeBytes,
-            Content = content
+            StorageProvider = storageResult.Provider,
+            StorageKey = storageResult.StorageKey,
+            StorageUrl = storageResult.StorageUrl,
+            ContentBase64 = storageResult.ContentBase64,
+            ContentHash = storageResult.ContentHash
         };
 
         await _attachmentRepository.AddAsync(attachment, cancellationToken);
         return RequestResult<AsnAttachmentDto>.Success(AsnMapping.MapAttachment(attachment));
+    }
+
+    public async Task<RequestResult<AsnAttachmentDownloadDto>> DownloadAttachmentAsync(
+        Guid asnId,
+        Guid attachmentId,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await _attachmentRepository.GetByIdAsync(asnId, attachmentId, cancellationToken);
+        if (attachment is null)
+        {
+            return RequestResult<AsnAttachmentDownloadDto>.Failure("asns.attachment.not_found", "Attachment not found.");
+        }
+
+        var result = await _fileStorage.ReadAsync(
+            new FileReadRequest(
+                attachment.StorageProvider,
+                attachment.StorageKey,
+                attachment.ContentBase64,
+                attachment.FileName,
+                attachment.ContentType),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return RequestResult<AsnAttachmentDownloadDto>.Failure("asns.attachment.missing", "Attachment file not available.");
+        }
+
+        return RequestResult<AsnAttachmentDownloadDto>.Success(
+            new AsnAttachmentDownloadDto(attachment.Id, result.FileName, result.ContentType, result.Content));
     }
 
     public async Task<RequestResult<AsnItemDto>> AddItemAsync(

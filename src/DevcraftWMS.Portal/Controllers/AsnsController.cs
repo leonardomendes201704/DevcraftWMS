@@ -175,6 +175,33 @@ public sealed class AsnsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    [HttpGet]
+    public async Task<IActionResult> DownloadAttachment(Guid id, Guid attachmentId, CancellationToken cancellationToken)
+    {
+        var result = await _asnsClient.DownloadAttachmentAsync(id, attachmentId, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to download attachment.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> PreviewAttachment(Guid id, Guid attachmentId, CancellationToken cancellationToken)
+    {
+        var result = await _asnsClient.DownloadAttachmentAsync(id, attachmentId, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to preview attachment.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        Response.Headers["Content-Disposition"] = $"inline; filename=\"{result.FileName}\"";
+        return File(result.Content, result.ContentType);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddItem(Guid id, AsnItemCreateViewModel model, CancellationToken cancellationToken)

@@ -54,8 +54,8 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         using var form = new MultipartFormDataContent();
         var fileBytes = Encoding.UTF8.GetBytes("demo attachment");
         var fileContent = new ByteArrayContent(fileBytes);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
-        form.Add(fileContent, "file", "asn-demo.txt");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+        form.Add(fileContent, "file", "asn-demo.pdf");
 
         var uploadResponse = await client.PostAsync($"/api/asns/{asnId}/attachments", form);
         var uploadBody = await uploadResponse.Content.ReadAsStringAsync();
@@ -68,6 +68,12 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         using var attachmentsDoc = JsonDocument.Parse(listAttachmentsBody);
         attachmentsDoc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
         attachmentsDoc.RootElement.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        var attachmentId = attachmentsDoc.RootElement[0].GetProperty("id").GetGuid();
+
+        var downloadResponse = await client.GetAsync($"/api/asns/{asnId}/attachments/{attachmentId}/download");
+        downloadResponse.IsSuccessStatusCode.Should().BeTrue();
+        var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync();
+        downloadedBytes.Length.Should().BeGreaterThan(0);
 
         var uomId = await CreateUomAsync(client);
         var productId = await CreateProductAsync(client, uomId);

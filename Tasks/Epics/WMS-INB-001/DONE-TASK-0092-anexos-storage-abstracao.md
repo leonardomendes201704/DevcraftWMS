@@ -7,7 +7,7 @@ Substituir upload "fake" (blob no banco) por armazenamento externo real com meta
 Introduzir arquitetura de storage (S3/Azure Blob/FileShare/Base64 em db) com configuracao via appsettings e validacao em startup.
 
 ## Escopo
-- Criar abstrações de storage (IFileStorage, IFileStorageClient).
+- Criar abstracoes de storage (IFileStorage, IFileStorageClient).
 - Implementar provider (inicialmente FileSystem e/ou MinIO/S3 e/ou base64 em db para dev).
 - Configuracoes em appsettings (endpoint, bucket/container, base path).
 - Persistir apenas metadados no banco (nome, tamanho, hash, url e se tiver flag para salvar em base64, persistir o base64).
@@ -29,5 +29,14 @@ Introduzir arquitetura de storage (S3/Azure Blob/FileShare/Base64 em db) com con
 - Config valida no startup (fail-fast).
 - README atualizado (ENVs).
 
+## Como testar
+1) Confirmar `FileStorage` no `appsettings.json` da API:
+   - `Provider = FileSystem`, `BasePath = App_Data/files`, `AsnAttachmentsPath = asns`.
+2) Subir a API (`dotnet run --project src/DevcraftWMS.Api`).
+3) Subir o Portal (`dotnet run --project src/DevcraftWMS.Portal`).
+4) Criar um ASN e anexar um PDF.
+5) Verificar se o banco nao possui base64 quando `StoreContentBase64 = false`.
+6) Confirmar o arquivo salvo em `App_Data/files/asns/...`.
+
 ## Status
-PENDENTE
+DONE

@@ -42,6 +42,7 @@ public sealed record AsnAttachmentDto(
     string FileName,
     string ContentType,
     long SizeBytes,
+    string? StorageUrl,
     DateTime CreatedAtUtc);
 
 public sealed record AsnItemDto(

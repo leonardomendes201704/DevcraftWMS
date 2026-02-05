@@ -354,6 +354,13 @@ Email:Processing:OutboxPollingSeconds -> Email outbox polling interval in second
 Email:Processing:InboxPollingSeconds  -> Email inbox polling interval in seconds
 Email:Processing:BatchSize            -> Email batch size
 Email:Processing:MaxAttempts          -> Email send max attempts
+FileStorage:Provider                  -> Storage provider (FileSystem or Database)
+FileStorage:BasePath                  -> Base path for file storage when using FileSystem
+FileStorage:BaseUrl                   -> Public base URL for file access (optional)
+FileStorage:AsnAttachmentsPath        -> Relative path for ASN attachments
+FileStorage:StoreContentBase64        -> Store content as base64 in DB (true/false)
+FileStorage:MaxFileSizeBytes          -> Maximum attachment size in bytes
+FileStorage:AllowedContentTypes       -> Allowed MIME types for attachment uploads
 ExternalAuth:Providers:Google:UserInfoUrl    -> Google user info endpoint
 ExternalAuth:Providers:Facebook:UserInfoUrl  -> Facebook user info endpoint
 ExternalAuth:Providers:LinkedIn:UserInfoUrl  -> LinkedIn user info endpoint

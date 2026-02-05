@@ -11,6 +11,7 @@ using DevcraftWMS.Application.Features.Asns.Commands.ApproveAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.ConvertAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.CancelAsn;
 using DevcraftWMS.Application.Features.Asns.Queries.GetAsnById;
+using DevcraftWMS.Application.Features.Asns.Queries.DownloadAsnAttachment;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnAttachments;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnsPaged;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnItems;
@@ -101,6 +102,18 @@ public sealed class AsnsController : ControllerBase
     {
         var result = await _mediator.Send(new ListAsnAttachmentsQuery(id), cancellationToken);
         return this.ToActionResult(result);
+    }
+
+    [HttpGet("asns/{id:guid}/attachments/{attachmentId:guid}/download")]
+    public async Task<IActionResult> DownloadAttachment(Guid id, Guid attachmentId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new DownloadAsnAttachmentQuery(id, attachmentId), cancellationToken);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
     }
 
     [HttpPost("asns/{id:guid}/attachments")]

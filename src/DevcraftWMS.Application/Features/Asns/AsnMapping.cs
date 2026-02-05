@@ -55,6 +55,7 @@ public static class AsnMapping
             attachment.FileName,
             attachment.ContentType,
             attachment.SizeBytes,
+            attachment.StorageUrl,
             attachment.CreatedAtUtc);
 
     public static AsnStatusEventDto MapStatusEvent(AsnStatusEvent statusEvent)

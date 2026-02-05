@@ -33,6 +33,20 @@ public sealed class AsnAttachmentRepository : IAsnAttachmentRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<AsnAttachment?> GetByIdAsync(Guid asnId, Guid attachmentId, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.AsnAttachments
+            .AsNoTracking()
+            .Include(a => a.Asn)
+            .SingleOrDefaultAsync(
+                a => a.Id == attachmentId &&
+                     a.AsnId == asnId &&
+                     a.Asn != null &&
+                     a.Asn.CustomerId == customerId,
+                cancellationToken);
+    }
+
     private Guid GetCustomerId()
     {
         var customerId = _customerContext.CustomerId;

@@ -1,9 +1,11 @@
 using FluentAssertions;
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
+using DevcraftWMS.Application.Abstractions.Storage;
 using DevcraftWMS.Application.Features.Asns;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Tests.Unit.Application;
 
@@ -19,7 +21,9 @@ public sealed class AsnServiceTests
             new FakeWarehouseRepository(new Warehouse { Id = Guid.NewGuid(), Name = "WH" }),
             new FakeProductRepository(),
             new FakeUomRepository(),
-            new FakeCustomerContext(null));
+            new FakeCustomerContext(null),
+            new FakeFileStorage(),
+            CreateOptions());
 
         var result = await service.CreateAsync(
             Guid.NewGuid(),
@@ -44,7 +48,9 @@ public sealed class AsnServiceTests
             new FakeWarehouseRepository(null),
             new FakeProductRepository(),
             new FakeUomRepository(),
-            new FakeCustomerContext(Guid.NewGuid()));
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
 
         var result = await service.CreateAsync(
             Guid.NewGuid(),
@@ -70,7 +76,9 @@ public sealed class AsnServiceTests
             new FakeWarehouseRepository(new Warehouse { Id = warehouseId, Name = "WH" }),
             new FakeProductRepository(),
             new FakeUomRepository(),
-            new FakeCustomerContext(Guid.NewGuid()));
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
 
         var result = await service.CreateAsync(
             warehouseId,
@@ -99,7 +107,9 @@ public sealed class AsnServiceTests
             new FakeWarehouseRepository(new Warehouse { Id = Guid.NewGuid(), Name = "WH" }),
             new FakeProductRepository(product),
             new FakeUomRepository(uom),
-            new FakeCustomerContext(Guid.NewGuid()));
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
 
         var result = await service.AddItemAsync(
             asn.Id,
@@ -128,7 +138,9 @@ public sealed class AsnServiceTests
             new FakeWarehouseRepository(new Warehouse { Id = Guid.NewGuid(), Name = "WH" }),
             new FakeProductRepository(product),
             new FakeUomRepository(uom),
-            new FakeCustomerContext(Guid.NewGuid()));
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
 
         var result = await service.AddItemAsync(
             asn.Id,
@@ -173,6 +185,8 @@ public sealed class AsnServiceTests
         public Task AddAsync(AsnAttachment attachment, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<AsnAttachment>> ListByAsnAsync(Guid asnId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<AsnAttachment>>(Array.Empty<AsnAttachment>());
+        public Task<AsnAttachment?> GetByIdAsync(Guid asnId, Guid attachmentId, CancellationToken cancellationToken = default)
+            => Task.FromResult<AsnAttachment?>(null);
     }
 
     private sealed class FakeAsnItemRepository : IAsnItemRepository
@@ -256,4 +270,23 @@ public sealed class AsnServiceTests
 
         public Guid? CustomerId { get; }
     }
+
+    private sealed class FakeFileStorage : IFileStorage
+    {
+        public Task<FileStorageResult> SaveAsync(FileSaveRequest request, CancellationToken cancellationToken = default)
+            => Task.FromResult(new FileStorageResult("Database", null, null, Convert.ToBase64String(request.Content), "hash", request.Content.LongLength));
+
+        public Task<FileReadResult?> ReadAsync(FileReadRequest request, CancellationToken cancellationToken = default)
+            => Task.FromResult<FileReadResult?>(null);
+    }
+
+    private static IOptions<FileStorageOptions> CreateOptions()
+        => Options.Create(new FileStorageOptions
+        {
+            Provider = "Database",
+            StoreContentBase64 = true,
+            MaxFileSizeBytes = 10_000_000,
+            AllowedContentTypes = Array.Empty<string>(),
+            AsnAttachmentsPath = "asns"
+        });
 }

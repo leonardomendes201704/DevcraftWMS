@@ -19,7 +19,20 @@ public sealed class AsnAttachmentConfiguration : IEntityTypeConfiguration<AsnAtt
             .HasMaxLength(128)
             .IsRequired();
 
-        builder.Property(x => x.Content)
+        builder.Property(x => x.StorageProvider)
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.StorageKey)
+            .HasMaxLength(512);
+
+        builder.Property(x => x.StorageUrl)
+            .HasMaxLength(1024);
+
+        builder.Property(x => x.ContentBase64);
+
+        builder.Property(x => x.ContentHash)
+            .HasMaxLength(128)
             .IsRequired();
 
         builder.HasIndex(x => x.AsnId);
