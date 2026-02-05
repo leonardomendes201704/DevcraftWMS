@@ -1,0 +1,164 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.OutboundOrders.OutboundOrderDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Outbound Order {Model.Order.OrderNumber}";
+    ViewData["Subtitle"] = "Release and review outbound order details";
+
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => $"Status {status}"
+    };
+
+    string PriorityLabel(int priority) => priority switch
+    {
+        0 => "Low",
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => $"Priority {priority}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="OutboundOrders" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-muted small">Status</div>
+                <span class="badge text-bg-primary">@StatusLabel(Model.Order.Status)</span>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Priority</div>
+                <span class="badge text-bg-info">@PriorityLabel(Model.Order.Priority)</span>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Warehouse</div>
+                <div class="fw-semibold">@Model.Order.WarehouseName</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small">Expected Ship</div>
+                <div class="fw-semibold">@Model.Order.ExpectedShipDate?.ToString("yyyy-MM-dd") ?? "-"</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Customer Reference</div>
+                <div class="fw-semibold">@Model.Order.CustomerReference ?? "-"</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Carrier</div>
+                <div class="fw-semibold">@Model.Order.CarrierName ?? "-"</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Created</div>
+                <div class="fw-semibold">@Model.Order.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+            </div>
+            <div class="col-md-12">
+                <div class="text-muted small">Notes</div>
+                <div class="fw-semibold">@Model.Order.Notes ?? "-"</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Release Parameters</h5>
+        <form asp-controller="OutboundOrders" asp-action="Release" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Order.Id" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Priority</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-exclamation-diamond"></i></span>
+                        <select asp-for="Release.Priority" class="form-select" asp-items="Model.PriorityOptions"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Picking Method</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-graph-up-arrow"></i></span>
+                        <select asp-for="Release.PickingMethod" class="form-select" asp-items="Model.PickingMethodOptions"></select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Shipping Window Start (UTC)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input asp-for="Release.ShippingWindowStartUtc" class="form-control" type="datetime-local" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Shipping Window End (UTC)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                        <input asp-for="Release.ShippingWindowEndUtc" class="form-control" type="datetime-local" />
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-unlock"></i> Release Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Items</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>UoM</th>
+                        <th>Quantity</th>
+                        <th>Lot</th>
+                        <th>Expiration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Order.Items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No items registered.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.Order.Items)
+                        {
+                            <tr>
+                                <td>@item.ProductCode - @item.ProductName</td>
+                                <td>@item.UomCode</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.LotCode ?? "-"</td>
+                                <td>@item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

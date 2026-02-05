@@ -69,9 +69,87 @@ public sealed class OutboundOrderServiceTests
         result.Value.OrderNumber.Should().Be("OS-2000");
     }
 
+    [Fact]
+    public async Task Release_Should_Set_Status_And_Parameters()
+    {
+        var customerId = Guid.NewGuid();
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            OrderNumber = "OS-RELEASE-1",
+            Status = OutboundOrderStatus.Registered,
+            Priority = OutboundOrderPriority.Normal
+        };
+
+        var repository = new FakeOutboundOrderRepository(order);
+        var service = new OutboundOrderService(
+            repository,
+            new FakeWarehouseRepository(),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeCustomerContext(customerId));
+
+        var result = await service.ReleaseAsync(
+            order.Id,
+            OutboundOrderPriority.High,
+            OutboundOrderPickingMethod.Batch,
+            DateTime.UtcNow.AddHours(1),
+            DateTime.UtcNow.AddHours(3),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Status.Should().Be(OutboundOrderStatus.Released);
+        result.Value.Priority.Should().Be(OutboundOrderPriority.High);
+        result.Value.PickingMethod.Should().Be(OutboundOrderPickingMethod.Batch);
+    }
+
+    [Fact]
+    public async Task Release_Should_Fail_When_Window_Invalid()
+    {
+        var customerId = Guid.NewGuid();
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            OrderNumber = "OS-RELEASE-2",
+            Status = OutboundOrderStatus.Registered
+        };
+
+        var repository = new FakeOutboundOrderRepository(order);
+        var service = new OutboundOrderService(
+            repository,
+            new FakeWarehouseRepository(),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeCustomerContext(customerId));
+
+        var result = await service.ReleaseAsync(
+            order.Id,
+            OutboundOrderPriority.Normal,
+            OutboundOrderPickingMethod.SingleOrder,
+            DateTime.UtcNow.AddHours(2),
+            DateTime.UtcNow.AddHours(1),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("outbound_orders.order.window_invalid");
+    }
+
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
     {
         private readonly List<OutboundOrder> _orders = new();
+
+        public FakeOutboundOrderRepository()
+        {
+        }
+
+        public FakeOutboundOrderRepository(OutboundOrder order)
+        {
+            _orders.Add(order);
+        }
 
         public Task<bool> OrderNumberExistsAsync(string orderNumber, CancellationToken cancellationToken = default)
             => Task.FromResult(_orders.Any(o => o.OrderNumber == orderNumber));
@@ -87,6 +165,12 @@ public sealed class OutboundOrderServiceTests
 
         public Task<OutboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult(_orders.SingleOrDefault(o => o.Id == id));
+
+        public Task<OutboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_orders.SingleOrDefault(o => o.Id == id));
+
+        public Task UpdateAsync(OutboundOrder order, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
 
         public Task<int> CountAsync(
             Guid? warehouseId,

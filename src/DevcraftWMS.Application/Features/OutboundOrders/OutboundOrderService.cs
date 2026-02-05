@@ -183,6 +183,53 @@ public sealed class OutboundOrderService : IOutboundOrderService
         return RequestResult<PagedResult<OutboundOrderListItemDto>>.Success(result);
     }
 
+    public async Task<RequestResult<OutboundOrderDetailDto>> ReleaseAsync(
+        Guid id,
+        OutboundOrderPriority priority,
+        OutboundOrderPickingMethod pickingMethod,
+        DateTime? shippingWindowStartUtc,
+        DateTime? shippingWindowEndUtc,
+        CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.required", "Outbound order is required.");
+        }
+
+        var order = await _orderRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (order is null)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.not_found", "Outbound order not found.");
+        }
+
+        if (order.Status is OutboundOrderStatus.Canceled or OutboundOrderStatus.Shipping or OutboundOrderStatus.Shipped)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.status_locked", "Outbound order status does not allow release.");
+        }
+
+        if (shippingWindowStartUtc.HasValue ^ shippingWindowEndUtc.HasValue)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.window_required", "Shipping window requires both start and end values.");
+        }
+
+        if (shippingWindowStartUtc.HasValue && shippingWindowEndUtc.HasValue &&
+            shippingWindowEndUtc.Value < shippingWindowStartUtc.Value)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.window_invalid", "Shipping window end must be after start.");
+        }
+
+        order.Priority = priority;
+        order.PickingMethod = pickingMethod;
+        order.ShippingWindowStartUtc = shippingWindowStartUtc;
+        order.ShippingWindowEndUtc = shippingWindowEndUtc;
+        order.Status = OutboundOrderStatus.Released;
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        var items = order.Items.Select(OutboundOrderMapping.MapItem).ToList();
+        return RequestResult<OutboundOrderDetailDto>.Success(OutboundOrderMapping.MapDetail(order, items));
+    }
+
     public async Task<RequestResult<OutboundOrderDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var order = await _orderRepository.GetByIdAsync(id, cancellationToken);

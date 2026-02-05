@@ -54,6 +54,22 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
         var getBody = await getResponse.Content.ReadAsStringAsync();
         getResponse.IsSuccessStatusCode.Should().BeTrue(getBody);
 
+        var releasePayload = JsonSerializer.Serialize(new
+        {
+            priority = 2,
+            pickingMethod = 1,
+            shippingWindowStartUtc = DateTime.UtcNow.AddHours(2),
+            shippingWindowEndUtc = DateTime.UtcNow.AddHours(4)
+        });
+
+        var releaseResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/release",
+            new StringContent(releasePayload, Encoding.UTF8, "application/json"));
+        var releaseBody = await releaseResponse.Content.ReadAsStringAsync();
+        releaseResponse.IsSuccessStatusCode.Should().BeTrue(releaseBody);
+
+        using var releasedDoc = JsonDocument.Parse(releaseBody);
+        releasedDoc.RootElement.GetProperty("status").GetInt32().Should().Be(2);
+
         var listResponse = await client.GetAsync("/api/outbound-orders?pageNumber=1&pageSize=20&orderBy=CreatedAtUtc&orderDir=desc");
         var listBody = await listResponse.Content.ReadAsStringAsync();
         listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);

@@ -15,3 +15,9 @@ public sealed record CreateOutboundOrderItemRequest(
     decimal Quantity,
     string? LotCode,
     DateOnly? ExpirationDate);
+
+public sealed record ReleaseOutboundOrderRequest(
+    DevcraftWMS.Domain.Enums.OutboundOrderPriority Priority,
+    DevcraftWMS.Domain.Enums.OutboundOrderPickingMethod PickingMethod,
+    DateTime? ShippingWindowStartUtc,
+    DateTime? ShippingWindowEndUtc);

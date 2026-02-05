@@ -1,6 +1,14 @@
 # History Log
 
 ## 2026-02-05
+- Fix - Outbound order release form binding.
+  - Key changes: bind Release form fields to correct model prefix to avoid missing Priority/PickingMethod.
+
+## 2026-02-05
+- TASK-0104 - Outbound order release workflow completed.
+  - Key changes: added picking method/shipping window fields, release endpoint, DemoMvc release UI, and tests.
+
+## 2026-02-05
 - TASK-0103 - Portal outbound orders UI completed.
   - Key changes: added portal list/create/details for outbound orders, new API client, viewmodels, and menu entry.
 

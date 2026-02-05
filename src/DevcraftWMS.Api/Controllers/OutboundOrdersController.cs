@@ -2,6 +2,7 @@ using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.OutboundOrders;
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.CreateOutboundOrder;
+using DevcraftWMS.Application.Features.OutboundOrders.Commands.ReleaseOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.ListOutboundOrders;
 using DevcraftWMS.Domain.Enums;
@@ -82,6 +83,21 @@ public sealed class OutboundOrdersController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetOutboundOrderQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/release")]
+    public async Task<IActionResult> Release(Guid id, [FromBody] ReleaseOutboundOrderRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new ReleaseOutboundOrderCommand(
+                id,
+                request.Priority,
+                request.PickingMethod,
+                request.ShippingWindowStartUtc,
+                request.ShippingWindowEndUtc),
+            cancellationToken);
+
         return this.ToActionResult(result);
     }
 }

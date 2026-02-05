@@ -50,6 +50,24 @@ public sealed class OutboundOrderRepository : IOutboundOrderRepository
             .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
     }
 
+    public async Task<OutboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.OutboundOrders
+            .Include(o => o.Warehouse)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Uom)
+            .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
+    }
+
+    public async Task UpdateAsync(OutboundOrder order, CancellationToken cancellationToken = default)
+    {
+        _dbContext.OutboundOrders.Update(order);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(
         Guid? warehouseId,
         string? orderNumber,

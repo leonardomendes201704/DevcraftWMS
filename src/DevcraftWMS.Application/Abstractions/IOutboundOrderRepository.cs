@@ -9,6 +9,8 @@ public interface IOutboundOrderRepository
     Task AddAsync(OutboundOrder order, CancellationToken cancellationToken = default);
     Task AddItemAsync(OutboundOrderItem item, CancellationToken cancellationToken = default);
     Task<OutboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<OutboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task UpdateAsync(OutboundOrder order, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
         Guid? warehouseId,
         string? orderNumber,
