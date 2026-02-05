@@ -1,0 +1,148 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@model DevcraftWMS.DemoMvc.ViewModels.OutboundChecks.OutboundCheckQueuePageViewModel
+@{
+    ViewData["Title"] = "Outbound Checks";
+    ViewData["Subtitle"] = "Validate picked items before packing";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "OutboundChecks",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["OrderNumber"] = Model.Query.OrderNumber,
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["Priority"] = Model.Query.Priority?.ToString(),
+            ["CreatedFromUtc"] = Model.Query.CreatedFromUtc?.ToString("O"),
+            ["CreatedToUtc"] = Model.Query.CreatedToUtc?.ToString("O"),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null },
+        new() { Value = "3", Text = "Picking", Selected = Model.Query.Status == 3 },
+        new() { Value = "4", Text = "Checked", Selected = Model.Query.Status == 4 }
+    };
+
+    var priorityOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Priority is null },
+        new() { Value = "1", Text = "Normal", Selected = Model.Query.Priority == 1 },
+        new() { Value = "2", Text = "High", Selected = Model.Query.Priority == 2 },
+        new() { Value = "3", Text = "Urgent", Selected = Model.Query.Priority == 3 }
+    };
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "OutboundChecks",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Warehouse Id", Name = "WarehouseId", Type = GridFilterType.Text, Value = Model.Query.WarehouseId?.ToString() },
+            new() { Label = "Order Number", Name = "OrderNumber", Type = GridFilterType.Text, Value = Model.Query.OrderNumber },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Priority", Name = "Priority", Type = GridFilterType.Select, Options = priorityOptions },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "OutboundChecks")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "outboundChecksFilters",
+        Title = "Outbound check filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => "Unknown"
+    };
+
+    string PriorityLabel(int priority) => priority switch
+    {
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => "Unknown"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.OutboundOrders.OutboundOrderListItemViewModel>()
+        .WithTitle("Outbound Checks")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Order", item => new HtmlString(HtmlEncoder.Default.Encode(item.OrderNumber)), "OrderNumber")
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{StatusLabel(item.Status)}</span>"), "Status")
+        .AddColumn("Priority", item => new HtmlString(PriorityLabel(item.Priority)), "Priority")
+        .AddColumn("Ship Date", item => new HtmlString(item.ExpectedShipDate?.ToString("d") ?? "-"), "ExpectedShipDate")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Check", item => Url.Action("Details", "OutboundChecks", new { id = item.Id }), "btn btn-sm btn-outline-success")
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#outboundChecksHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_OutboundChecksHelp" />

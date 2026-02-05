@@ -90,6 +90,49 @@ public sealed class OutboundCheckServiceTests
         checkRepository.Stored[0].Items.Should().HaveCount(1);
     }
 
+    [Fact]
+    public async Task Register_Should_Store_Evidence_When_Provided()
+    {
+        var customerId = Guid.NewGuid();
+        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-EVID", Name = "Check Product" };
+        var uom = new Uom { Id = Guid.NewGuid(), Code = "EA" };
+        var orderItem = new OutboundOrderItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = product.Id,
+            UomId = uom.Id,
+            Quantity = 1,
+            Product = product,
+            Uom = uom
+        };
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            Status = OutboundOrderStatus.Picking,
+            Items = new List<OutboundOrderItem> { orderItem }
+        };
+
+        var checkRepository = new FakeOutboundCheckRepository();
+        var service = new OutboundCheckService(
+            new FakeOutboundOrderRepository(order),
+            checkRepository,
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider(DateTime.UtcNow));
+
+        var result = await service.RegisterAsync(order.Id, new List<OutboundCheckItemInput>
+        {
+            new(orderItem.Id, 1, null, new List<OutboundCheckEvidenceInput>
+            {
+                new("photo.jpg", "image/jpeg", 3, new byte[] { 1, 2, 3 })
+            })
+        }, null, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        checkRepository.Stored.Single().Items.Single().Evidence.Should().HaveCount(1);
+    }
+
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
     {
         private readonly OutboundOrder _order;

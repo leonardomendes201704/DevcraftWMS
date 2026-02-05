@@ -115,6 +115,10 @@ When implementing a new endpoint:
 - No hardcoded external URLs; all external endpoints come from validated Options.
 - When a task is completed, the chat response must include a short "How to test" section with concrete steps/commands.
 - The completed task file must include a "How to test" section with the same concrete steps/commands.
+- "How to test" must always include:
+  - Unit tests and integration tests commands.
+  - Manual UI verification steps (DemoMvc).
+  - Swagger/API verification steps (endpoint + example request/response path).
 
 ## Change log rule (MANDATORY)
 Every code change must append an entry to `HistoryLog.md` at solution root with:

@@ -23,7 +23,7 @@ Implementar o fluxo completo de saida e expedicao conforme o documento Especific
 - [DONE-TASK-0107] Picking: geracao de tarefas (wave/batch/zone) | Prioridade: P1 | Dependencias: TASK-0106 | Estimativa: 6h
 - [DONE-TASK-0108] DemoMvc: fila de picking + execucao/confirmacao | Prioridade: P1 | Dependencias: TASK-0107 | Estimativa: 6h
 - [DONE-TASK-0109] Conferencia outbound: modelo + API | Prioridade: P1 | Dependencias: TASK-0106 | Estimativa: 6h
-- [TASK-0110] DemoMvc: conferencia + divergencias | Prioridade: P1 | Dependencias: TASK-0109 | Estimativa: 6h
+- [DONE-TASK-0110] DemoMvc: conferencia + divergencias | Prioridade: P1 | Dependencias: TASK-0109 | Estimativa: 6h
 - [TASK-0111] Packing: modelo + API (volumes, peso, etiqueta) | Prioridade: P1 | Dependencias: TASK-0109 | Estimativa: 6h
 - [TASK-0112] DemoMvc: tela de packing + etiquetas | Prioridade: P2 | Dependencias: TASK-0111 | Estimativa: 6h
 - [TASK-0113] Expedicao: doca/carregamento + API | Prioridade: P1 | Dependencias: TASK-0111 | Estimativa: 6h

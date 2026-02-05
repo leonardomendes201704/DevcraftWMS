@@ -1,0 +1,126 @@
+@model DevcraftWMS.DemoMvc.ViewModels.OutboundChecks.OutboundCheckDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Outbound Check {Model.Order.OrderNumber}";
+    ViewData["Subtitle"] = "Confirm picked quantities";
+
+    var statusLabel = Model.Order.Status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => "Unknown"
+    };
+
+    var priorityLabel = Model.Order.Priority switch
+    {
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => "Unknown"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="badge text-bg-primary">@Model.Order.WarehouseName</span>
+        <span class="badge text-bg-light">@statusLabel</span>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="OutboundChecks" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back to list
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Order Summary</div>
+                <dl class="row mb-0">
+                    <dt class="col-5">Order</dt>
+                    <dd class="col-7">@Model.Order.OrderNumber</dd>
+                    <dt class="col-5">Warehouse</dt>
+                    <dd class="col-7">@Model.Order.WarehouseName</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">@statusLabel</dd>
+                    <dt class="col-5">Priority</dt>
+                    <dd class="col-7">@priorityLabel</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Check Items</div>
+                <form asp-controller="OutboundChecks" asp-action="Check" asp-route-id="@Model.Order.Id" method="post" enctype="multipart/form-data" class="vstack gap-3">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>UoM</th>
+                                    <th class="text-end">Expected</th>
+                                    <th style="width: 140px;">Checked</th>
+                                    <th style="width: 220px;">Divergence</th>
+                                    <th style="width: 220px;">Evidence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @for (var index = 0; index < Model.Check.Items.Count; index++)
+                            {
+                                var item = Model.Check.Items[index];
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@item.ProductCode</div>
+                                        <div class="text-muted small">@item.ProductName</div>
+                                    </td>
+                                    <td>@item.UomCode</td>
+                                    <td class="text-end">@item.QuantityExpected</td>
+                                    <td>
+                                        <input type="hidden" name="Check.Items[@index].OutboundOrderItemId" value="@item.OutboundOrderItemId" />
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="bi bi-clipboard-check"></i></span>
+                                            <input class="form-control" type="number" step="0.01" min="0" name="Check.Items[@index].QuantityChecked" value="@item.QuantityChecked" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="bi bi-exclamation-circle"></i></span>
+                                            <input class="form-control" name="Check.Items[@index].DivergenceReason" value="@item.DivergenceReason" placeholder="Reason" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="bi bi-paperclip"></i></span>
+                                            <input class="form-control" type="file" name="Check.Items[@index].EvidenceFile" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <label class="form-label">Notes</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                            <input class="form-control" name="Check.Notes" value="@Model.Check.Notes" placeholder="Optional notes" />
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-check2-circle me-1"></i>Register Check
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

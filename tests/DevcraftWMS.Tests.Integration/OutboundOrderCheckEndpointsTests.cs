@@ -64,6 +64,58 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
         refreshedDoc.RootElement.GetProperty("status").GetInt32().Should().Be(4);
     }
 
+    [Fact]
+    public async Task Check_Should_Accept_Evidence_File()
+    {
+        var client = _factory.CreateClient();
+
+        var warehouseId = await CreateWarehouseAsync(client);
+        var uomId = await CreateUomAsync(client);
+        var productId = await CreateProductAsync(client, uomId);
+        await SeedInventoryBalanceAsync(_factory, warehouseId, productId, 10m);
+
+        var orderId = await CreateOutboundOrderAsync(client, warehouseId, productId, uomId);
+        await ReleaseOutboundOrderAsync(client, orderId);
+
+        var orderResponse = await client.GetAsync($"/api/outbound-orders/{orderId}");
+        var orderBody = await orderResponse.Content.ReadAsStringAsync();
+        orderResponse.IsSuccessStatusCode.Should().BeTrue(orderBody);
+        using var orderDoc = JsonDocument.Parse(orderBody);
+        var orderItemId = orderDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+
+        var evidenceContent = Convert.ToBase64String(new byte[] { 10, 20, 30 });
+        var checkPayload = JsonSerializer.Serialize(new
+        {
+            items = new[]
+            {
+                new
+                {
+                    outboundOrderItemId = orderItemId,
+                    quantityChecked = 3m,
+                    divergenceReason = (string?)null,
+                    evidence = new[]
+                    {
+                        new
+                        {
+                            fileName = "photo.jpg",
+                            contentType = "image/jpeg",
+                            sizeBytes = 3,
+                            content = evidenceContent
+                        }
+                    }
+                }
+            },
+            notes = "Checked with evidence"
+        });
+
+        var checkResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/check", new StringContent(checkPayload, Encoding.UTF8, "application/json"));
+        var checkBody = await checkResponse.Content.ReadAsStringAsync();
+        checkResponse.IsSuccessStatusCode.Should().BeTrue(checkBody);
+
+        using var checkDoc = JsonDocument.Parse(checkBody);
+        checkDoc.RootElement.GetProperty("items")[0].GetProperty("evidenceCount").GetInt32().Should().Be(1);
+    }
+
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
         var code = $"WH-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
@@ -128,13 +180,14 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
     private static async Task<Guid> CreateProductAsync(HttpClient client, Guid baseUomId)
     {
         var code = $"SKU-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var ean = (DateTime.UtcNow.Ticks % 10000000000000L).ToString("D13");
         var payload = JsonSerializer.Serialize(new
         {
             code,
             name = "Check Product",
             description = "Outbound",
-            ean = "789000000555",
-            erpCode = "ERP-CHK",
+            ean,
+            erpCode = $"ERP-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
             category = "Outbound",
             brand = "Devcraft",
             baseUomId,
@@ -157,10 +210,11 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
 
     private static async Task<Guid> CreateOutboundOrderAsync(HttpClient client, Guid warehouseId, Guid productId, Guid uomId)
     {
+        var orderNumber = $"OS-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
         var payload = JsonSerializer.Serialize(new
         {
             warehouseId,
-            orderNumber = "OS-CHK-100",
+            orderNumber,
             customerReference = "REF-CHK-100",
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),

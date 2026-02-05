@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0110 - Outbound check DemoMvc UI completed.
+  - Key changes: added DemoMvc queue/details screens for outbound checks with evidence upload, plus test updates.
+
+## 2026-02-05
 - TASK-0109 - Outbound check API completed.
   - Key changes: added outbound check entities/configs/migration, register endpoint, and unit/integration tests.
 
