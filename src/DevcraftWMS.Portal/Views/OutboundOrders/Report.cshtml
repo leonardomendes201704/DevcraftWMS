@@ -1,0 +1,210 @@
+@model DevcraftWMS.Portal.ViewModels.OutboundOrders.OutboundOrderReportViewModel
+@{
+    ViewData["Title"] = "Outbound Shipping Report";
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => $"Status {status}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Shipping Report</h1>
+        <div class="text-muted">Outbound order shipping summary and exported lines.</div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.Report is not null)
+        {
+            <a class="btn btn-outline-primary" asp-action="ReportExport" asp-route-id="@Model.Report.OutboundOrderId">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+        }
+        <a class="btn btn-outline-secondary" href="#shippingReportHelp" data-bs-toggle="modal">
+            <i class="bi bi-question-circle"></i> Help
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Report?.OutboundOrderId">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+@if (Model.Report is null)
+{
+    <div class="alert alert-warning">Report data is not available.</div>
+}
+else
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Order</div>
+                    <div class="fw-semibold">@Model.Report.OrderNumber</div>
+                    <div class="text-muted small mt-2">Warehouse</div>
+                    <div class="fw-semibold">@Model.Report.WarehouseName</div>
+                    <div class="text-muted small mt-2">Carrier</div>
+                    <div class="fw-semibold">@Model.Report.CarrierName ?? "-"</div>
+                    <div class="text-muted small mt-2">Expected Ship</div>
+                    <div class="fw-semibold">@Model.Report.ExpectedShipDate?.ToString("yyyy-MM-dd") ?? "-"</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Status</div>
+                    <div class="fw-semibold">
+                        <span class="badge bg-primary-subtle text-primary">@StatusLabel(Model.Report.Status)</span>
+                    </div>
+                    <div class="text-muted small mt-2">Created</div>
+                    <div class="fw-semibold">@Model.Report.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</div>
+                    <div class="text-muted small mt-2">Shipments</div>
+                    <div class="fw-semibold">@Model.Report.Summary.ShipmentCount</div>
+                    <div class="text-muted small mt-2">Shipped Packages</div>
+                    <div class="fw-semibold">@Model.Report.Summary.ShippedPackageCount</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Expected Qty</div>
+                    <div class="h4 mb-3">@Model.Report.Summary.TotalExpected</div>
+                    <div class="text-muted small">Shipped Qty</div>
+                    <div class="h4 mb-3">@Model.Report.Summary.TotalShipped</div>
+                    <div class="text-muted small">Variance</div>
+                    <div class="h4 mb-0">@Model.Report.Summary.TotalVariance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="h5 mb-1">Shipping Lines</h2>
+                    <div class="text-muted">Expected vs. shipped quantities.</div>
+                </div>
+                <div class="text-muted">Total: @Model.Report.Summary.LineCount</div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>UoM</th>
+                            <th>Lot</th>
+                            <th>Expiration</th>
+                            <th class="text-end">Expected</th>
+                            <th class="text-end">Shipped</th>
+                            <th class="text-end">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.Lines.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No lines found.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var line in Model.Report.Lines)
+                            {
+                                <tr>
+                                    <td>@line.ProductCode - @line.ProductName</td>
+                                    <td>@line.UomCode</td>
+                                    <td>@line.LotCode ?? "-"</td>
+                                    <td>@line.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"</td>
+                                    <td class="text-end">@line.ExpectedQuantity</td>
+                                    <td class="text-end">@line.ShippedQuantity</td>
+                                    <td class="text-end">@line.Variance</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="h5 mb-1">Pending Lines</h2>
+                    <div class="text-muted">Items still pending to ship.</div>
+                </div>
+                <div class="text-muted">Pending: @Model.Report.Summary.PendingLineCount</div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>UoM</th>
+                            <th>Lot</th>
+                            <th>Expiration</th>
+                            <th class="text-end">Expected</th>
+                            <th class="text-end">Shipped</th>
+                            <th class="text-end">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Report.PendingLines.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No pending lines.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var line in Model.Report.PendingLines)
+                            {
+                                <tr>
+                                    <td>@line.ProductCode - @line.ProductName</td>
+                                    <td>@line.UomCode</td>
+                                    <td>@line.LotCode ?? "-"</td>
+                                    <td>@line.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"</td>
+                                    <td class="text-end">@line.ExpectedQuantity</td>
+                                    <td class="text-end">@line.ShippedQuantity</td>
+                                    <td class="text-end">@line.Variance</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="shippingReportHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Shipping Report Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This report summarizes outbound shipment progress for the selected order.</p>
+                <ul>
+                    <li><strong>Expected vs. Shipped:</strong> shows quantities already shipped.</li>
+                    <li><strong>Pending Lines:</strong> remaining quantities to ship for each SKU/UoM.</li>
+                    <li><strong>CSV Export:</strong> downloads the report for sharing or audits.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

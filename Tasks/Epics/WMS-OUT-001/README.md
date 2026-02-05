@@ -28,7 +28,7 @@ Implementar o fluxo completo de saida e expedicao conforme o documento Especific
 - [DONE-TASK-0112] DemoMvc: tela de packing + etiquetas | Prioridade: P2 | Dependencias: TASK-0111 | Estimativa: 6h
 - [DONE-TASK-0113] Expedicao: doca/carregamento + API | Prioridade: P1 | Dependencias: TASK-0111 | Estimativa: 6h
 - [DONE-TASK-0114] DemoMvc: expedicao (carregar, finalizar) | Prioridade: P2 | Dependencias: TASK-0113 | Estimativa: 6h
-- [TASK-0115] Documentos de transporte (romaneio/relatorio) | Prioridade: P2 | Dependencias: TASK-0113 | Estimativa: 6h
+- [DONE-TASK-0115] Documentos de transporte (romaneio/relatorio) | Prioridade: P2 | Dependencias: TASK-0113 | Estimativa: 6h
 - [TASK-0116] Notificacoes outbound (portal/email/webhook) | Prioridade: P2 | Dependencias: TASK-0115 | Estimativa: 6h
 - [TASK-0117] KPIs outbound (separacao, conferencia, OS->expedido) | Prioridade: P2 | Dependencias: TASK-0113 | Estimativa: 6h
 - [TASK-0118] Fluxos alternativos (parcial, cancelamento pos separacao, cross-dock) | Prioridade: P2 | Dependencias: TASK-0106 | Estimativa: 6h

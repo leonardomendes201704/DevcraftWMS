@@ -12,6 +12,8 @@ using DevcraftWMS.Application.Features.OutboundShipping;
 using DevcraftWMS.Application.Features.OutboundShipping.Commands.RegisterOutboundShipment;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.ListOutboundOrders;
+using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrderShippingReport;
+using DevcraftWMS.Application.Features.OutboundOrders.Queries.ExportOutboundOrderShippingReport;
 using DevcraftWMS.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -91,6 +93,25 @@ public sealed class OutboundOrdersController : ControllerBase
     {
         var result = await _mediator.Send(new GetOutboundOrderQuery(id), cancellationToken);
         return this.ToActionResult(result);
+    }
+
+    [HttpGet("{id:guid}/report")]
+    public async Task<IActionResult> GetShippingReport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetOutboundOrderShippingReportQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{id:guid}/report/export")]
+    public async Task<IActionResult> ExportShippingReport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ExportOutboundOrderShippingReportQuery(id), cancellationToken);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
     }
 
     [HttpPost("{id:guid}/release")]

@@ -41,5 +41,10 @@ public sealed class OutboundOrdersApiClient : ApiClientBase
 
     public Task<ApiResult<OutboundOrderDetailDto>> CreateAsync(object payload, CancellationToken cancellationToken)
         => PostAsync<OutboundOrderDetailDto>("/api/outbound-orders", payload, cancellationToken);
-}
 
+    public Task<ApiResult<OutboundOrderShippingReportDto>> GetReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetAsync<OutboundOrderShippingReportDto>($"/api/outbound-orders/{id}/report", cancellationToken);
+
+    public Task<ApiFileResult> ExportReportAsync(Guid id, CancellationToken cancellationToken)
+        => GetFileAsync($"/api/outbound-orders/{id}/report/export", cancellationToken);
+}

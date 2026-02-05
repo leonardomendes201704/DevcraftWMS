@@ -48,6 +48,56 @@ public sealed class OutboundOrdersController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Reports([FromQuery] OutboundOrderListQuery query, CancellationToken cancellationToken)
+    {
+        var warehouses = await LoadWarehousesAsync(cancellationToken);
+        var result = await _ordersClient.ListAsync(query, cancellationToken);
+
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Unable to load outbound reports.";
+        }
+
+        var model = new OutboundOrderReportsViewModel
+        {
+            Query = query,
+            Items = result.Data?.Items ?? Array.Empty<OutboundOrderListItemDto>(),
+            TotalCount = result.Data?.TotalCount ?? 0,
+            Warehouses = warehouses
+        };
+
+        ViewData["Title"] = "Shipping Reports";
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Report(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.GetReportAsync(id, cancellationToken);
+        if (!result.IsSuccess || result.Data is null)
+        {
+            TempData["Error"] = result.Error ?? "Outbound report not available.";
+            return RedirectToAction(nameof(Reports));
+        }
+
+        ViewData["Title"] = $"Report {result.Data.OrderNumber}";
+        return View(new OutboundOrderReportViewModel { Report = result.Data });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportExport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.ExportReportAsync(id, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to export outbound report.";
+            return RedirectToAction(nameof(Report), new { id });
+        }
+
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         var warehouses = await LoadWarehousesAsync(cancellationToken);
@@ -197,4 +247,3 @@ public sealed class OutboundOrdersController : Controller
         return result.Data.Items;
     }
 }
-

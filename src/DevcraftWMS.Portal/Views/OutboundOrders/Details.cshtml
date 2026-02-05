@@ -30,9 +30,14 @@
         <h1 class="h3 mb-1">Outbound Order @Model.Order.OrderNumber</h1>
         <div class="text-muted">Order details and requested items.</div>
     </div>
-    <a class="btn btn-outline-secondary" asp-action="Index">
-        <i class="bi bi-arrow-left"></i> Back
-    </a>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-action="Report" asp-route-id="@Model.Order.Id">
+            <i class="bi bi-file-earmark-text"></i> Shipping Report
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 </div>
 
 <div class="card border-0 shadow-sm mb-3">

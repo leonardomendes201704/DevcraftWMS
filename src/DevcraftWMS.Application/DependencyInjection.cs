@@ -69,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();
         services.AddScoped<IOutboundOrderService, OutboundOrderService>();
+        services.AddScoped<IOutboundOrderReportService, OutboundOrderReportService>();
         services.AddScoped<IOutboundCheckService, OutboundCheckService>();
         services.AddScoped<IOutboundPackingService, OutboundPackingService>();
         services.AddScoped<IOutboundShippingService, OutboundShippingService>();

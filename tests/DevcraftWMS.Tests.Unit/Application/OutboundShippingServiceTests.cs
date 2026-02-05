@@ -128,6 +128,9 @@ public sealed class OutboundShippingServiceTests
     {
         public Task AddAsync(OutboundShipment shipment, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task<IReadOnlyList<OutboundShipment>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<OutboundShipment>>(Array.Empty<OutboundShipment>());
     }
 
     private sealed class FakeCustomerContext : ICustomerContext

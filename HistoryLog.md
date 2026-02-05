@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0115 - Outbound shipping documents completed.
+  - Key changes: added outbound shipping report API/export, portal report screens, and tests.
+
+## 2026-02-05
 - TASK-0114 - Outbound shipping DemoMvc UI completed.
   - Key changes: added shipping queue/details screens, package selection via API, and test updates.
 
