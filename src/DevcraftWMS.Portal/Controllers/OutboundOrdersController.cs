@@ -203,12 +203,35 @@ public sealed class OutboundOrdersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var notificationsResult = await _ordersClient.ListNotificationsAsync(id, cancellationToken);
+        if (!notificationsResult.IsSuccess)
+        {
+            TempData["Error"] = notificationsResult.Error ?? "Unable to load notifications.";
+        }
+
         ViewData["Title"] = $"Order {result.Data.OrderNumber}";
         return View(new OutboundOrderDetailViewModel
         {
             Order = result.Data,
-            Items = result.Data.Items
+            Items = result.Data.Items,
+            Notifications = notificationsResult.Data ?? Array.Empty<OutboundOrderNotificationDto>()
         });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ResendNotification(Guid id, Guid notificationId, CancellationToken cancellationToken)
+    {
+        var result = await _ordersClient.ResendNotificationAsync(id, notificationId, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to resend notification.";
+        }
+        else
+        {
+            TempData["Success"] = "Notification resend queued.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     private async Task<IReadOnlyList<WarehouseOptionDto>> LoadWarehousesAsync(CancellationToken cancellationToken)

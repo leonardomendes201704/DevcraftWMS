@@ -388,6 +388,11 @@ Notifications:InboundOrders:WebhookEnabled -> Enable inbound order webhook notif
 Notifications:InboundOrders:PortalEnabled -> Enable inbound order portal notifications
 Notifications:InboundOrders:WebhookUrl -> Webhook endpoint for inbound order notifications
 Notifications:InboundOrders:WebhookTimeoutSeconds -> Webhook timeout in seconds
+Notifications:OutboundOrders:EmailEnabled -> Enable outbound order email notifications
+Notifications:OutboundOrders:WebhookEnabled -> Enable outbound order webhook notifications
+Notifications:OutboundOrders:PortalEnabled -> Enable outbound order portal notifications
+Notifications:OutboundOrders:WebhookUrl -> Webhook endpoint for outbound order notifications
+Notifications:OutboundOrders:WebhookTimeoutSeconds -> Webhook timeout in seconds
 ReceiptDivergences:EvidenceRequiredTypes -> Divergence types that require evidence photo
 ReceiptDivergences:MaxEvidenceBytes     -> Max evidence file size (bytes)
 ReceiptMeasurements:BlockOnDeviation   -> Block item creation when measurement deviation exceeds limits

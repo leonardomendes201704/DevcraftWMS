@@ -1,6 +1,7 @@
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
+using DevcraftWMS.Application.Features.OutboundOrderNotifications;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 
@@ -13,19 +14,22 @@ public sealed class OutboundShippingService : IOutboundShippingService
     private readonly IOutboundShipmentRepository _shipmentRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IOutboundOrderNotificationService _notificationService;
 
     public OutboundShippingService(
         IOutboundOrderRepository orderRepository,
         IOutboundPackageRepository packageRepository,
         IOutboundShipmentRepository shipmentRepository,
         ICustomerContext customerContext,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IOutboundOrderNotificationService notificationService)
     {
         _orderRepository = orderRepository;
         _packageRepository = packageRepository;
         _shipmentRepository = shipmentRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
+        _notificationService = notificationService;
     }
 
     public async Task<RequestResult<OutboundShipmentDto>> RegisterAsync(
@@ -123,6 +127,7 @@ public sealed class OutboundShippingService : IOutboundShippingService
             : OutboundOrderStatus.PartiallyShipped;
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
+        await _notificationService.NotifyShipmentAsync(order, order.Status, cancellationToken);
 
         shipment.OutboundOrder = order;
         shipment.Warehouse = order.Warehouse;

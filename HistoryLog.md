@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0116 - Outbound notifications completed.
+  - Key changes: added outbound notification model, API endpoints, portal notifications, and tests.
+
+## 2026-02-05
 - TASK-0115 - Outbound shipping documents completed.
   - Key changes: added outbound shipping report API/export, portal report screens, and tests.
 

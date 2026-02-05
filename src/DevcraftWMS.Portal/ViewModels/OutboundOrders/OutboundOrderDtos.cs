@@ -37,3 +37,16 @@ public sealed record OutboundOrderItemDto(
     decimal Quantity,
     string? LotCode,
     DateOnly? ExpirationDate);
+
+public sealed record OutboundOrderNotificationDto(
+    Guid Id,
+    Guid OutboundOrderId,
+    string EventType,
+    int Channel,
+    int Status,
+    string? ToAddress,
+    string? Subject,
+    DateTime? SentAtUtc,
+    int Attempts,
+    string? LastError,
+    DateTime CreatedAtUtc);

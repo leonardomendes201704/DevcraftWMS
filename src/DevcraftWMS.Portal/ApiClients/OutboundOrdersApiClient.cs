@@ -47,4 +47,10 @@ public sealed class OutboundOrdersApiClient : ApiClientBase
 
     public Task<ApiFileResult> ExportReportAsync(Guid id, CancellationToken cancellationToken)
         => GetFileAsync($"/api/outbound-orders/{id}/report/export", cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<OutboundOrderNotificationDto>>> ListNotificationsAsync(Guid id, CancellationToken cancellationToken)
+        => GetAsync<IReadOnlyList<OutboundOrderNotificationDto>>($"/api/outbound-orders/{id}/notifications", cancellationToken);
+
+    public Task<ApiResult<OutboundOrderNotificationDto>> ResendNotificationAsync(Guid outboundOrderId, Guid notificationId, CancellationToken cancellationToken)
+        => PostAsync<OutboundOrderNotificationDto>($"/api/outbound-orders/{outboundOrderId}/notifications/{notificationId}/resend", new { }, cancellationToken);
 }

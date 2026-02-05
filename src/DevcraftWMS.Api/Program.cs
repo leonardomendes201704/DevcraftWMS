@@ -88,6 +88,14 @@ builder.Services.AddOptions<DevcraftWMS.Application.Features.InboundOrderNotific
         "Notifications:InboundOrders:WebhookUrl must be an absolute URI when WebhookEnabled is true.")
     .Validate(options => options.WebhookTimeoutSeconds > 0, "Notifications:InboundOrders:WebhookTimeoutSeconds must be greater than zero.")
     .ValidateOnStart();
+builder.Services.AddOptions<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationOptions>()
+    .Bind(builder.Configuration.GetSection("Notifications:OutboundOrders"))
+    .Validate(options => !options.WebhookEnabled || !string.IsNullOrWhiteSpace(options.WebhookUrl),
+        "Notifications:OutboundOrders:WebhookUrl is required when WebhookEnabled is true.")
+    .Validate(options => !options.WebhookEnabled || Uri.IsWellFormedUriString(options.WebhookUrl, UriKind.Absolute),
+        "Notifications:OutboundOrders:WebhookUrl must be an absolute URI when WebhookEnabled is true.")
+    .Validate(options => options.WebhookTimeoutSeconds > 0, "Notifications:OutboundOrders:WebhookTimeoutSeconds must be greater than zero.")
+    .ValidateOnStart();
 builder.Services.AddOptions<FileStorageOptions>()
     .Bind(builder.Configuration.GetSection(FileStorageOptions.SectionName))
     .Validate(options => !string.IsNullOrWhiteSpace(options.Provider), "FileStorage:Provider is required.")

@@ -23,6 +23,7 @@ using DevcraftWMS.Infrastructure.Seeding;
 using DevcraftWMS.Infrastructure.Notifications;
 using Microsoft.Extensions.Options;
 using DevcraftWMS.Application.Features.InboundOrderNotifications;
+using DevcraftWMS.Application.Features.OutboundOrderNotifications;
 using DevcraftWMS.Application.Abstractions.Storage;
 using DevcraftWMS.Infrastructure.Storage;
 
@@ -67,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IOutboundCheckRepository, OutboundCheckRepository>();
         services.AddScoped<IOutboundPackageRepository, OutboundPackageRepository>();
         services.AddScoped<IOutboundShipmentRepository, OutboundShipmentRepository>();
+        services.AddScoped<IOutboundOrderNotificationRepository, OutboundOrderNotificationRepository>();
         services.AddScoped<IDashboardKpiRepository, DashboardKpiRepository>();
         services.AddScoped<IAsnRepository, AsnRepository>();
         services.AddScoped<IAsnAttachmentRepository, AsnAttachmentRepository>();
@@ -88,8 +90,10 @@ public static class DependencyInjection
         services.AddHttpClient<IWebhookSender, WebhookSender>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var options = sp.GetRequiredService<IOptions<InboundOrderNotificationOptions>>().Value;
-                client.Timeout = TimeSpan.FromSeconds(options.WebhookTimeoutSeconds);
+                var inboundOptions = sp.GetRequiredService<IOptions<InboundOrderNotificationOptions>>().Value;
+                var outboundOptions = sp.GetRequiredService<IOptions<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationOptions>>().Value;
+                var timeoutSeconds = Math.Max(inboundOptions.WebhookTimeoutSeconds, outboundOptions.WebhookTimeoutSeconds);
+                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
             });
         services.AddOptions<ExternalAuthOptions>()
             .Bind(configuration.GetSection("ExternalAuth"))

@@ -33,7 +33,8 @@ public sealed class OutboundShippingServiceTests
             new FakeOutboundPackageRepository(packages),
             new FakeOutboundShipmentRepository(),
             new FakeCustomerContext(customerId),
-            new FakeDateTimeProvider(DateTime.UtcNow));
+            new FakeDateTimeProvider(DateTime.UtcNow),
+            new FakeOutboundOrderNotificationService());
 
         var result = await service.RegisterAsync(order.Id, new RegisterOutboundShipmentInput(
             "D1",
@@ -71,7 +72,8 @@ public sealed class OutboundShippingServiceTests
             new FakeOutboundPackageRepository(packages),
             new FakeOutboundShipmentRepository(),
             new FakeCustomerContext(customerId),
-            new FakeDateTimeProvider(DateTime.UtcNow));
+            new FakeDateTimeProvider(DateTime.UtcNow),
+            new FakeOutboundOrderNotificationService());
 
         var result = await service.RegisterAsync(order.Id, new RegisterOutboundShipmentInput(
             "D1",
@@ -151,5 +153,17 @@ public sealed class OutboundShippingServiceTests
         }
 
         public DateTime UtcNow { get; }
+    }
+
+    private sealed class FakeOutboundOrderNotificationService : DevcraftWMS.Application.Features.OutboundOrderNotifications.IOutboundOrderNotificationService
+    {
+        public Task NotifyShipmentAsync(OutboundOrder order, OutboundOrderStatus targetStatus, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        public Task<DevcraftWMS.Application.Common.Models.RequestResult<IReadOnlyList<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationDto>>> ListAsync(Guid outboundOrderId, CancellationToken cancellationToken)
+            => Task.FromResult(DevcraftWMS.Application.Common.Models.RequestResult<IReadOnlyList<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationDto>>.Success(Array.Empty<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationDto>()));
+
+        public Task<DevcraftWMS.Application.Common.Models.RequestResult<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationDto>> ResendAsync(Guid outboundOrderId, Guid notificationId, CancellationToken cancellationToken)
+            => Task.FromResult(DevcraftWMS.Application.Common.Models.RequestResult<DevcraftWMS.Application.Features.OutboundOrderNotifications.OutboundOrderNotificationDto>.Failure("outbound_orders.notifications.not_found", "Notification not found."));
     }
 }

@@ -124,3 +124,80 @@
         </div>
     </div>
 </div>
+
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 mb-0">Notifications</h2>
+            <a class="btn btn-sm btn-outline-secondary" href="#outboundOrderNotificationsHelp" data-bs-toggle="modal">
+                <i class="bi bi-question-circle"></i> Help
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Channel</th>
+                        <th>Status</th>
+                        <th>Recipient</th>
+                        <th>Subject</th>
+                        <th>Attempts</th>
+                        <th>Sent</th>
+                        <th>Error</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Notifications.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No notifications recorded.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var notification in Model.Notifications)
+                        {
+                            <tr>
+                                <td>@notification.Channel</td>
+                                <td>@notification.Status</td>
+                                <td>@notification.ToAddress</td>
+                                <td>@notification.Subject</td>
+                                <td>@notification.Attempts</td>
+                                <td>@notification.SentAtUtc?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@notification.LastError</td>
+                                <td class="text-end">
+                                    <form asp-action="ResendNotification" asp-route-id="@Model.Order.Id" asp-route-notificationId="@notification.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-arrow-repeat"></i> Resend
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="outboundOrderNotificationsHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notifications Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Notifications are sent when the outbound order is shipped or partially shipped.</p>
+                <ul>
+                    <li><strong>Channel</strong>: Email, Webhook, or Portal entry.</li>
+                    <li><strong>Status</strong>: Pending (queued), Sent, or Failed.</li>
+                    <li><strong>Resend</strong>: triggers another delivery attempt.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
