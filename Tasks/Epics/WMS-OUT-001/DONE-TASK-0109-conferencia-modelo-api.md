@@ -24,4 +24,16 @@ Registrar conferencia, divergencias e evidencias.
 - Conferencia registrada com divergencias.
 
 ## Status
-PENDENTE
+DONE
+
+## Progresso
+- Modelo outbound check (check, itens, evidencias) criado com configuracoes EF e migration.
+- API /api/outbound-orders/{id}/check adicionada com validacoes de quantidade/SKU.
+- Testes unitarios e de integracao adicionados.
+
+## How to test
+```bash
+dotnet build DevcraftWMS/DevcraftWMS.sln
+dotnet test DevcraftWMS/tests/DevcraftWMS.Tests.Unit/DevcraftWMS.Tests.Unit.csproj
+dotnet test DevcraftWMS/tests/DevcraftWMS.Tests.Integration/DevcraftWMS.Tests.Integration.csproj
+```

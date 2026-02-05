@@ -23,4 +23,5 @@ public sealed class OutboundOrder : AuditableEntity
     public Warehouse? Warehouse { get; set; }
     public ICollection<OutboundOrderItem> Items { get; set; } = new List<OutboundOrderItem>();
     public ICollection<PickingTask> PickingTasks { get; set; } = new List<PickingTask>();
+    public ICollection<OutboundCheck> OutboundChecks { get; set; } = new List<OutboundCheck>();
 }

@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0109 - Outbound check API completed.
+  - Key changes: added outbound check entities/configs/migration, register endpoint, and unit/integration tests.
+
+## 2026-02-05
 - TASK-0108 - Picking queue DemoMvc completed.
   - Key changes: added picking tasks API (list/get/confirm), DemoMvc UI (index/details), and unit/integration tests.
 

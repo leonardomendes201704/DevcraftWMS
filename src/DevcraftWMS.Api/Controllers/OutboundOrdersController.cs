@@ -3,6 +3,8 @@ using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.OutboundOrders;
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.CreateOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.ReleaseOutboundOrder;
+using DevcraftWMS.Application.Features.OutboundChecks;
+using DevcraftWMS.Application.Features.OutboundChecks.Commands.RegisterOutboundCheck;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.ListOutboundOrders;
 using DevcraftWMS.Domain.Enums;
@@ -96,6 +98,25 @@ public sealed class OutboundOrdersController : ControllerBase
                 request.PickingMethod,
                 request.ShippingWindowStartUtc,
                 request.ShippingWindowEndUtc),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/check")]
+    public async Task<IActionResult> Check(Guid id, [FromBody] RegisterOutboundCheckRequest request, CancellationToken cancellationToken)
+    {
+        var items = request.Items.Select(i => new OutboundCheckItemInput(
+            i.OutboundOrderItemId,
+            i.QuantityChecked,
+            i.DivergenceReason,
+            i.Evidence?.Select(e => new OutboundCheckEvidenceInput(e.FileName, e.ContentType, e.SizeBytes, e.Content)).ToList()));
+
+        var result = await _mediator.Send(
+            new RegisterOutboundCheckCommand(
+                id,
+                items.ToList(),
+                request.Notes),
             cancellationToken);
 
         return this.ToActionResult(result);

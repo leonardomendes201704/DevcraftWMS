@@ -25,6 +25,7 @@ using DevcraftWMS.Application.Features.Zones;
 using DevcraftWMS.Application.Features.Asns;
 using DevcraftWMS.Application.Features.InboundOrders;
 using DevcraftWMS.Application.Features.OutboundOrders;
+using DevcraftWMS.Application.Features.OutboundChecks;
 using DevcraftWMS.Application.Features.InboundOrderNotifications;
 using DevcraftWMS.Application.Features.GateCheckins;
 using DevcraftWMS.Application.Features.UnitLoads;
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IAsnService, AsnService>();
         services.AddScoped<IInboundOrderService, InboundOrderService>();
         services.AddScoped<IOutboundOrderService, OutboundOrderService>();
+        services.AddScoped<IOutboundCheckService, OutboundCheckService>();
         services.AddScoped<IInboundOrderReportService, InboundOrderReportService>();
         services.AddScoped<IInboundOrderNotificationService, InboundOrderNotificationService>();
         services.AddScoped<IGateCheckinService, GateCheckinService>();
