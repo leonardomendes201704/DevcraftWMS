@@ -1,0 +1,121 @@
+@model DevcraftWMS.Portal.ViewModels.OutboundOrders.OutboundOrderDetailViewModel
+@{
+    ViewData["Title"] = $"Order {Model.Order.OrderNumber}";
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => $"Status {status}"
+    };
+    string PriorityLabel(int priority) => priority switch
+    {
+        0 => "Low",
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => $"Priority {priority}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Outbound Order @Model.Order.OrderNumber</h1>
+        <div class="text-muted">Order details and requested items.</div>
+    </div>
+    <a class="btn btn-outline-secondary" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12 col-lg-3">
+                <div class="text-muted small">Warehouse</div>
+                <div class="fw-semibold">@Model.Order.WarehouseName</div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="text-muted small">Status</div>
+                <div><span class="badge bg-primary-subtle text-primary">@StatusLabel(Model.Order.Status)</span></div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="text-muted small">Priority</div>
+                <div><span class="badge bg-info-subtle text-info">@PriorityLabel(Model.Order.Priority)</span></div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="text-muted small">Expected Ship</div>
+                <div class="fw-semibold">@Model.Order.ExpectedShipDate?.ToString("yyyy-MM-dd") ?? "-"</div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="text-muted small">Customer Reference</div>
+                <div class="fw-semibold">@Model.Order.CustomerReference ?? "-"</div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="text-muted small">Carrier</div>
+                <div class="fw-semibold">@Model.Order.CarrierName ?? "-"</div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="text-muted small">Created</div>
+                <div class="fw-semibold">@Model.Order.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</div>
+            </div>
+            <div class="col-12">
+                <div class="text-muted small">Notes</div>
+                <div class="fw-semibold">@Model.Order.Notes ?? "-"</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h2 class="h5 mb-1">Items</h2>
+                <div class="text-muted">Products included in the order.</div>
+            </div>
+            <div class="text-muted">Total: @Model.Items.Count</div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>UoM</th>
+                        <th>Quantity</th>
+                        <th>Lot</th>
+                        <th>Expiration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No items registered.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.ProductCode - @item.ProductName</td>
+                                <td>@item.UomCode</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.LotCode ?? "-"</td>
+                                <td>@item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

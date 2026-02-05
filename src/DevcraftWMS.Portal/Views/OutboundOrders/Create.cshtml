@@ -1,0 +1,253 @@
+@model DevcraftWMS.Portal.ViewModels.OutboundOrders.OutboundOrderCreateViewModel
+@{
+    ViewData["Title"] = "Create Outbound Order";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Create Outbound Order</h1>
+        <div class="text-muted">Register a customer shipping request with items.</div>
+    </div>
+    <a class="btn btn-outline-secondary" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<form method="post" class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Warehouse</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                    <select class="form-select" asp-for="WarehouseId">
+                        <option value="">Select...</option>
+                        @foreach (var warehouse in Model.Warehouses)
+                        {
+                            <option value="@warehouse.Id">@warehouse.Code - @warehouse.Name</option>
+                        }
+                    </select>
+                </div>
+                <span asp-validation-for="WarehouseId" class="text-danger small"></span>
+            </div>
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Order Number</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input class="form-control" asp-for="OrderNumber" />
+                </div>
+                <span asp-validation-for="OrderNumber" class="text-danger small"></span>
+            </div>
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Customer Reference</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                    <input class="form-control" asp-for="CustomerReference" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Carrier</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-truck"></i></span>
+                    <input class="form-control" asp-for="CarrierName" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Expected Ship Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <input class="form-control" asp-for="ExpectedShipDate" type="date" />
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Notes</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                    <textarea class="form-control" asp-for="Notes" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h2 class="h5 mb-1">Items</h2>
+                <div class="text-muted">Add the products to be shipped.</div>
+            </div>
+            <button class="btn btn-outline-primary btn-sm" type="button" id="addItem">
+                <i class="bi bi-plus-circle"></i> Add item
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>UoM</th>
+                        <th>Qty</th>
+                        <th>Lot</th>
+                        <th>Expiration</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var index = 0; index < Model.Items.Count; index++)
+                    {
+                        <tr>
+                            <td>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+                                    <select class="form-select" name="Items[@index].ProductId">
+                                        <option value="">Select...</option>
+                                        @foreach (var product in Model.Products)
+                                        {
+                                            <option value="@product.Id" selected="@(Model.Items[index].ProductId == product.Id)">
+                                                @product.Code - @product.Name
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                                    <select class="form-select" name="Items[@index].UomId">
+                                        <option value="">Select...</option>
+                                        @foreach (var uom in Model.Uoms)
+                                        {
+                                            <option value="@uom.Id" selected="@(Model.Items[index].UomId == uom.Id)">
+                                                @uom.Code - @uom.Name
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-123"></i></span>
+                                    <input class="form-control" name="Items[@index].Quantity" value="@(Model.Items[index].Quantity)" inputmode="decimal" />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                    <input class="form-control" name="Items[@index].LotCode" value="@Model.Items[index].LotCode" />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                    <input class="form-control" type="date" name="Items[@index].ExpirationDate" value="@(Model.Items[index].ExpirationDate?.ToString("yyyy-MM-dd"))" />
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-danger btn-sm remove-item" type="button">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-save"></i> Create order
+            </button>
+        </div>
+    </div>
+</form>
+
+<template id="itemRowTemplate">
+    <tr>
+        <td>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+                <select class="form-select" data-name="ProductId">
+                    <option value="">Select...</option>
+                    @foreach (var product in Model.Products)
+                    {
+                        <option value="@product.Id">@product.Code - @product.Name</option>
+                    }
+                </select>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                <select class="form-select" data-name="UomId">
+                    <option value="">Select...</option>
+                    @foreach (var uom in Model.Uoms)
+                    {
+                        <option value="@uom.Id">@uom.Code - @uom.Name</option>
+                    }
+                </select>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-123"></i></span>
+                <input class="form-control" data-name="Quantity" inputmode="decimal" />
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                <input class="form-control" data-name="LotCode" />
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                <input class="form-control" type="date" data-name="ExpirationDate" />
+            </div>
+        </td>
+        <td class="text-end">
+            <button class="btn btn-outline-danger btn-sm remove-item" type="button">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const tableBody = document.querySelector("#itemsTable tbody");
+            const addButton = document.getElementById("addItem");
+            const template = document.getElementById("itemRowTemplate");
+
+            function refreshIndexes() {
+                const rows = tableBody.querySelectorAll("tr");
+                rows.forEach((row, index) => {
+                    row.querySelectorAll("[data-name]").forEach(input => {
+                        const field = input.getAttribute("data-name");
+                        input.setAttribute("name", `Items[${index}].${field}`);
+                    });
+                });
+            }
+
+            function addRow() {
+                const fragment = template.content.cloneNode(true);
+                tableBody.appendChild(fragment);
+                refreshIndexes();
+            }
+
+            tableBody.addEventListener("click", (event) => {
+                if (event.target.closest(".remove-item")) {
+                    const row = event.target.closest("tr");
+                    row.remove();
+                    refreshIndexes();
+                }
+            });
+
+            addButton.addEventListener("click", () => addRow());
+        })();
+    </script>
+}
+

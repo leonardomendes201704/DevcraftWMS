@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0103 - Portal outbound orders UI completed.
+  - Key changes: added portal list/create/details for outbound orders, new API client, viewmodels, and menu entry.
+
+## 2026-02-05
 - TASK-0102 - Outbound order CQRS completed.
   - Key changes: added OutboundOrders CQRS (create/list/get), API controller, repository/service, and unit/integration tests.
 

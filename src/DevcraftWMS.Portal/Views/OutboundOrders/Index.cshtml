@@ -1,0 +1,238 @@
+@model DevcraftWMS.Portal.ViewModels.OutboundOrders.OutboundOrderListViewModel
+@{
+    ViewData["Title"] = "Outbound Orders";
+    var totalPages = Model.Query.PageSize > 0 ? (int)Math.Ceiling(Model.TotalCount / (double)Model.Query.PageSize) : 1;
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending adjustment",
+        2 => "Released",
+        3 => "Picking",
+        4 => "Checked",
+        5 => "Packed",
+        6 => "Shipping",
+        7 => "Shipped",
+        8 => "Partially shipped",
+        9 => "Canceled",
+        _ => $"Status {status}"
+    };
+    string PriorityLabel(int priority) => priority switch
+    {
+        0 => "Low",
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => $"Priority {priority}"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Outbound Orders</h1>
+        <div class="text-muted">Customer outbound requests and shipping preparation.</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="#outboundHelp" data-bs-toggle="modal">
+            <i class="bi bi-question-circle"></i> Help
+        </a>
+        <a class="btn btn-primary" asp-action="Create">
+            <i class="bi bi-plus-lg"></i> New Order
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Warehouse</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                    <select class="form-select" name="WarehouseId">
+                        <option value="">Select...</option>
+                        @foreach (var warehouse in Model.Warehouses)
+                        {
+                            <option value="@warehouse.Id" selected="@(Model.Query.WarehouseId == warehouse.Id)">
+                                @warehouse.Code - @warehouse.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Order Number</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input class="form-control" name="OrderNumber" value="@Model.Query.OrderNumber" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Status</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-flag"></i></span>
+                    <select class="form-select" name="Status">
+                        <option value="">Select...</option>
+                        <option value="0" selected="@(Model.Query.Status == 0)">Registered</option>
+                        <option value="1" selected="@(Model.Query.Status == 1)">Pending adjustment</option>
+                        <option value="2" selected="@(Model.Query.Status == 2)">Released</option>
+                        <option value="3" selected="@(Model.Query.Status == 3)">Picking</option>
+                        <option value="4" selected="@(Model.Query.Status == 4)">Checked</option>
+                        <option value="5" selected="@(Model.Query.Status == 5)">Packed</option>
+                        <option value="6" selected="@(Model.Query.Status == 6)">Shipping</option>
+                        <option value="7" selected="@(Model.Query.Status == 7)">Shipped</option>
+                        <option value="8" selected="@(Model.Query.Status == 8)">Partially shipped</option>
+                        <option value="9" selected="@(Model.Query.Status == 9)">Canceled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Priority</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-exclamation-diamond"></i></span>
+                    <select class="form-select" name="Priority">
+                        <option value="">Select...</option>
+                        <option value="0" selected="@(Model.Query.Priority == 0)">Low</option>
+                        <option value="1" selected="@(Model.Query.Priority == 1)">Normal</option>
+                        <option value="2" selected="@(Model.Query.Priority == 2)">High</option>
+                        <option value="3" selected="@(Model.Query.Priority == 3)">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Created From</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <input class="form-control" type="date" name="CreatedFromUtc" value="@(Model.Query.CreatedFromUtc?.ToString("yyyy-MM-dd"))" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Created To</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                    <input class="form-control" type="date" name="CreatedToUtc" value="@(Model.Query.CreatedToUtc?.ToString("yyyy-MM-dd"))" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <label class="form-label">Active</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-check-circle"></i></span>
+                    <select class="form-select" name="IsActive">
+                        <option value="">Select...</option>
+                        <option value="true" selected="@(Model.Query.IsActive == true)">Yes</option>
+                        <option value="false" selected="@(Model.Query.IsActive == false)">No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <label class="form-label">Order By</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-sort-alpha-down"></i></span>
+                    <select class="form-select" name="OrderBy">
+                        <option value="CreatedAtUtc" selected="@(Model.Query.OrderBy == "CreatedAtUtc")">Created</option>
+                        <option value="OrderNumber" selected="@(Model.Query.OrderBy == "OrderNumber")">Order Number</option>
+                        <option value="Status" selected="@(Model.Query.OrderBy == "Status")">Status</option>
+                        <option value="Priority" selected="@(Model.Query.OrderBy == "Priority")">Priority</option>
+                        <option value="ExpectedShipDate" selected="@(Model.Query.OrderBy == "ExpectedShipDate")">Expected Ship Date</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <label class="form-label">Order Dir</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
+                    <select class="form-select" name="OrderDir">
+                        <option value="desc" selected="@(Model.Query.OrderDir == "desc")">Desc</option>
+                        <option value="asc" selected="@(Model.Query.OrderDir == "asc")">Asc</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary" asp-action="Index">Clear</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i> Apply filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="text-muted">Total: @Model.TotalCount</div>
+            <div class="text-muted">Page @Model.Query.PageNumber of @Math.Max(totalPages, 1)</div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Warehouse</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Expected Ship</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No outbound orders found.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var order in Model.Items)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@order.OrderNumber</td>
+                                <td>@order.WarehouseName</td>
+                                <td><span class="badge bg-primary-subtle text-primary">@StatusLabel(order.Status)</span></td>
+                                <td><span class="badge bg-info-subtle text-info">@PriorityLabel(order.Priority)</span></td>
+                                <td>@(order.ExpectedShipDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@order.Id">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="outboundHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Outbound Orders Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Overview</h6>
+                <p>Outbound orders represent customer requests for shipping. Use this list to monitor status and track expected ship dates.</p>
+
+                <h6>Filters</h6>
+                <ul>
+                    <li>Warehouse and Order Number filter the list.</li>
+                    <li>Status and Priority help you focus on urgent or active orders.</li>
+                    <li>Created From/To narrows the registration window.</li>
+                </ul>
+
+                <h6>Create flow</h6>
+                <ol>
+                    <li>Click <strong>New Order</strong>.</li>
+                    <li>Fill in warehouse, order number, and shipment details.</li>
+                    <li>Add at least one item (product, UoM, and quantity).</li>
+                </ol>
+
+                <h6>Details</h6>
+                <p>Use <strong>View</strong> to review items, shipment information, and current status.</p>
+            </div>
+        </div>
+    </div>
+</div>

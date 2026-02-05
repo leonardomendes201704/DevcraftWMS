@@ -23,5 +23,12 @@ Permitir que o cliente registre pedidos de saida.
 ## Criterios de Aceite
 - Cliente cria OS com itens e envia para backoffice.
 
+## Como testar
+1) Subir o portal: `dotnet run --project src/DevcraftWMS.Portal`
+2) Autenticar no portal e selecionar um cliente.
+3) Acessar **Outbound Orders** no menu.
+4) Criar uma OS em **New Order**, preencher warehouse, order number e ao menos 1 item.
+5) Validar criação e abrir **View** para ver detalhes e itens.
+
 ## Status
-PENDENTE
+DONE

@@ -35,6 +35,10 @@
         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
             <i class="bi bi-receipt"></i> Receipts
         </a>
+        <div class="nav-section">Outbound</div>
+        <a class="nav-link @Active("OutboundOrders")" asp-controller="OutboundOrders" asp-action="Index">
+            <i class="bi bi-box-arrow-up-right"></i> Outbound Orders
+        </a>
         <div class="nav-section">Reports</div>
         <a class="nav-link @Active("InboundOrders", "Reports")" asp-controller="InboundOrders" asp-action="Reports">
             <i class="bi bi-bar-chart-line"></i> Receiving Reports
