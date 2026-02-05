@@ -62,6 +62,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<OutboundCheckEvidence> OutboundCheckEvidence => Set<OutboundCheckEvidence>();
     public DbSet<OutboundPackage> OutboundPackages => Set<OutboundPackage>();
     public DbSet<OutboundPackageItem> OutboundPackageItems => Set<OutboundPackageItem>();
+    public DbSet<OutboundShipment> OutboundShipments => Set<OutboundShipment>();
+    public DbSet<OutboundShipmentItem> OutboundShipmentItems => Set<OutboundShipmentItem>();
     public DbSet<GateCheckin> GateCheckins => Set<GateCheckin>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();

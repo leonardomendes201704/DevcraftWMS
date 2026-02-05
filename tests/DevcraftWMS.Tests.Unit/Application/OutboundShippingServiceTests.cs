@@ -1,98 +1,89 @@
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
-using DevcraftWMS.Application.Features.OutboundPacking;
+using DevcraftWMS.Application.Features.OutboundShipping;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 using FluentAssertions;
 
 namespace DevcraftWMS.Tests.Unit.Application;
 
-public sealed class OutboundPackingServiceTests
+public sealed class OutboundShippingServiceTests
 {
     [Fact]
-    public async Task Register_Should_Fail_When_Quantity_Exceeds()
+    public async Task Register_Should_Set_Partial_When_Not_All_Packages()
     {
         var customerId = Guid.NewGuid();
-        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-PACK", Name = "Pack Product" };
-        var uom = new Uom { Id = Guid.NewGuid(), Code = "EA" };
-        var orderItem = new OutboundOrderItem
-        {
-            Id = Guid.NewGuid(),
-            ProductId = product.Id,
-            UomId = uom.Id,
-            Quantity = 2,
-            Product = product,
-            Uom = uom
-        };
         var order = new OutboundOrder
         {
             Id = Guid.NewGuid(),
             CustomerId = customerId,
             WarehouseId = Guid.NewGuid(),
-            Status = OutboundOrderStatus.Checked,
-            Items = new List<OutboundOrderItem> { orderItem }
+            Status = OutboundOrderStatus.Packed,
+            Items = new List<OutboundOrderItem>()
         };
 
-        var service = new OutboundPackingService(
+        var packages = new List<OutboundPackage>
+        {
+            new() { Id = Guid.NewGuid(), OutboundOrderId = order.Id, PackageNumber = "PKG-1" },
+            new() { Id = Guid.NewGuid(), OutboundOrderId = order.Id, PackageNumber = "PKG-2" }
+        };
+
+        var service = new OutboundShippingService(
             new FakeOutboundOrderRepository(order),
-            new FakeOutboundPackageRepository(),
+            new FakeOutboundPackageRepository(packages),
+            new FakeOutboundShipmentRepository(),
             new FakeCustomerContext(customerId),
             new FakeDateTimeProvider(DateTime.UtcNow));
 
-        var result = await service.RegisterAsync(order.Id, new List<OutboundPackageInput>
-        {
-            new("PKG-1", 1, 10, 10, 10, null, new List<OutboundPackageItemInput>
-            {
-                new(orderItem.Id, 3)
-            })
-        }, CancellationToken.None);
+        var result = await service.RegisterAsync(order.Id, new RegisterOutboundShipmentInput(
+            "D1",
+            null,
+            null,
+            null,
+            null,
+            new List<OutboundShipmentPackageInput> { new(packages[0].Id) }),
+            CancellationToken.None);
 
-        result.IsSuccess.Should().BeFalse();
-        result.ErrorCode.Should().Be("outbound_packing.item.quantity_exceeded");
+        result.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OutboundOrderStatus.PartiallyShipped);
     }
 
     [Fact]
-    public async Task Register_Should_Create_Packages()
+    public async Task Register_Should_Set_Shipped_When_All_Packages()
     {
         var customerId = Guid.NewGuid();
-        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-PACK", Name = "Pack Product" };
-        var uom = new Uom { Id = Guid.NewGuid(), Code = "EA" };
-        var orderItem = new OutboundOrderItem
-        {
-            Id = Guid.NewGuid(),
-            ProductId = product.Id,
-            UomId = uom.Id,
-            Quantity = 2,
-            Product = product,
-            Uom = uom
-        };
         var order = new OutboundOrder
         {
             Id = Guid.NewGuid(),
             CustomerId = customerId,
             WarehouseId = Guid.NewGuid(),
-            Status = OutboundOrderStatus.Checked,
-            Items = new List<OutboundOrderItem> { orderItem }
+            Status = OutboundOrderStatus.Packed,
+            Items = new List<OutboundOrderItem>()
         };
 
-        var repo = new FakeOutboundPackageRepository();
-        var service = new OutboundPackingService(
+        var packages = new List<OutboundPackage>
+        {
+            new() { Id = Guid.NewGuid(), OutboundOrderId = order.Id, PackageNumber = "PKG-1" }
+        };
+
+        var service = new OutboundShippingService(
             new FakeOutboundOrderRepository(order),
-            repo,
+            new FakeOutboundPackageRepository(packages),
+            new FakeOutboundShipmentRepository(),
             new FakeCustomerContext(customerId),
             new FakeDateTimeProvider(DateTime.UtcNow));
 
-        var result = await service.RegisterAsync(order.Id, new List<OutboundPackageInput>
-        {
-            new("PKG-1", 1, 10, 10, 10, null, new List<OutboundPackageItemInput>
-            {
-                new(orderItem.Id, 2)
-            })
-        }, CancellationToken.None);
+        var result = await service.RegisterAsync(order.Id, new RegisterOutboundShipmentInput(
+            "D1",
+            null,
+            null,
+            null,
+            null,
+            new List<OutboundShipmentPackageInput> { new(packages[0].Id) }),
+            CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        repo.Stored.Should().HaveCount(1);
-        order.Status.Should().Be(OutboundOrderStatus.Packed);
+        order.Status.Should().Be(OutboundOrderStatus.Shipped);
     }
 
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
@@ -119,16 +110,24 @@ public sealed class OutboundPackingServiceTests
 
     private sealed class FakeOutboundPackageRepository : IOutboundPackageRepository
     {
-        public List<OutboundPackage> Stored { get; } = new();
+        private readonly IReadOnlyList<OutboundPackage> _packages;
 
-        public Task AddAsync(IReadOnlyList<OutboundPackage> packages, CancellationToken cancellationToken = default)
+        public FakeOutboundPackageRepository(IReadOnlyList<OutboundPackage> packages)
         {
-            Stored.AddRange(packages);
-            return Task.CompletedTask;
+            _packages = packages;
         }
 
+        public Task AddAsync(IReadOnlyList<OutboundPackage> packages, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
         public Task<IReadOnlyList<OutboundPackage>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<OutboundPackage>>(Stored.Where(p => p.OutboundOrderId == outboundOrderId).ToList());
+            => Task.FromResult(_packages.Where(p => p.OutboundOrderId == outboundOrderId).ToList() as IReadOnlyList<OutboundPackage>);
+    }
+
+    private sealed class FakeOutboundShipmentRepository : IOutboundShipmentRepository
+    {
+        public Task AddAsync(OutboundShipment shipment, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 
     private sealed class FakeCustomerContext : ICustomerContext
