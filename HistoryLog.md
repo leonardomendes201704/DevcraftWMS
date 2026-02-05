@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0111 - Packing API completed.
+  - Key changes: added outbound package entities/configs/migration, pack endpoint, and unit/integration tests.
+
+## 2026-02-05
 - TASK-0110 - Outbound check DemoMvc UI completed.
   - Key changes: added DemoMvc queue/details screens for outbound checks with evidence upload, plus test updates.
 

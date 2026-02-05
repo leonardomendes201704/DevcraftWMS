@@ -60,6 +60,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<OutboundCheck> OutboundChecks => Set<OutboundCheck>();
     public DbSet<OutboundCheckItem> OutboundCheckItems => Set<OutboundCheckItem>();
     public DbSet<OutboundCheckEvidence> OutboundCheckEvidence => Set<OutboundCheckEvidence>();
+    public DbSet<OutboundPackage> OutboundPackages => Set<OutboundPackage>();
+    public DbSet<OutboundPackageItem> OutboundPackageItems => Set<OutboundPackageItem>();
     public DbSet<GateCheckin> GateCheckins => Set<GateCheckin>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();

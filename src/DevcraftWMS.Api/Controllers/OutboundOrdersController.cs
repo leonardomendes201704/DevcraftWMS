@@ -5,6 +5,8 @@ using DevcraftWMS.Application.Features.OutboundOrders.Commands.CreateOutboundOrd
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.ReleaseOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundChecks;
 using DevcraftWMS.Application.Features.OutboundChecks.Commands.RegisterOutboundCheck;
+using DevcraftWMS.Application.Features.OutboundPacking;
+using DevcraftWMS.Application.Features.OutboundPacking.Commands.RegisterOutboundPacking;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.GetOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Queries.ListOutboundOrders;
 using DevcraftWMS.Domain.Enums;
@@ -117,6 +119,26 @@ public sealed class OutboundOrdersController : ControllerBase
                 id,
                 items.ToList(),
                 request.Notes),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/pack")]
+    public async Task<IActionResult> Pack(Guid id, [FromBody] RegisterOutboundPackingRequest request, CancellationToken cancellationToken)
+    {
+        var packages = request.Packages.Select(p => new OutboundPackageInput(
+            p.PackageNumber,
+            p.WeightKg,
+            p.LengthCm,
+            p.WidthCm,
+            p.HeightCm,
+            p.Notes,
+            p.Items.Select(i => new OutboundPackageItemInput(i.OutboundOrderItemId, i.Quantity)).ToList()))
+            .ToList();
+
+        var result = await _mediator.Send(
+            new RegisterOutboundPackingCommand(id, packages),
             cancellationToken);
 
         return this.ToActionResult(result);
