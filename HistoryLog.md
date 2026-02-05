@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- Doc - Manual WMS-INB-001 atualizado.
+  - Key changes: reescreveu o manual HTML com escopos usuario/tecnico, fluxos, RBAC, anexos, KPIs e checklists.
+
+## 2026-02-05
 - TASK-0092/0093/0094 - ASN attachments real storage completed.
   - Key changes: added FileStorage abstraction + FileSystem provider, moved ASN attachments to external storage with metadata only, added download endpoint and Portal download/preview UI, updated tests, and migration UpdateAsnAttachmentsStorage.
 

@@ -1,0 +1,358 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manual de Operacao - WMS-INB-001 (Inbound & Putaway)</title>
+    <link rel="stylesheet" href="../../../src/DevcraftWMS.DemoMvc/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../src/DevcraftWMS.DemoMvc/wwwroot/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        :root { --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --ink: #0f172a; --muted: #64748b; --primary: #0d6efd; }
+        body { background: var(--bg); color: var(--ink); }
+        .toc a { text-decoration: none; color: var(--ink); }
+        .toc a:hover { color: var(--primary); }
+        .badge-soft { background: #e7f1ff; color: #0d6efd; }
+        .section-title { border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin-bottom: 1rem; }
+        .callout { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: .5rem; padding: 1rem; }
+        .icon-card { border: 1px solid var(--border); border-radius: .75rem; background: var(--card); padding: 1rem; }
+        .icon-card i { font-size: 1.5rem; }
+        .step-list li { margin-bottom: .5rem; }
+        .small-muted { color: var(--muted); font-size: .9rem; }
+        .sticky-top { top: 1rem; }
+        .pill { background: #f1f5f9; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .75rem; font-size: .85rem; }
+        .tag { font-size: .85rem; padding: .2rem .6rem; border-radius: .5rem; background: #f1f5f9; border: 1px solid var(--border); }
+        .section-card { border: 0; box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
+        code { background: #f8fafc; padding: .15rem .35rem; border-radius: .3rem; border: 1px solid #e5e7eb; }
+        .kpi { font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Manual de Operacao - WMS-INB-001</h1>
+            <div class="text-muted">Inbound & Putaway (Entrada e Armazenagem)</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="pill"><i class="bi bi-box-arrow-in-down me-1"></i>Epic WMS-INB-001</span>
+            <span class="badge badge-soft rounded-pill px-3 py-2">Versao operacional</span>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div id="overview" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-clipboard-check me-2"></i>Visao geral</h2>
+                    <p>
+                        Este manual descreve o fluxo operacional completo do epic <strong>WMS-INB-001</strong>, cobrindo
+                        a entrada de mercadorias desde o ASN (pre-recebimento) ate o putaway e encerramento da OE,
+                        incluindo excecoes como cross-dock, entradas parciais, quarentena e reetiquetagem.
+                    </p>
+                    <div class="callout">
+                        <strong>Objetivo:</strong> garantir rastreabilidade por UL/SSCC, lote/validade quando aplicavel,
+                        controle de qualidade, quarentena e enderecamento com regras de capacidade e compatibilidade.
+                    </div>
+                </div>
+            </div>
+
+            <div id="scopes" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-link-45deg me-2"></i>Escopos (Usuario e Tecnico)</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-person-badge"></i>
+                                    <strong>Escopo do Usuario</strong>
+                                </div>
+                                <p class="small-muted mb-2">Fluxos operacionais e telas.</p>
+                                <a href="#user-scope" class="btn btn-sm btn-outline-primary">Ir para secao</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-gear"></i>
+                                    <strong>Escopo Tecnico</strong>
+                                </div>
+                                <p class="small-muted mb-2">APIs, regras, dados e integrações.</p>
+                                <a href="#technical-scope" class="btn btn-sm btn-outline-primary">Ir para secao</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="flow" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-diagram-3 me-2"></i>Fluxo principal (happy path)</h2>
+                    <ol class="step-list">
+                        <li>Cliente registra ASN com itens, documentos e previsao de chegada.</li>
+                        <li>Backoffice aprova o ASN e emite a OE, definindo prioridade e conferência.</li>
+                        <li>Portaria registra check-in e direciona o veiculo para doca.</li>
+                        <li>Recebimento cria UL/SSCC, confere itens e registra divergencias.</li>
+                        <li>Qualidade avalia e libera ou mantem em quarentena (quando aplicavel).</li>
+                        <li>Putaway gera tarefa e confirma UL + endereco final.</li>
+                        <li>OE e encerrada e o cliente recebe relatorio e notificacao.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div id="user-scope" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-people me-2"></i>Escopo do usuario (operacional)</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                    <strong>Portal do Cliente (ASN)</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Criar ASN com itens, quantidades e documentos.</li>
+                                    <li>Anexar XML/arquivos e acompanhar status.</li>
+                                    <li>Receber notificacoes e relatorios de recebimento.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-clipboard-data"></i>
+                                    <strong>Backoffice (OE)</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Aprovar ASN e emitir OE.</li>
+                                    <li>Definir conferencia, prioridade e doca sugerida.</li>
+                                    <li>Encerrar OE e gerar relatorio.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-truck"></i>
+                                    <strong>Portaria</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Check-in de veiculo e documentos.</li>
+                                    <li>Fila de doca e direcionamento.</li>
+                                    <li>Atribuir doca com registro de horario.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-box-seam"></i>
+                                    <strong>Recebimento</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Iniciar romaneio da OE.</li>
+                                    <li>Criar UL/SSCC e imprimir etiqueta.</li>
+                                    <li>Conferencia cega/assistida e divergencias.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-shield-check"></i>
+                                    <strong>Qualidade & Quarentena</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Inspecao, aprovacao/reprovacao.</li>
+                                    <li>Bloqueio em quarentena.</li>
+                                    <li>Liberacao controlada por perfil.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-arrow-left-right"></i>
+                                    <strong>Putaway</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    <li>Tarefas automaticas por UL.</li>
+                                    <li>Sugestao por zona/capacidade/regras.</li>
+                                    <li>Confirmar UL + endereco final.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="technical-scope" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-terminal me-2"></i>Escopo tecnico (regras e integrações)</h2>
+                    <ul class="mb-3">
+                        <li><strong>Rastreio por SKU:</strong> TrackingMode (None, Lot, Lot+Expiry).</li>
+                        <li><strong>Validade minima:</strong> regra por SKU/cliente com quarentena automatica.</li>
+                        <li><strong>UL/SSCC:</strong> criacao interna e etiqueta padrao CD.</li>
+                        <li><strong>Quarentena:</strong> bloqueia movimentacoes e picking.</li>
+                        <li><strong>Putaway:</strong> obrigatorio para encerrar OE (exceto cross-dock).</li>
+                        <li><strong>Cross-dock:</strong> estoque nao e enderecado; segue para expedicao.</li>
+                        <li><strong>RBAC:</strong> perfis/roles controlam portaria, recebimento, qualidade, putaway e backoffice.</li>
+                        <li><strong>Anexos:</strong> storage real com metadados no banco (download/preview via Portal).</li>
+                    </ul>
+                    <div class="callout">
+                        <strong>APIs principais:</strong>
+                        <code>/api/asns</code>, <code>/api/inbound-orders</code>, <code>/api/gate-checkins</code>,
+                        <code>/api/receipts</code>, <code>/api/quality</code>, <code>/api/putaway-tasks</code>,
+                        <code>/api/inbound-orders/{id}/report</code>.
+                    </div>
+                </div>
+            </div>
+
+            <div id="roles" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-shield-lock me-2"></i>Perfis e responsabilidades (RBAC)</h2>
+                    <div class="row g-2">
+                        <div class="col-md-4"><span class="tag">Admin</span> Acesso total e governanca.</div>
+                        <div class="col-md-4"><span class="tag">Backoffice</span> Aprovar ASN, emitir OE, encerrar.</div>
+                        <div class="col-md-4"><span class="tag">Portaria</span> Check-in, fila e docas.</div>
+                        <div class="col-md-4"><span class="tag">Conferente</span> Recebimento e divergencias.</div>
+                        <div class="col-md-4"><span class="tag">Qualidade</span> Inspecao e liberacao.</div>
+                        <div class="col-md-4"><span class="tag">Putaway</span> Confirmar tarefas de armazenagem.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="attachments" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-paperclip me-2"></i>Anexos (ASN)</h2>
+                    <ul>
+                        <li>Upload de documentos (XML/PDF/imagens) durante o ASN.</li>
+                        <li>Download e preview direto no Portal do Cliente.</li>
+                        <li>Metadados persistidos no banco; conteudo armazenado externamente.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="exceptions" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-exclamation-triangle me-2"></i>Fluxos alternativos e excecoes</h2>
+                    <ul>
+                        <li><strong>Sem OE:</strong> portaria cria pre-registro e backoffice gera OE emergencial.</li>
+                        <li><strong>Entrada parcial:</strong> relatorio aponta pendencias e permite encerramento parcial.</li>
+                        <li><strong>Validade insuficiente:</strong> direciona para quarentena.</li>
+                        <li><strong>Cross-dock:</strong> nao endereca, segue para expedicao.</li>
+                        <li><strong>Divergencias:</strong> falta, sobra, SKU divergente, avaria, documento divergente.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="reports" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-file-earmark-text me-2"></i>Relatorios e KPIs</h2>
+                    <ul>
+                        <li><strong>Relatorio de Recebimento:</strong> previsto x recebido, divergencias, quarentena.</li>
+                        <li><strong>Relatorio de OE:</strong> status, historico e pendencias.</li>
+                        <li><strong>KPIs Inbound:</strong> Chegada→Doca, Doca→Conferencia, Conferencia→Armazenado.</li>
+                        <li><strong>KPIs de validade:</strong> produtos/lotes proximos ao vencimento (janela configuravel).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="status" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-diagram-2 me-2"></i>Status principais</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>ASN</strong>
+                                <p class="small-muted mb-0">Registrado → Pendente ajuste → Aprovado → Convertido → Cancelado</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>OE</strong>
+                                <p class="small-muted mb-0">Emitida → Portaria → Doca → Conferencia → Qualidade/Quarentena → Putaway → Encerrada</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>UL</strong>
+                                <p class="small-muted mb-0">Criada → Recebida → Conferida → Quarentena → Liberada → Armazenada</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>Putaway</strong>
+                                <p class="small-muted mb-0">Pendente → Em execucao → Concluida → Reatribuida</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="checklists" class="card section-card mb-3">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-list-check me-2"></i>Checklists operacionais</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>Antes de receber</strong>
+                                <ul class="mb-0">
+                                    <li>OE emitida e com status correto.</li>
+                                    <li>Doca definida e recursos alocados.</li>
+                                    <li>Equipe e impressoras prontas.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="icon-card h-100">
+                                <strong>Antes de encerrar OE</strong>
+                                <ul class="mb-0">
+                                    <li>ULs com status valido (armazenado/quarentena/cross-dock).</li>
+                                    <li>Divergencias registradas com evidencias.</li>
+                                    <li>Relatorio conferido e notificado.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="faq" class="card section-card mb-5">
+                <div class="card-body">
+                    <h2 class="h5 section-title"><i class="bi bi-question-circle me-2"></i>Perguntas frequentes</h2>
+                    <p><strong>Quando usar cross-dock?</strong> Quando a carga deve sair imediatamente sem armazenagem.</p>
+                    <p><strong>Posso encerrar OE com pendencias?</strong> Sim, usando encerramento parcial.</p>
+                    <p><strong>Como tratar validade insuficiente?</strong> O sistema direciona automaticamente para quarentena.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card section-card sticky-top">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Navegacao</h2>
+                    <div class="toc d-grid gap-2">
+                        <a href="#overview"><i class="bi bi-clipboard-check me-2"></i>Visao geral</a>
+                        <a href="#scopes"><i class="bi bi-link-45deg me-2"></i>Escopos</a>
+                        <a href="#flow"><i class="bi bi-diagram-3 me-2"></i>Fluxo principal</a>
+                        <a href="#user-scope"><i class="bi bi-people me-2"></i>Escopo do usuario</a>
+                        <a href="#technical-scope"><i class="bi bi-gear me-2"></i>Escopo tecnico</a>
+                        <a href="#roles"><i class="bi bi-shield-lock me-2"></i>Perfis e RBAC</a>
+                        <a href="#attachments"><i class="bi bi-paperclip me-2"></i>Anexos</a>
+                        <a href="#exceptions"><i class="bi bi-exclamation-triangle me-2"></i>Excecoes</a>
+                        <a href="#reports"><i class="bi bi-file-earmark-text me-2"></i>Relatorios e KPIs</a>
+                        <a href="#status"><i class="bi bi-diagram-2 me-2"></i>Status principais</a>
+                        <a href="#checklists"><i class="bi bi-list-check me-2"></i>Checklists</a>
+                        <a href="#faq"><i class="bi bi-question-circle me-2"></i>FAQ</a>
+                    </div>
+                    <hr>
+                    <div class="small-muted">
+                        <i class="bi bi-info-circle me-1"></i>Manual do epic WMS-INB-001. Consulte as tasks do epic para detalhes tecnicos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
