@@ -469,6 +469,20 @@ public sealed class OutboundOrderServiceTests
             AddedTasks.AddRange(tasks);
             return Task.CompletedTask;
         }
+
+        public Task UpdateAsync(PickingTask task, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task<PickingTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<PickingTask?>(AddedTasks.SingleOrDefault(t => t.Id == id));
+
+        public Task<PickingTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<PickingTask?>(AddedTasks.SingleOrDefault(t => t.Id == id));
+
+        public Task<int> CountAsync(Guid? warehouseId, Guid? outboundOrderId, Guid? assignedUserId, PickingTaskStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(AddedTasks.Count);
+
+        public Task<IReadOnlyList<PickingTask>> ListAsync(Guid? warehouseId, Guid? outboundOrderId, Guid? assignedUserId, PickingTaskStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<PickingTask>>(AddedTasks.ToList());
     }
 
     private sealed class FakeInventoryBalanceRepository : IInventoryBalanceRepository

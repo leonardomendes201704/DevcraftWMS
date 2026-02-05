@@ -1,0 +1,123 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@using DevcraftWMS.DemoMvc.Infrastructure
+@model DevcraftWMS.DemoMvc.ViewModels.PickingTasks.PickingTaskListPageViewModel
+@{
+    ViewData["Title"] = "Picking Tasks";
+    ViewData["Subtitle"] = "Queue of outbound picking tasks";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "PickingTasks",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["OutboundOrderId"] = Model.Query.OutboundOrderId?.ToString(),
+            ["AssignedUserId"] = Model.Query.AssignedUserId?.ToString(),
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<PickingTaskStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.GetDisplayName(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "PickingTasks",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Warehouse Id", Name = "WarehouseId", Type = GridFilterType.Text, Value = Model.Query.WarehouseId?.ToString() },
+            new() { Label = "Outbound Order Id", Name = "OutboundOrderId", Type = GridFilterType.Text, Value = Model.Query.OutboundOrderId?.ToString() },
+            new() { Label = "Assigned User Id", Name = "AssignedUserId", Type = GridFilterType.Text, Value = Model.Query.AssignedUserId?.ToString() },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "PickingTasks")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "pickingTaskFilters",
+        Title = "Picking task filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.PickingTasks.PickingTaskListItemViewModel>()
+        .WithTitle("Picking Tasks")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Order", item => new HtmlString(HtmlEncoder.Default.Encode(item.OrderNumber)), "OrderNumber")
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Sequence", item => new HtmlString(item.Sequence.ToString()), "Sequence")
+        .AddColumn("Assigned", item => new HtmlString(HtmlEncoder.Default.Encode(item.AssignedUserId?.ToString() ?? "Unassigned")), "AssignedUserId")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-info\">{item.Status.GetDisplayName()}</span>"), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .AddAction("Details", item => Url.Action("Details", "PickingTasks", new { id = item.Id }))
+        .Build();
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#pickingTasksHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+<partial name="_FilterDrawer" model="filterDrawer" />
+<partial name="_Grid" model="grid" />
+<partial name="_PickingTasksHelp" />

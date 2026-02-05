@@ -1,0 +1,118 @@
+@using DevcraftWMS.DemoMvc.Enums
+@using DevcraftWMS.DemoMvc.Infrastructure
+@model DevcraftWMS.DemoMvc.ViewModels.PickingTasks.PickingTaskDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Picking Task {Model.Task.OrderNumber}";
+    ViewData["Subtitle"] = "Picking task details";
+
+    var statusBadge = Model.Task.Status switch
+    {
+        PickingTaskStatus.Completed => "text-bg-success",
+        PickingTaskStatus.InProgress => "text-bg-warning",
+        PickingTaskStatus.Canceled => "text-bg-secondary",
+        PickingTaskStatus.Reassigned => "text-bg-info",
+        _ => "text-bg-light text-dark"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="badge @statusBadge">@Model.Task.Status.GetDisplayName()</span>
+        <span class="badge text-bg-primary">Sequence @Model.Task.Sequence</span>
+        <span class="badge text-bg-light">Warehouse @Model.Task.WarehouseName</span>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="PickingTasks" asp-action="Index">
+        <i class="bi bi-arrow-left"></i> Back to list
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Task Summary</div>
+                <dl class="row mb-0">
+                    <dt class="col-5">Order</dt>
+                    <dd class="col-7">@Model.Task.OrderNumber</dd>
+                    <dt class="col-5">Warehouse</dt>
+                    <dd class="col-7">@Model.Task.WarehouseName</dd>
+                    <dt class="col-5">Assigned User</dt>
+                    <dd class="col-7">@(Model.Task.AssignedUserId?.ToString() ?? "Unassigned")</dd>
+                    <dt class="col-5">Started</dt>
+                    <dd class="col-7">@(Model.Task.StartedAtUtc?.ToLocalTime().ToString("g") ?? "-")</dd>
+                    <dt class="col-5">Completed</dt>
+                    <dd class="col-7">@(Model.Task.CompletedAtUtc?.ToLocalTime().ToString("g") ?? "-")</dd>
+                    <dt class="col-5">Notes</dt>
+                    <dd class="col-7">@(string.IsNullOrWhiteSpace(Model.Task.Notes) ? "-" : Model.Task.Notes)</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Confirm Picking</div>
+                @if (Model.Task.Status == PickingTaskStatus.Completed)
+                {
+                    <div class="alert alert-success mb-0">Picking already completed.</div>
+                }
+                else if (Model.Task.Status == PickingTaskStatus.Canceled)
+                {
+                    <div class="alert alert-secondary mb-0">Picking task is canceled.</div>
+                }
+                else
+                {
+                    <form asp-controller="PickingTasks" asp-action="Confirm" asp-route-id="@Model.Task.Id" method="post" class="vstack gap-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Lot</th>
+                                        <th>UoM</th>
+                                        <th class="text-end">Planned</th>
+                                        <th style="width: 160px;">Picked</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for (var index = 0; index < Model.Task.Items.Count; index++)
+                                {
+                                    var item = Model.Task.Items[index];
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@item.ProductCode</div>
+                                            <div class="text-muted small">@item.ProductName</div>
+                                        </td>
+                                        <td>@(item.LotCode ?? "-")</td>
+                                        <td>@item.UomCode</td>
+                                        <td class="text-end">@item.QuantityPlanned</td>
+                                        <td>
+                                            <input type="hidden" name="Confirm.Items[@index].PickingTaskItemId" value="@item.Id" />
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
+                                                <input class="form-control" type="number" step="0.01" min="0" name="Confirm.Items[@index].QuantityPicked" value="@item.QuantityPicked" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <label class="form-label">Notes</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                                <input class="form-control" name="Confirm.Notes" value="@Model.Confirm.Notes" placeholder="Optional confirmation notes" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-success" type="submit">
+                                <i class="bi bi-check2-circle me-1"></i>Confirm Picking
+                            </button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

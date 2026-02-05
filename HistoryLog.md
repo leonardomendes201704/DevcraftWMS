@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0108 - Picking queue DemoMvc completed.
+  - Key changes: added picking tasks API (list/get/confirm), DemoMvc UI (index/details), and unit/integration tests.
+
+## 2026-02-05
 - TASK-0107 - Picking task generation completed.
   - Key changes: added picking task repository and generation on outbound release with single/batch/cluster grouping and FEFO ordering, plus tests.
 
