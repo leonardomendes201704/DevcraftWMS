@@ -383,6 +383,7 @@ Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 Dashboard:InboundWindowDays        -> Default KPI window (days) for inbound KPIs
+Dashboard:OutboundWindowDays       -> Default KPI window (days) for outbound KPIs
 Notifications:InboundOrders:EmailEnabled -> Enable inbound order email notifications
 Notifications:InboundOrders:WebhookEnabled -> Enable inbound order webhook notifications
 Notifications:InboundOrders:PortalEnabled -> Enable inbound order portal notifications

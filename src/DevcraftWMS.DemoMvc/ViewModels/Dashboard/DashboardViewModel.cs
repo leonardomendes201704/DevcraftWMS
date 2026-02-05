@@ -11,6 +11,8 @@ public sealed class DashboardViewModel
     public ExpiringLotsKpiDto? ExpiringLots { get; init; }
     public InboundKpiDto? InboundKpis { get; init; }
     public int InboundWindowDays { get; init; }
+    public OutboundKpiDto? OutboundKpis { get; init; }
+    public int OutboundWindowDays { get; init; }
 }
 
 

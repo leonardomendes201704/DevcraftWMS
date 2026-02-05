@@ -60,6 +60,41 @@ public sealed class DashboardKpiRepository : IDashboardKpiRepository
             putawayCompletedTask.Result);
     }
 
+    public async Task<OutboundKpiCounts> GetOutboundKpisAsync(DateTime startUtc, DateTime endUtc, CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+
+        var pickingCompletedTask = _dbContext.PickingTasks
+            .AsNoTracking()
+            .Where(t => t.OutboundOrder!.CustomerId == customerId
+                        && t.Status == PickingTaskStatus.Completed
+                        && t.CompletedAtUtc.HasValue
+                        && t.CompletedAtUtc.Value >= startUtc
+                        && t.CompletedAtUtc.Value <= endUtc)
+            .CountAsync(cancellationToken);
+
+        var checksCompletedTask = _dbContext.OutboundChecks
+            .AsNoTracking()
+            .Where(c => c.CustomerId == customerId
+                        && c.CheckedAtUtc >= startUtc
+                        && c.CheckedAtUtc <= endUtc)
+            .CountAsync(cancellationToken);
+
+        var shipmentsCompletedTask = _dbContext.OutboundShipments
+            .AsNoTracking()
+            .Where(s => s.CustomerId == customerId
+                        && s.ShippedAtUtc >= startUtc
+                        && s.ShippedAtUtc <= endUtc)
+            .CountAsync(cancellationToken);
+
+        await Task.WhenAll(pickingCompletedTask, checksCompletedTask, shipmentsCompletedTask);
+
+        return new OutboundKpiCounts(
+            pickingCompletedTask.Result,
+            checksCompletedTask.Result,
+            shipmentsCompletedTask.Result);
+    }
+
     private Guid GetCustomerId()
     {
         var customerId = _customerContext.CustomerId;

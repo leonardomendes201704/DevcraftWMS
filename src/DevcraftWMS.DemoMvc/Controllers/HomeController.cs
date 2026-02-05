@@ -23,7 +23,7 @@ public sealed class HomeController : Controller
         _dashboardClient = dashboardClient;
     }
 
-    public async Task<IActionResult> Index(int? inboundDays, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(int? inboundDays, int? outboundDays, CancellationToken cancellationToken)
     {
         var apiHealthy = await _healthClient.IsHealthyAsync(cancellationToken);
 
@@ -42,6 +42,7 @@ public sealed class HomeController : Controller
 
         var expiringLots = await _dashboardClient.GetExpiringLotsAsync(null, cancellationToken);
         var inboundKpis = await _dashboardClient.GetInboundKpisAsync(inboundDays, cancellationToken);
+        var outboundKpis = await _dashboardClient.GetOutboundKpisAsync(outboundDays, cancellationToken);
 
         var model = new DashboardViewModel
         {
@@ -51,7 +52,9 @@ public sealed class HomeController : Controller
             ActiveWarehouses = warehouses.Data?.TotalCount ?? 0,
             ExpiringLots = expiringLots.Data,
             InboundKpis = inboundKpis.Data,
-            InboundWindowDays = inboundDays ?? inboundKpis.Data?.WindowDays ?? 0
+            InboundWindowDays = inboundDays ?? inboundKpis.Data?.WindowDays ?? 0,
+            OutboundKpis = outboundKpis.Data,
+            OutboundWindowDays = outboundDays ?? outboundKpis.Data?.WindowDays ?? 0
         };
 
         return View(model);

@@ -55,6 +55,26 @@ public sealed class DashboardKpiTests : IClassFixture<CustomWebApplicationFactor
         dockAssigned.Should().BeGreaterThanOrEqualTo(1);
     }
 
+    [Fact]
+    public async Task OutboundKpis_Returns_Counts()
+    {
+        var client = _factory.CreateClient();
+        await SeedOutboundKpisAsync(_factory);
+
+        var response = await client.GetAsync("/api/dashboard/outbound-kpis?days=7");
+        response.IsSuccessStatusCode.Should().BeTrue();
+
+        var body = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(body);
+        var pickingCompleted = doc.RootElement.GetProperty("pickingCompleted").GetInt32();
+        var checksCompleted = doc.RootElement.GetProperty("checksCompleted").GetInt32();
+        var shipmentsCompleted = doc.RootElement.GetProperty("shipmentsCompleted").GetInt32();
+
+        pickingCompleted.Should().BeGreaterThanOrEqualTo(1);
+        checksCompleted.Should().BeGreaterThanOrEqualTo(1);
+        shipmentsCompleted.Should().BeGreaterThanOrEqualTo(1);
+    }
+
     private static async Task<Guid> CreateUomAsync(HttpClient client)
     {
         var code = $"KPI{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant();
@@ -199,5 +219,69 @@ public sealed class DashboardKpiTests : IClassFixture<CustomWebApplicationFactor
         await db.SaveChangesAsync();
 
         return inboundOrder.Id;
+    }
+
+    private static async Task SeedOutboundKpisAsync(CustomWebApplicationFactory factory)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        var warehouse = new Warehouse
+        {
+            Id = Guid.NewGuid(),
+            Code = $"WH-OB-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Name = "Outbound KPI Warehouse",
+            WarehouseType = WarehouseType.Other,
+            IsReceivingEnabled = true,
+            IsPickingEnabled = true,
+            IsShippingEnabled = true,
+            IsReturnsEnabled = false
+        };
+
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = warehouse.Id,
+            OrderNumber = $"OS-{Guid.NewGuid():N}".Substring(0, 10).ToUpperInvariant(),
+            Status = OutboundOrderStatus.Shipped,
+            Priority = OutboundOrderPriority.Normal
+        };
+
+        var pickingTask = new PickingTask
+        {
+            Id = Guid.NewGuid(),
+            OutboundOrderId = order.Id,
+            WarehouseId = warehouse.Id,
+            Status = PickingTaskStatus.Completed,
+            CompletedAtUtc = DateTime.UtcNow
+        };
+
+        var check = new OutboundCheck
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            OutboundOrderId = order.Id,
+            WarehouseId = warehouse.Id,
+            CheckedAtUtc = DateTime.UtcNow
+        };
+
+        var shipment = new OutboundShipment
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            OutboundOrderId = order.Id,
+            WarehouseId = warehouse.Id,
+            DockCode = "DCK-01",
+            ShippedAtUtc = DateTime.UtcNow
+        };
+
+        db.Warehouses.Add(warehouse);
+        db.OutboundOrders.Add(order);
+        db.PickingTasks.Add(pickingTask);
+        db.OutboundChecks.Add(check);
+        db.OutboundShipments.Add(shipment);
+        await db.SaveChangesAsync();
     }
 }

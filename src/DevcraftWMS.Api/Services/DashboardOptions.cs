@@ -4,4 +4,5 @@ public sealed class DashboardOptions
 {
     public int ExpiringLotsDays { get; set; }
     public int InboundWindowDays { get; set; } = 30;
+    public int OutboundWindowDays { get; set; } = 30;
 }

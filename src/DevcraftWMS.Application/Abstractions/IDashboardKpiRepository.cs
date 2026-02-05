@@ -6,7 +6,13 @@ public sealed record InboundKpiCounts(
     int ReceiptsCompleted,
     int PutawayCompleted);
 
+public sealed record OutboundKpiCounts(
+    int PickingCompleted,
+    int ChecksCompleted,
+    int ShipmentsCompleted);
+
 public interface IDashboardKpiRepository
 {
     Task<InboundKpiCounts> GetInboundKpisAsync(DateTime startUtc, DateTime endUtc, CancellationToken cancellationToken = default);
+    Task<OutboundKpiCounts> GetOutboundKpisAsync(DateTime startUtc, DateTime endUtc, CancellationToken cancellationToken = default);
 }
