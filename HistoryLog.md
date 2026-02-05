@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0102 - Outbound order CQRS completed.
+  - Key changes: added OutboundOrders CQRS (create/list/get), API controller, repository/service, and unit/integration tests.
+
+## 2026-02-05
 - TASK-0101 - Outbound order model completed.
   - Key changes: added OutboundOrder/OutboundOrderItem entities with status/priority enums, EF configs, DbSets, and migration AddOutboundOrders.
 

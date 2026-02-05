@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IAsnAttachmentRepository, AsnAttachmentRepository>();
         services.AddScoped<IAsnItemRepository, AsnItemRepository>();
         services.AddScoped<IInboundOrderRepository, InboundOrderRepository>();
+        services.AddScoped<IOutboundOrderRepository, OutboundOrderRepository>();
         services.AddScoped<IGateCheckinRepository, GateCheckinRepository>();
         services.AddScoped<IUomRepository, UomRepository>();
         services.AddScoped<IProductUomRepository, ProductUomRepository>();

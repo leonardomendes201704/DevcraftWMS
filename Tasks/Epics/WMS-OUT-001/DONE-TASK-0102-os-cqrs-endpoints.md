@@ -23,5 +23,16 @@ Permitir que o cliente registre OS e o backoffice visualize a fila.
 ## Criterios de Aceite
 - OS criada e consultavel com filtros e paginacao.
 
+## Como testar
+1) Subir a API: `dotnet run --project src/DevcraftWMS.Api`
+2) Criar OS:
+   - `POST /api/outbound-orders` com items, warehouseId, orderNumber.
+3) Listar:
+   - `GET /api/outbound-orders?pageNumber=1&pageSize=20&orderBy=CreatedAtUtc&orderDir=desc`
+4) Buscar detalhes:
+   - `GET /api/outbound-orders/{id}`
+5) Rodar testes:
+   - `dotnet test --filter FullyQualifiedName~OutboundOrderCrudTests`
+
 ## Status
-PENDENTE
+DONE
