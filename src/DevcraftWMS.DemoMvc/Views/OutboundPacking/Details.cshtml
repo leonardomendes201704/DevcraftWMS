@@ -1,0 +1,212 @@
+@model DevcraftWMS.DemoMvc.ViewModels.OutboundPacking.OutboundPackingDetailsPageViewModel
+@{
+    ViewData["Title"] = $"Outbound Packing {Model.Order.OrderNumber}";
+    ViewData["Subtitle"] = "Create packages for shipping";
+
+    var statusLabel = Model.Order.Status switch
+    {
+        4 => "Checked",
+        5 => "Packed",
+        _ => "Unknown"
+    };
+
+    var priorityLabel = Model.Order.Priority switch
+    {
+        1 => "Normal",
+        2 => "High",
+        3 => "Urgent",
+        _ => "Unknown"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="badge text-bg-primary">@Model.Order.WarehouseName</span>
+        <span class="badge text-bg-light">@statusLabel</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="OutboundPacking" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Back to list
+        </a>
+        <a class="btn btn-outline-primary btn-sm" asp-controller="OutboundPacking" asp-action="Details" asp-route-id="@Model.Order.Id" asp-route-packages="@(Model.PackageCount + 1)">
+            <i class="bi bi-plus-lg"></i> Add package
+        </a>
+    </div>
+</div>
+
+@if (Model.PackedPackages.Count > 0)
+{
+    <div class="alert alert-success">
+        <div class="fw-semibold">Packed packages generated</div>
+        <div class="small text-muted">Use preview to check labels and print if needed.</div>
+    </div>
+    <div class="row g-3 mb-4">
+        @for (var i = 0; i < Model.PackedPackages.Count; i++)
+        {
+            var package = Model.PackedPackages[i];
+            var modalId = $"packagePreview{i}";
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold">@package.PackageNumber</div>
+                        <div class="text-muted small">@((package.WeightKg.HasValue ? $"{package.WeightKg} kg" : "Weight n/a"))</div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#@modalId">Preview Label</button>
+                            <button class="btn btn-outline-primary btn-sm" type="button" onclick="window.print()">Print</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Package @package.PackageNumber</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-2">Order: @Model.Order.OrderNumber</div>
+                            <div class="mb-2">Warehouse: @Model.Order.WarehouseName</div>
+                            <div class="mb-3">Dimensions: @(package.LengthCm?.ToString() ?? "-") x @(package.WidthCm?.ToString() ?? "-") x @(package.HeightCm?.ToString() ?? "-") cm</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>UoM</th>
+                                            <th class="text-end">Qty</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var item in package.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@item.ProductCode</div>
+                                                <div class="text-muted small">@item.ProductName</div>
+                                            </td>
+                                            <td>@item.UomCode</td>
+                                            <td class="text-end">@item.Quantity</td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="window.print()">Print</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Order Summary</div>
+                <dl class="row mb-0">
+                    <dt class="col-5">Order</dt>
+                    <dd class="col-7">@Model.Order.OrderNumber</dd>
+                    <dt class="col-5">Warehouse</dt>
+                    <dd class="col-7">@Model.Order.WarehouseName</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">@statusLabel</dd>
+                    <dt class="col-5">Priority</dt>
+                    <dd class="col-7">@priorityLabel</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="fw-semibold mb-3">Packages</div>
+                <form asp-controller="OutboundPacking" asp-action="Pack" asp-route-id="@Model.Order.Id" method="post" class="vstack gap-4">
+                    @for (var pIndex = 0; pIndex < Model.Packing.Packages.Count; pIndex++)
+                    {
+                        var package = Model.Packing.Packages[pIndex];
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-semibold">Package @package.PackageNumber</div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Package Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                                        <input class="form-control" name="Packing.Packages[@pIndex].PackageNumber" value="@package.PackageNumber" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Weight (kg)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-box"></i></span>
+                                        <input class="form-control" type="number" step="0.01" min="0" name="Packing.Packages[@pIndex].WeightKg" value="@package.WeightKg" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Dimensions (cm)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-arrows-angle-expand"></i></span>
+                                        <input class="form-control" type="number" step="0.1" min="0" name="Packing.Packages[@pIndex].LengthCm" value="@package.LengthCm" placeholder="L" />
+                                        <input class="form-control" type="number" step="0.1" min="0" name="Packing.Packages[@pIndex].WidthCm" value="@package.WidthCm" placeholder="W" />
+                                        <input class="form-control" type="number" step="0.1" min="0" name="Packing.Packages[@pIndex].HeightCm" value="@package.HeightCm" placeholder="H" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                                    <input class="form-control" name="Packing.Packages[@pIndex].Notes" value="@package.Notes" />
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>UoM</th>
+                                            <th class="text-end">Qty</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @for (var iIndex = 0; iIndex < package.Items.Count; iIndex++)
+                                    {
+                                        var item = package.Items[iIndex];
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@item.ProductCode</div>
+                                                <div class="text-muted small">@item.ProductName</div>
+                                            </td>
+                                            <td>@item.UomCode</td>
+                                            <td class="text-end">
+                                                <input type="hidden" name="Packing.Packages[@pIndex].Items[@iIndex].OutboundOrderItemId" value="@item.OutboundOrderItemId" />
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text"><i class="bi bi-archive"></i></span>
+                                                    <input class="form-control" type="number" step="0.01" min="0" name="Packing.Packages[@pIndex].Items[@iIndex].Quantity" value="@item.Quantity" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-check2-circle me-1"></i>Register Packing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

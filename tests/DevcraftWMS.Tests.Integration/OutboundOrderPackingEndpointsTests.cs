@@ -74,6 +74,75 @@ public sealed class OutboundOrderPackingEndpointsTests : IClassFixture<CustomWeb
         refreshedDoc.RootElement.GetProperty("status").GetInt32().Should().Be(5);
     }
 
+    [Fact]
+    public async Task Pack_Should_Accept_Multiple_Packages()
+    {
+        var client = _factory.CreateClient();
+
+        var warehouseId = await CreateWarehouseAsync(client);
+        var uomId = await CreateUomAsync(client);
+        var productId = await CreateProductAsync(client, uomId);
+        await SeedInventoryBalanceAsync(_factory, warehouseId, productId, 10m);
+
+        var orderId = await CreateOutboundOrderAsync(client, warehouseId, productId, uomId);
+        await ReleaseOutboundOrderAsync(client, orderId);
+        await CheckOutboundOrderAsync(client, orderId);
+
+        var orderResponse = await client.GetAsync($"/api/outbound-orders/{orderId}");
+        var orderBody = await orderResponse.Content.ReadAsStringAsync();
+        orderResponse.IsSuccessStatusCode.Should().BeTrue(orderBody);
+        using var orderDoc = JsonDocument.Parse(orderBody);
+        var orderItemId = orderDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+
+        var packPayload = JsonSerializer.Serialize(new
+        {
+            packages = new[]
+            {
+                new
+                {
+                    packageNumber = "PKG-A",
+                    weightKg = 0.5m,
+                    lengthCm = 10m,
+                    widthCm = 10m,
+                    heightCm = 5m,
+                    notes = "Box A",
+                    items = new[]
+                    {
+                        new
+                        {
+                            outboundOrderItemId = orderItemId,
+                            quantity = 1m
+                        }
+                    }
+                },
+                new
+                {
+                    packageNumber = "PKG-B",
+                    weightKg = 1.0m,
+                    lengthCm = 20m,
+                    widthCm = 10m,
+                    heightCm = 5m,
+                    notes = "Box B",
+                    items = new[]
+                    {
+                        new
+                        {
+                            outboundOrderItemId = orderItemId,
+                            quantity = 2m
+                        }
+                    }
+                }
+            }
+        });
+
+        var packResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/pack", new StringContent(packPayload, Encoding.UTF8, "application/json"));
+        var packBody = await packResponse.Content.ReadAsStringAsync();
+        packResponse.IsSuccessStatusCode.Should().BeTrue(packBody);
+
+        using var packDoc = JsonDocument.Parse(packBody);
+        packDoc.RootElement.GetArrayLength().Should().Be(2);
+    }
+
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
         var code = $"WH-PACK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
