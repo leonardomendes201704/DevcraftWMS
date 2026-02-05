@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0100 - Epic Outbound index completed.
+  - Key changes: created epic folder, README index, and references to outbound specification (txt/html).
+
+## 2026-02-05
 - Tasking - Epic WMS-OUT-001 created.
   - Key changes: created outbound epic README and tasks (0100-0120) based on Especificacao-Fluxo-Saida.
 
