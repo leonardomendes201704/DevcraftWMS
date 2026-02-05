@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0101 - Outbound order model completed.
+  - Key changes: added OutboundOrder/OutboundOrderItem entities with status/priority enums, EF configs, DbSets, and migration AddOutboundOrders.
+
+## 2026-02-05
 - TASK-0100 - Epic Outbound index completed.
   - Key changes: created epic folder, README index, and references to outbound specification (txt/html).
 

@@ -23,5 +23,11 @@ Persistir OS com itens, dados de transporte, prioridade e status.
 ## Criterios de Aceite
 - OS e itens persistidos com status e auditoria.
 
+## Como testar
+1) Executar migrations da MainDb:
+   - `dotnet ef database update --project src/DevcraftWMS.Infrastructure --startup-project src/DevcraftWMS.Api`
+2) Verificar tabelas `OutboundOrders` e `OutboundOrderItems` no SQLite.
+3) Confirmar enums `OutboundOrderStatus` e `OutboundOrderPriority` com DisplayName.
+
 ## Status
-PENDENTE
+DONE
