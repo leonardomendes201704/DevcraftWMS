@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- TASK-0105 - Reserva de estoque ao liberar OS.
+  - Key changes: added stock availability validation and inventory reservation during outbound release, plus unit/integration tests.
+
+## 2026-02-05
 - Fix - Outbound order release form binding.
   - Key changes: bind Release form fields to correct model prefix to avoid missing Priority/PickingMethod.
 

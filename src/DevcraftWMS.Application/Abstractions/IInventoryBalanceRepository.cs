@@ -58,4 +58,9 @@ public interface IInventoryBalanceRepository
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(
+        Guid productId,
+        Guid? lotId,
+        CancellationToken cancellationToken = default);
 }

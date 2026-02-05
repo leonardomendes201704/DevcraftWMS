@@ -23,5 +23,12 @@ Evitar conflito entre OS e garantir saldo reservado.
 ## Criterios de Aceite
 - OS nao libera sem saldo disponivel.
 
+## Como testar
+- Criar um produto e um saldo de inventario (Inventory Balance) com quantidade disponivel.
+- Criar uma OS com item para esse produto.
+- Acessar a OS e clicar em Release:
+  - Deve liberar quando houver saldo suficiente.
+  - Deve retornar erro amigavel quando o saldo disponivel for insuficiente.
+
 ## Status
-PENDENTE
+DONE

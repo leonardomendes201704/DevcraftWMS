@@ -193,6 +193,9 @@ public sealed class QualityInspectionServiceTests
             => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
         public Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(Guid lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<InventoryBalance>>(_balances.Where(b => b.LotId == lotId).ToList());
+
+        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
     }
 
     private sealed class FakeDateTimeProvider : IDateTimeProvider

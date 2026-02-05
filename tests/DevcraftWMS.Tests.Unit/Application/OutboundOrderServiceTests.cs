@@ -17,6 +17,8 @@ public sealed class OutboundOrderServiceTests
             new FakeWarehouseRepository(),
             new FakeProductRepository(),
             new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(),
+            new FakeLotRepository(),
             new FakeCustomerContext(null));
 
         var result = await service.CreateAsync(
@@ -48,6 +50,8 @@ public sealed class OutboundOrderServiceTests
             new FakeWarehouseRepository(warehouse),
             new FakeProductRepository(product),
             new FakeUomRepository(uom),
+            new FakeInventoryBalanceRepository(),
+            new FakeLotRepository(),
             new FakeCustomerContext(Guid.NewGuid()));
 
         var result = await service.CreateAsync(
@@ -73,6 +77,15 @@ public sealed class OutboundOrderServiceTests
     public async Task Release_Should_Set_Status_And_Parameters()
     {
         var customerId = Guid.NewGuid();
+        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-REL", Name = "Release Product", TrackingMode = TrackingMode.None };
+        var orderItem = new OutboundOrderItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = product.Id,
+            UomId = Guid.NewGuid(),
+            Quantity = 5,
+            Product = product
+        };
         var order = new OutboundOrder
         {
             Id = Guid.NewGuid(),
@@ -80,15 +93,30 @@ public sealed class OutboundOrderServiceTests
             WarehouseId = Guid.NewGuid(),
             OrderNumber = "OS-RELEASE-1",
             Status = OutboundOrderStatus.Registered,
-            Priority = OutboundOrderPriority.Normal
+            Priority = OutboundOrderPriority.Normal,
+            Items = new List<OutboundOrderItem> { orderItem }
+        };
+
+        var balances = new List<InventoryBalance>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                QuantityOnHand = 10,
+                QuantityReserved = 0,
+                Status = InventoryBalanceStatus.Available
+            }
         };
 
         var repository = new FakeOutboundOrderRepository(order);
         var service = new OutboundOrderService(
             repository,
             new FakeWarehouseRepository(),
-            new FakeProductRepository(),
+            new FakeProductRepository(product),
             new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(balances),
+            new FakeLotRepository(),
             new FakeCustomerContext(customerId));
 
         var result = await service.ReleaseAsync(
@@ -103,27 +131,52 @@ public sealed class OutboundOrderServiceTests
         result.Value!.Status.Should().Be(OutboundOrderStatus.Released);
         result.Value.Priority.Should().Be(OutboundOrderPriority.High);
         result.Value.PickingMethod.Should().Be(OutboundOrderPickingMethod.Batch);
+        balances.Single().QuantityReserved.Should().Be(5);
     }
 
     [Fact]
     public async Task Release_Should_Fail_When_Window_Invalid()
     {
         var customerId = Guid.NewGuid();
+        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-WINDOW", Name = "Window Product", TrackingMode = TrackingMode.None };
+        var orderItem = new OutboundOrderItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = product.Id,
+            UomId = Guid.NewGuid(),
+            Quantity = 2,
+            Product = product
+        };
         var order = new OutboundOrder
         {
             Id = Guid.NewGuid(),
             CustomerId = customerId,
             WarehouseId = Guid.NewGuid(),
             OrderNumber = "OS-RELEASE-2",
-            Status = OutboundOrderStatus.Registered
+            Status = OutboundOrderStatus.Registered,
+            Items = new List<OutboundOrderItem> { orderItem }
+        };
+
+        var balances = new List<InventoryBalance>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                QuantityOnHand = 5,
+                QuantityReserved = 0,
+                Status = InventoryBalanceStatus.Available
+            }
         };
 
         var repository = new FakeOutboundOrderRepository(order);
         var service = new OutboundOrderService(
             repository,
             new FakeWarehouseRepository(),
-            new FakeProductRepository(),
+            new FakeProductRepository(product),
             new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(balances),
+            new FakeLotRepository(),
             new FakeCustomerContext(customerId));
 
         var result = await service.ReleaseAsync(
@@ -136,6 +189,63 @@ public sealed class OutboundOrderServiceTests
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("outbound_orders.order.window_invalid");
+    }
+
+    [Fact]
+    public async Task Release_Should_Fail_When_Insufficient_Stock()
+    {
+        var customerId = Guid.NewGuid();
+        var product = new Product { Id = Guid.NewGuid(), Code = "SKU-LOW", Name = "Low Stock", TrackingMode = TrackingMode.None };
+        var orderItem = new OutboundOrderItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = product.Id,
+            UomId = Guid.NewGuid(),
+            Quantity = 8,
+            Product = product
+        };
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            OrderNumber = "OS-RELEASE-3",
+            Status = OutboundOrderStatus.Registered,
+            Items = new List<OutboundOrderItem> { orderItem }
+        };
+
+        var balances = new List<InventoryBalance>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                QuantityOnHand = 4,
+                QuantityReserved = 0,
+                Status = InventoryBalanceStatus.Available
+            }
+        };
+
+        var service = new OutboundOrderService(
+            new FakeOutboundOrderRepository(order),
+            new FakeWarehouseRepository(),
+            new FakeProductRepository(product),
+            new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(balances),
+            new FakeLotRepository(),
+            new FakeCustomerContext(customerId));
+
+        var result = await service.ReleaseAsync(
+            order.Id,
+            OutboundOrderPriority.Normal,
+            OutboundOrderPickingMethod.SingleOrder,
+            null,
+            null,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("outbound_orders.stock.insufficient");
+        balances.Single().QuantityReserved.Should().Be(0);
     }
 
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
@@ -340,5 +450,86 @@ public sealed class OutboundOrderServiceTests
         }
 
         public Guid? CustomerId { get; }
+    }
+
+    private sealed class FakeInventoryBalanceRepository : IInventoryBalanceRepository
+    {
+        private readonly List<InventoryBalance> _balances;
+
+        public FakeInventoryBalanceRepository()
+        {
+            _balances = new List<InventoryBalance>();
+        }
+
+        public FakeInventoryBalanceRepository(List<InventoryBalance> balances)
+        {
+            _balances = balances;
+        }
+
+        public Task<bool> ExistsAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
+        public Task<bool> ExistsAsync(Guid locationId, Guid productId, Guid? lotId, Guid excludeId, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
+        public Task AddAsync(InventoryBalance balance, CancellationToken cancellationToken = default)
+        {
+            _balances.Add(balance);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(InventoryBalance balance, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<InventoryBalance?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_balances.SingleOrDefault(b => b.Id == id));
+
+        public Task<InventoryBalance?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult(_balances.SingleOrDefault(b => b.Id == id));
+
+        public Task<InventoryBalance?> GetTrackedByKeyAsync(Guid locationId, Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_balances.SingleOrDefault(b => b.ProductId == productId && b.LotId == lotId));
+
+        public Task<int> CountAsync(Guid? locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+
+        public Task<IReadOnlyList<InventoryBalance>> ListAsync(Guid? locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
+
+        public Task<int> CountByLocationAsync(Guid locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+
+        public Task<IReadOnlyList<InventoryBalance>> ListByLocationAsync(Guid locationId, Guid? productId, Guid? lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
+
+        public Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(Guid lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
+
+        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+        {
+            var balances = _balances
+                .Where(b => b.ProductId == productId && b.LotId == lotId)
+                .Where(b => b.Status == InventoryBalanceStatus.Available)
+                .Where(b => b.QuantityOnHand > b.QuantityReserved)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<InventoryBalance>>(balances);
+        }
+    }
+
+    private sealed class FakeLotRepository : ILotRepository
+    {
+        public Task<bool> CodeExistsAsync(Guid productId, string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<bool> CodeExistsAsync(Guid productId, string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task AddAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<Lot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Lot?>(null);
+        public Task<Lot?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Lot?>(null);
+        public Task<Lot?> GetByCodeAsync(Guid productId, string code, CancellationToken cancellationToken = default) => Task.FromResult<Lot?>(null);
+        public Task<int> CountAsync(Guid productId, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+        public Task<IReadOnlyList<Lot>> ListAsync(Guid productId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, LotStatus? status, DateOnly? expirationFrom, DateOnly? expirationTo, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Lot>>(Array.Empty<Lot>());
+        public Task<int> CountExpiringAsync(DateOnly expirationFrom, DateOnly expirationTo, LotStatus? status, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
     }
 }

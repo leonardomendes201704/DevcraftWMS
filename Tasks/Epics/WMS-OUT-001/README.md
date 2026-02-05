@@ -17,8 +17,8 @@ Implementar o fluxo completo de saida e expedicao conforme o documento Especific
 - [TASK-0101] OS: modelo de dados e status | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
 - [TASK-0102] OS: CQRS + endpoints (create/list/get) | Prioridade: P0 | Dependencias: TASK-0101 | Estimativa: 6h
 - [TASK-0103] Portal Cliente: UI criar OS | Prioridade: P0 | Dependencias: TASK-0102 | Estimativa: 6h
-- [TASK-0104] Backoffice: liberar OS + parametros (prioridade, metodo picking, janela) | Prioridade: P1 | Dependencias: TASK-0102 | Estimativa: 6h
-- [TASK-0105] Reserva de estoque e validacao disponibilidade | Prioridade: P0 | Dependencias: TASK-0102 | Estimativa: 6h
+- [DONE-TASK-0104] Backoffice: liberar OS + parametros (prioridade, metodo picking, janela) | Prioridade: P1 | Dependencias: TASK-0102 | Estimativa: 6h
+- [DONE-TASK-0105] Reserva de estoque e validacao disponibilidade | Prioridade: P0 | Dependencias: TASK-0102 | Estimativa: 6h
 - [TASK-0106] Picking: modelo de tarefas e status | Prioridade: P0 | Dependencias: TASK-0101 | Estimativa: 6h
 - [TASK-0107] Picking: geracao de tarefas (wave/batch/zone) | Prioridade: P1 | Dependencias: TASK-0106 | Estimativa: 6h
 - [TASK-0108] DemoMvc: fila de picking + execucao/confirmacao | Prioridade: P1 | Dependencias: TASK-0107 | Estimativa: 6h

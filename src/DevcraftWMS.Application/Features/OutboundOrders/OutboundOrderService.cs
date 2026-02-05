@@ -13,6 +13,8 @@ public sealed class OutboundOrderService : IOutboundOrderService
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IProductRepository _productRepository;
     private readonly IUomRepository _uomRepository;
+    private readonly IInventoryBalanceRepository _inventoryBalanceRepository;
+    private readonly ILotRepository _lotRepository;
     private readonly ICustomerContext _customerContext;
 
     public OutboundOrderService(
@@ -20,12 +22,16 @@ public sealed class OutboundOrderService : IOutboundOrderService
         IWarehouseRepository warehouseRepository,
         IProductRepository productRepository,
         IUomRepository uomRepository,
+        IInventoryBalanceRepository inventoryBalanceRepository,
+        ILotRepository lotRepository,
         ICustomerContext customerContext)
     {
         _orderRepository = orderRepository;
         _warehouseRepository = warehouseRepository;
         _productRepository = productRepository;
         _uomRepository = uomRepository;
+        _inventoryBalanceRepository = inventoryBalanceRepository;
+        _lotRepository = lotRepository;
         _customerContext = customerContext;
     }
 
@@ -207,6 +213,16 @@ public sealed class OutboundOrderService : IOutboundOrderService
             return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.status_locked", "Outbound order status does not allow release.");
         }
 
+        if (order.Status == OutboundOrderStatus.Released)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.already_released", "Outbound order is already released.");
+        }
+
+        if (order.Items.Count == 0)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.items.required", "At least one item is required.");
+        }
+
         if (shippingWindowStartUtc.HasValue ^ shippingWindowEndUtc.HasValue)
         {
             return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.window_required", "Shipping window requires both start and end values.");
@@ -216,6 +232,75 @@ public sealed class OutboundOrderService : IOutboundOrderService
             shippingWindowEndUtc.Value < shippingWindowStartUtc.Value)
         {
             return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.window_invalid", "Shipping window end must be after start.");
+        }
+
+        foreach (var item in order.Items)
+        {
+            if (item.Quantity <= 0)
+            {
+                return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.invalid_quantity", "Quantity must be greater than zero.");
+            }
+
+            var product = item.Product ?? await _productRepository.GetByIdAsync(item.ProductId, cancellationToken);
+            if (product is null)
+            {
+                return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.product_not_found", "Product not found.");
+            }
+
+            Guid? lotId = null;
+            if (!string.IsNullOrWhiteSpace(item.LotCode))
+            {
+                var lot = await _lotRepository.GetByCodeAsync(product.Id, item.LotCode.Trim(), cancellationToken);
+                if (lot is null)
+                {
+                    return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.lot_not_found", "Lot not found.");
+                }
+
+                if (lot.Status != LotStatus.Available)
+                {
+                    return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.lot_unavailable", "Lot is not available for reservation.");
+                }
+
+                if (item.ExpirationDate.HasValue && lot.ExpirationDate.HasValue &&
+                    item.ExpirationDate.Value != lot.ExpirationDate.Value)
+                {
+                    return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.item.lot_mismatch", "Lot expiration date does not match the order item.");
+                }
+
+                lotId = lot.Id;
+            }
+
+            var balances = await _inventoryBalanceRepository.ListAvailableForReservationAsync(
+                product.Id,
+                lotId,
+                cancellationToken);
+
+            var available = balances.Sum(b => b.QuantityOnHand - b.QuantityReserved);
+            if (available < item.Quantity)
+            {
+                return RequestResult<OutboundOrderDetailDto>.Failure(
+                    "outbound_orders.stock.insufficient",
+                    $"Insufficient available stock for product {product.Code}.");
+            }
+
+            var remaining = item.Quantity;
+            foreach (var balance in balances)
+            {
+                if (remaining <= 0)
+                {
+                    break;
+                }
+
+                var balanceAvailable = balance.QuantityOnHand - balance.QuantityReserved;
+                if (balanceAvailable <= 0)
+                {
+                    continue;
+                }
+
+                var reserve = Math.Min(balanceAvailable, remaining);
+                balance.QuantityReserved += reserve;
+                remaining -= reserve;
+            }
         }
 
         order.Priority = priority;

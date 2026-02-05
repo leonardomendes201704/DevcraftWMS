@@ -160,6 +160,37 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
         return await query.ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(
+        Guid productId,
+        Guid? lotId,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        var query = _dbContext.InventoryBalances
+            .Include(b => b.Product)
+            .Include(b => b.Location)
+            .ThenInclude(l => l.CustomerAccesses)
+            .Where(b => b.ProductId == productId)
+            .Where(b => b.Product != null && b.Product.CustomerId == customerId)
+            .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId))
+            .Where(b => b.Status == InventoryBalanceStatus.Available)
+            .Where(b => b.IsActive)
+            .Where(b => b.QuantityOnHand > b.QuantityReserved);
+
+        if (lotId.HasValue)
+        {
+            query = query.Where(b => b.LotId == lotId.Value);
+        }
+        else
+        {
+            query = query.Where(b => b.LotId == null);
+        }
+
+        return await query
+            .OrderBy(b => b.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
     private IQueryable<InventoryBalance> BuildQuery(
         Guid? locationId,
         Guid? productId,

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using DevcraftWMS.Tests.Integration.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DevcraftWMS.Tests.Integration;
 
@@ -21,6 +22,7 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
         var warehouseId = await CreateWarehouseAsync(client);
         var uomId = await CreateUomAsync(client);
         var productId = await CreateProductAsync(client, uomId);
+        await SeedInventoryBalanceAsync(_factory, warehouseId, productId, 10m);
 
         var payload = JsonSerializer.Serialize(new
         {
@@ -164,5 +166,91 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
 
         using var doc = JsonDocument.Parse(body);
         return doc.RootElement.GetProperty("id").GetGuid();
+    }
+
+    private static async Task SeedInventoryBalanceAsync(CustomWebApplicationFactory factory, Guid warehouseId, Guid productId, decimal quantity)
+    {
+        var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Persistence.ApplicationDbContext>();
+
+        var sector = new DevcraftWMS.Domain.Entities.Sector
+        {
+            Id = Guid.NewGuid(),
+            WarehouseId = warehouseId,
+            Code = $"SEC-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Name = "Outbound Sector"
+        };
+        sector.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.SectorCustomer
+        {
+            Id = Guid.NewGuid(),
+            SectorId = sector.Id,
+            CustomerId = customerId
+        });
+
+        var section = new DevcraftWMS.Domain.Entities.Section
+        {
+            Id = Guid.NewGuid(),
+            SectorId = sector.Id,
+            Code = $"SEC-A-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Name = "Outbound Section"
+        };
+        section.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.SectionCustomer
+        {
+            Id = Guid.NewGuid(),
+            SectionId = section.Id,
+            CustomerId = customerId
+        });
+
+        var structure = new DevcraftWMS.Domain.Entities.Structure
+        {
+            Id = Guid.NewGuid(),
+            SectionId = section.Id,
+            Code = $"STR-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Name = "Outbound Structure",
+            Levels = 1
+        };
+        structure.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.StructureCustomer
+        {
+            Id = Guid.NewGuid(),
+            StructureId = structure.Id,
+            CustomerId = customerId
+        });
+
+        var location = new DevcraftWMS.Domain.Entities.Location
+        {
+            Id = Guid.NewGuid(),
+            StructureId = structure.Id,
+            Code = $"LOC-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Barcode = $"LOC-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
+            Level = 1,
+            Row = 1,
+            Column = 1
+        };
+        location.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.LocationCustomer
+        {
+            Id = Guid.NewGuid(),
+            LocationId = location.Id,
+            CustomerId = customerId
+        });
+
+        db.Sectors.Add(sector);
+        db.Sections.Add(section);
+        db.Structures.Add(structure);
+        db.Locations.Add(location);
+        await db.SaveChangesAsync();
+
+        db.InventoryBalances.Add(new DevcraftWMS.Domain.Entities.InventoryBalance
+        {
+            Id = Guid.NewGuid(),
+            LocationId = location.Id,
+            ProductId = productId,
+            LotId = null,
+            QuantityOnHand = quantity,
+            QuantityReserved = 0,
+            Status = DevcraftWMS.Domain.Enums.InventoryBalanceStatus.Available
+        });
+        await db.SaveChangesAsync();
     }
 }
