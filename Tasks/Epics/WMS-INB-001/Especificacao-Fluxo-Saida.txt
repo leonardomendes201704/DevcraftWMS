@@ -1,0 +1,556 @@
+﻿Cenario: Saida e Expedicao (WMS) com produtos variados, rastreabilidade e controle por lote/validade
+1) Contexto do cliente e dos produtos
+
+O cliente AutoPecas Orion (Cliente A) utiliza o armazem do operador logistico CD Vale Verde (3PL). Ele possui estoque de:
+
+Produtos sem controle de lote/validade
+
+Parafusos, arruelas, abraçadeiras, itens de ferragem.
+
+Produtos com controle de lote e validade
+
+Adesivos industriais, selantes, quimicos automotivos, sprays, lubrificantes.
+
+Produtos com regras especiais
+
+Inflamaveis (regras de doca, segregacao, area especifica)
+
+Produtos frageis (embalagem / manuseio)
+
+Produtos de alto valor (armazenagem em area restrita)
+
+O contrato define:
+
+O cliente deve registrar o pedido de saida (Ordem de Saida / OS / Pedido de Expedicao).
+
+O backoffice do armazem transforma o pedido em Ordem de Separacao (Pick Order) e gera tarefas.
+
+O processo exige rastreabilidade por SSCC/UL, lote/validade quando aplicavel, controle de qualidade e conferencias.
+
+O WMS exige controle de status por etapa: liberacao, separacao, conferencia, embalagem, expedicao e transporte.
+
+2) Cliente registra o pedido (Ordem de Saida / OS)
+2.1 Acao do Cliente (Portal / Integracao / EDI)
+
+No portal do WMS (ou via integracao), o cliente cria um Pedido de Saida informando:
+
+Dados do envio
+
+Transportadora (se definida)
+
+Prioridade (normal/urgente)
+
+Previsao de coleta/expedicao
+
+Tipo de carga (palletizada, batida, mista)
+
+Numero de pedido do cliente
+
+Observacoes (ex.: “contém inflamaveis”, “entrega fracionada”, “entrega agendada”)
+
+Itens do pedido
+Para cada SKU:
+
+Codigo do produto (SKU)
+
+Descricao
+
+Quantidade e unidade (cx, un, kg, etc.)
+
+Tipo de embalagem (caixa, fardo, pallet)
+
+Regras do produto (fragil, inflamavel, alto valor)
+
+Regras de lote/validade (FEFO/FIFO), se aplicavel
+
+2.2 Validacoes automaticas no momento do pedido
+
+Ao salvar, o WMS valida:
+
+SKU existe no cadastro do cliente
+
+Unidades e fator de conversao (cx->un, pallet->cx)
+
+Disponibilidade de estoque (quantidade disponivel vs reservada)
+
+Campos obrigatorios por tipo de produto
+
+Se “controlado por validade”: lote/validade pode ser selecionado por regra (FEFO) ou definido pelo cliente
+
+Restricoes de horario/docas (se agendamento)
+
+Saida do processo (cliente):
+
+Pedido fica com status “Pedido Registrado”
+
+Sistema gera identificador, ex.: OS-2026-000512
+
+Se integrado, pode gerar arquivo de “Order Release”
+
+3) Backoffice recebe o pedido e emite a Ordem de Separacao (Pick Order)
+3.1 Triagem do backoffice
+
+Um analista do CD abre a fila de pedidos “Pendentes de liberacao”. Ele confere:
+
+Dados do cliente e prioridade
+
+Restricoes especiais (inflamavel, alto valor)
+
+Disponibilidade de estoque
+
+Se houver inconsistencias:
+
+Status vira “Pendente de ajuste”
+
+Sistema notifica o cliente com o motivo
+
+Se estiver ok:
+
+Aprova e libera a OS
+
+Gera Ordem de Separacao (PO-2026-000781)
+
+3.2 Regras de separacao
+
+O WMS determina:
+
+Metodo de separacao (onda, batch, zone, single order)
+
+Sequencia de picking (otimizado por endereco)
+
+Regra de lote/validade (FEFO, FIFO, escolha manual)
+
+Regras de consolidação e embalagem
+
+Saida do processo (backoffice):
+
+Status: OS Liberada
+
+Pick Order entra na fila operacional
+
+4) Planejamento operacional da saida
+4.1 Encarregado de expedicao
+
+No inicio do turno, o encarregado abre o painel do WMS:
+
+OS previstas para o dia
+
+Capacidade de docas e patio
+
+Tipo de carga e complexidade
+
+Ele define:
+
+Equipe (separadores, conferentes, embaladores)
+
+Equipamentos (coletor RF, impressora de etiquetas, balanca)
+
+Janelas de expedicao e docas
+
+No WMS, a OS muda para:
+
+“Aguardando separacao”
+
+5) Separacao (Picking)
+5.1 Inicio do picking
+
+O operador inicia no coletor:
+
+Seleciona a PO-2026-000781
+
+Confirma metodo de separacao
+
+O sistema gera lista de enderecos e itens
+
+5.2 Execucao
+
+Para cada item:
+
+Operador bipaa endereco
+
+Operador bipaa SKU/UL
+
+Informa quantidade
+
+Regras:
+
+FEFO/FIFO automatico para produtos controlados
+
+Bloqueia separacao de estoque em quarentena
+
+Bloqueia estoque reservado para outra OS
+
+Excecoes:
+
+Falta de estoque (gera pendencia)
+
+SKU divergente
+
+Endereco bloqueado
+
+5.3 Consolidação
+
+Itens podem ser consolidados por:
+
+Pedido (single order)
+
+Cliente
+
+Onda (wave)
+
+O WMS gera:
+
+Etiquetas de caixa/volumes
+
+Identificacao de ULs
+
+Status:
+
+“Separado” ou “Separado Parcial”
+
+6) Conferencia e embalagem
+6.1 Conferencia
+
+Conferente valida itens separados:
+
+Conferencia cega ou assistida
+
+Registro de divergencias (falta/sobra/SKU divergente/avaria)
+
+Evidencia (foto) quando necessario
+
+6.2 Embalagem
+
+Definir embalagem (caixa, filme, paletizacao)
+
+Registrar pesos e dimensoes finais
+
+Gerar etiqueta de volume e nota de embalagem
+
+Status:
+
+“Conferido” e “Embalado”
+
+7) Expedição
+7.1 Alocacao em doca
+
+WMS direciona a OS para doca de expedição
+
+Registra horario de inicio e fim de carregamento
+
+7.2 Carregamento
+
+Operador bipaa volumes/ULs carregados
+
+WMS valida se todos os itens estão embarcados
+
+7.3 Emissao de documentos
+
+Romaneio de carga
+
+Etiqueta de transporte
+
+NF-e de saida (quando aplicavel)
+
+Status final:
+
+“Expedido” ou “Expedido Parcial”
+
+8) Pos-processo e rastreabilidade
+
+Estoque e atualizado (baixa definitiva)
+
+Rastreio de lote/validade por pedido
+
+Historico de movimentacoes por OS
+
+KPIs de expedição:
+
+Tempo de separacao
+
+Tempo de conferencia
+
+Tempo total OS->Expedido
+
+Taxa de divergencias na saida
+
+9) Regras de negocio (RN)
+RN-01 — Separacao respeita FEFO/FIFO
+
+Produtos controlados por validade: sempre escolher lote com menor validade (FEFO), salvo excecao autorizada.
+
+RN-02 — Bloqueio de estoque
+
+Estoque em quarentena ou bloqueado nao pode ser separado.
+
+RN-03 — Reserva de estoque
+
+Ao liberar OS, estoque e reservado para evitar conflito com outras OS.
+
+RN-04 — Conferencia obrigatoria por tipo de produto
+
+Produtos de alto valor ou controle especial exigem conferencia dupla.
+
+RN-05 — Embalagem e peso
+
+Itens com divergencia de peso/volume devem gerar alerta.
+
+RN-06 — Cancelamento de OS
+
+Somente perfis autorizados podem cancelar OS; motivo obrigatorio.
+
+RN-07 — Expedicao parcial
+
+Permitir expedir parcialmente quando houver falta; pendencia registrada.
+
+RN-08 — Enderecos de picking
+
+Picking prioriza enderecos de picking; se insuficiente, faz reposicao.
+
+RN-09 — Reposicao automatica
+
+Quando picking abaixo do minimo, gerar tarefa de reposicao.
+
+10) Estados e Status (modelo de status)
+10.1 Status da OS
+
+Registrada → Pendente ajuste → Liberada → Em separacao → Separada → Conferida → Embalada → Em expedicao → Expedida
+(ou: Expedida parcial, Cancelada)
+
+10.2 Status da PO (Pick Order)
+
+Criada → Em separacao → Separada → Conferida → Finalizada
+
+10.3 Status da UL/Volume
+
+Em estoque → Separada → Conferida → Embalada → Embarcada
+
+11) Fluxos alternativos
+
+FA-01: Sem estoque suficiente → OS parcial ou backorder
+
+FA-02: Cross-dock → itens separados direto da doca de recebimento
+
+FA-03: Itens com lote bloqueado → substituicao por outro lote (com aprovacao)
+
+FA-04: Reprocesso de conferencia → divergencia reaberta
+
+FA-05: Cancelamento apos separacao → devolucao ao estoque com auditoria
+
+12) Atores (Personas)
+
+Cliente (Expedidor / Administrativo do Cliente)
+
+Backoffice do CD (Analista Outbound)
+
+Encarregado de Expedicao
+
+Separador
+
+Conferente
+
+Embalador
+
+Operador de doca
+
+Administrador WMS
+
+13) Pre-condicoes
+
+Clientes e SKUs cadastrados
+
+Enderecos de picking e estoque com capacidade
+
+Regras de rastreio e validade configuradas
+
+Perfis e permissoes definidos (outbound)
+
+14) Entradas e Saidas do Processo
+14.1 Entradas
+
+Pedido do cliente (OS) com itens e quantidades
+
+Dados de transporte e janela de coleta
+
+Estoque e saldo por endereco
+
+14.2 Saidas
+
+OS expedida e faturada
+
+Estoque baixado e rastreabilidade mantida
+
+Relatorios de expedicao
+
+Notificacao ao cliente
+
+15) KPIs sugeridos
+
+Tempo medio de separacao
+
+Tempo de conferencia
+
+Tempo total OS→Expedido
+
+Taxa de divergencias
+
+Indice de expedicao parcial
+
+16) Mapa de Telas (sugestao)
+
+Portal Cliente → OS
+
+Criar pedido de saida, anexar docs, acompanhar status
+
+Backoffice → Fila de OS
+
+Liberar OS, definir prioridade, cancelar, reagendar
+
+Separacao → Picking
+
+Fila de picking, tarefa, confirmacao de separacao
+
+Conferencia → Revisao
+
+Conferir itens, registrar divergencias
+
+Embalagem → Packing
+
+Gerar volumes, pesos, etiqueta
+
+Expedicao → Carregamento
+
+Doca, carregar, emitir documentos
+
+17) APIs minimas (proposta)
+
+OS
+
+POST /api/outbound-orders
+
+GET /api/outbound-orders?status=...
+
+GET /api/outbound-orders/{id}
+
+POST /api/outbound-orders/{id}/release
+
+POST /api/outbound-orders/{id}/cancel
+
+Picking
+
+GET /api/picking/tasks?status=...
+
+POST /api/picking/tasks/{id}/confirm
+
+POST /api/picking/tasks/{id}/reassign
+
+Conferencia
+
+POST /api/outbound-orders/{id}/check
+
+Packing
+
+POST /api/outbound-orders/{id}/pack
+
+Expedicao
+
+POST /api/outbound-orders/{id}/ship
+
+POST /api/outbound-orders/{id}/documents
+
+18) Checklist de Implementacao (para Task / Epic)
+18.1 Cadastros e parametrizacoes
+
+Cadastro de enderecos de picking e reposicao
+
+Configuracao de reposicao automatica
+
+Regras de separacao e conferência
+
+Perfis e permissoes outbound
+
+18.2 OS / Pedido do Cliente
+
+Tela/API para criar OS com itens
+
+Validacoes por SKU (lote/validade)
+
+Status e auditoria
+
+18.3 Separacao e Picking
+
+Criacao de tarefas e otimizacao de rota
+
+Confirmacao por bipagem
+
+18.4 Conferencia e Packing
+
+Registro de divergencias e evidencias
+
+Embalagem e etiquetas
+
+18.5 Expedicao
+
+Doca, carregamento, documentos
+
+18.6 Notificacoes
+
+Email/portal/webhook
+
+19) Perguntas de validacao
+
+Separacao deve ser por ondas (wave) ou por pedido?
+
+Cross-dock outbound e permitido para todos?
+
+Conferencia dupla e obrigatoria para quais SKUs?
+
+Cancelamento pos separacao deve exigir aprovacao?
+
+Como tratar devolucao parcial?
+
+20) Epic — WMS-OUT-001: Outbound (Saida e Expedicao)
+
+Objetivo do Epic
+
+Implementar o processo completo de saida e expedicao, desde a OS do cliente ate a entrega, com rastreio por UL/SSCC e lotes.
+
+Criterios de sucesso (DoD do Epic)
+
+Fluxo end-to-end executavel sem controles externos
+
+Estoque baixado com rastreabilidade
+
+Divergencias registradas e visiveis em relatorios
+
+Expedicao parcial e cancelamento controlados
+
+Relatorio final e notificacao ao cliente
+
+Template de Descricao (para cada Task no Azure DevOps)
+
+Descricao
+
+Contexto:
+
+Objetivo:
+
+Regra(s) de negocio:
+
+Impactos:
+
+Observacoes:
+
+Criterios de Aceite
+
+...
+
+DoD
+
+Cobertura minima de testes (unit/integracao conforme aplicavel)
+
+Logs/auditoria de eventos criticos
+
+Validacoes e mensagens para o usuario
+
+Atualizacao de documentacao Wiki

@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-05
+- Tasking - Epic WMS-OUT-001 created.
+  - Key changes: created outbound epic README and tasks (0100-0120) based on Especificacao-Fluxo-Saida.
+
+## 2026-02-05
 - Doc - Manual WMS-INB-001 atualizado.
   - Key changes: reescreveu o manual HTML com escopos usuario/tecnico, fluxos, RBAC, anexos, KPIs e checklists.
 
