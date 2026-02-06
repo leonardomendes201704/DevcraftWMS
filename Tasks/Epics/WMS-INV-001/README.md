@@ -28,7 +28,7 @@ Entregar uma experiencia completa para localizar e explicar, com confianca, onde
 - Documentacao/Manual interno.
 
 ## Ordem sugerida (prioridade e dependencias)
-- [TASK-0200] Visao consolidada + API base de consulta | Prioridade: P0 | Dependencias: - | Estimativa: 12h
+- [DONE-TASK-0200] Visao consolidada + API base de consulta | Prioridade: P0 | Dependencias: - | Estimativa: 12h
 - [TASK-0201] UI Backoffice (consulta + filtros + drill-down) | Prioridade: P0 | Dependencias: TASK-0200 | Estimativa: 12h
 - [TASK-0202] Disponibilidade real (reservas/bloqueios/processos) | Prioridade: P0 | Dependencias: TASK-0200 | Estimativa: 10h
 - [TASK-0203] Linha do tempo e auditoria de movimentacoes | Prioridade: P1 | Dependencias: TASK-0200 | Estimativa: 10h

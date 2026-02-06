@@ -42,6 +42,7 @@ using DevcraftWMS.Application.Features.PickingReplenishments;
 using DevcraftWMS.Application.Features.Returns;
 using DevcraftWMS.Application.Features.InventoryCounts;
 using DevcraftWMS.Application.Features.DockSchedules;
+using DevcraftWMS.Application.Features.InventoryVisibility;
 
 namespace DevcraftWMS.Application;
 
@@ -88,6 +89,7 @@ public static class DependencyInjection
         services.AddScoped<IReturnService, ReturnService>();
         services.AddScoped<IInventoryCountService, InventoryCountService>();
         services.AddScoped<IDockScheduleService, DockScheduleService>();
+        services.AddScoped<IInventoryVisibilityService, InventoryVisibilityService>();
         services.AddScoped<PickingReplenishmentService>();
         services.AddScoped<RoleService>();
         services.AddScoped<PermissionService>();

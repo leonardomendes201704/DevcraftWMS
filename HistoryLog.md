@@ -5,6 +5,10 @@
   - Key changes: added epic README and tasks 0200-0206.
 
 ## 2026-02-06
+- TASK-0200 - Inventory visibility API consolidada concluida.
+  - Key changes: added inventory visibility service, repository, API endpoint, and tests.
+
+## 2026-02-06
 - TASK-0104 - Mobile Conferencia fila concluida.
   - Key changes: documentacao finalizada e task marcada como DONE.
 

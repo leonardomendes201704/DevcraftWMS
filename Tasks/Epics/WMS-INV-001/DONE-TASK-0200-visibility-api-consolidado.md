@@ -88,4 +88,4 @@ Backoffice precisa responder rapidamente onde estao os produtos do Cliente X no 
 - Swagger: verificar resposta com summary + locations.
 
 ## Status
-PENDING
+DONE
