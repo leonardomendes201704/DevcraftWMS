@@ -64,4 +64,13 @@ public interface IInventoryBalanceRepository
         Guid? lotId,
         ZoneType? zoneType = null,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<InventoryBalance>> ListByProductAndZonesAsync(
+        Guid productId,
+        IReadOnlyList<ZoneType> zoneTypes,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<InventoryBalance>> ListByZonesAsync(
+        IReadOnlyList<ZoneType> zoneTypes,
+        CancellationToken cancellationToken = default);
 }

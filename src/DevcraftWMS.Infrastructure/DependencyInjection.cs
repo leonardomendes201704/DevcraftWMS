@@ -26,6 +26,7 @@ using DevcraftWMS.Application.Features.InboundOrderNotifications;
 using DevcraftWMS.Application.Features.OutboundOrderNotifications;
 using DevcraftWMS.Application.Abstractions.Storage;
 using DevcraftWMS.Infrastructure.Storage;
+using DevcraftWMS.Application.Features.PickingReplenishments;
 
 namespace DevcraftWMS.Infrastructure;
 
@@ -70,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<IOutboundShipmentRepository, OutboundShipmentRepository>();
         services.AddScoped<IOutboundOrderReservationRepository, OutboundOrderReservationRepository>();
         services.AddScoped<IOutboundOrderNotificationRepository, OutboundOrderNotificationRepository>();
+        services.AddScoped<IPickingReplenishmentTaskRepository, PickingReplenishmentTaskRepository>();
         services.AddScoped<IDashboardKpiRepository, DashboardKpiRepository>();
         services.AddScoped<IAsnRepository, AsnRepository>();
         services.AddScoped<IAsnAttachmentRepository, AsnAttachmentRepository>();
@@ -115,6 +117,9 @@ public static class DependencyInjection
             .Bind(configuration.GetSection("Seed:SampleData"))
             .ValidateOnStart();
         services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<SampleDataOptions>, SampleDataOptionsValidation>();
+        services.AddOptions<PickingReplenishmentOptions>()
+            .Bind(configuration.GetSection("Replenishment"))
+            .ValidateOnStart();
         services.AddScoped<SampleDataSeeder>();
         services.AddScoped<INotificationPublisher, NoOpNotificationPublisher>();
         services.AddHostedService<OutboxProcessor>();

@@ -38,6 +38,7 @@ using DevcraftWMS.Application.Features.QualityInspections;
 using DevcraftWMS.Application.Features.Dashboard;
 using DevcraftWMS.Application.Features.Rbac;
 using DevcraftWMS.Application.Features.Users;
+using DevcraftWMS.Application.Features.PickingReplenishments;
 
 namespace DevcraftWMS.Application;
 
@@ -81,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitLoadService, UnitLoadService>();
         services.AddScoped<IReceiptCountService, ReceiptCountService>();
         services.AddScoped<IReceiptDivergenceService, ReceiptDivergenceService>();
+        services.AddScoped<PickingReplenishmentService>();
         services.AddScoped<RoleService>();
         services.AddScoped<PermissionService>();
         services.AddScoped<UserManagementService>();

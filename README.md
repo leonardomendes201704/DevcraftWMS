@@ -382,6 +382,9 @@ Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back f
 Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Seed:SampleData:PickingTaskCount       -> Number of picking tasks to seed
+Replenishment:PickingMinQuantity       -> Minimum available quantity in picking before replenishment triggers
+Replenishment:PickingTargetQuantity    -> Target quantity to reach after replenishment
+Replenishment:MaxTasksPerRun           -> Maximum replenishment tasks generated per run
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 Dashboard:InboundWindowDays        -> Default KPI window (days) for inbound KPIs
 Dashboard:OutboundWindowDays       -> Default KPI window (days) for outbound KPIs

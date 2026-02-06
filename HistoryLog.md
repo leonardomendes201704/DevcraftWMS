@@ -1,6 +1,10 @@
 # History Log
 
-## 2026-02-05
+## 2026-02-06
+- TASK-0119 - Picking replenishment automation completed.
+  - Key changes: added replenishment task model/repository, generate/list endpoints, config options, and tests.
+
+## 2026-02-06
 - Seed - Picking queue sample data added.
   - Key changes: added picking task seeding (orders/tasks/items) with configurable count for mobile queue visibility.
 

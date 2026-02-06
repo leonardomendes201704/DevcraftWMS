@@ -199,6 +199,43 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<InventoryBalance>> ListByProductAndZonesAsync(
+        Guid productId,
+        IReadOnlyList<ZoneType> zoneTypes,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        var query = _dbContext.InventoryBalances
+            .AsNoTracking()
+            .Include(b => b.Location)
+            .ThenInclude(l => l.Zone)
+            .Include(b => b.Product)
+            .Where(b => b.ProductId == productId)
+            .Where(b => b.Product != null && b.Product.CustomerId == customerId)
+            .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId))
+            .Where(b => b.Location != null && b.Location.Zone != null && zoneTypes.Contains(b.Location.Zone.ZoneType))
+            .Where(b => b.IsActive);
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<InventoryBalance>> ListByZonesAsync(
+        IReadOnlyList<ZoneType> zoneTypes,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        return await _dbContext.InventoryBalances
+            .AsNoTracking()
+            .Include(b => b.Location)
+                .ThenInclude(l => l.Zone)
+            .Include(b => b.Product)
+            .Where(b => b.Product != null && b.Product.CustomerId == customerId)
+            .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId))
+            .Where(b => b.Location != null && b.Location.Zone != null && zoneTypes.Contains(b.Location.Zone.ZoneType))
+            .Where(b => b.IsActive)
+            .ToListAsync(cancellationToken);
+    }
+
     private IQueryable<InventoryBalance> BuildQuery(
         Guid? locationId,
         Guid? productId,

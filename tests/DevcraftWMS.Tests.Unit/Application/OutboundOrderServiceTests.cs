@@ -660,6 +660,12 @@ public sealed class OutboundOrderServiceTests
                 .ToList();
             return Task.FromResult<IReadOnlyList<InventoryBalance>>(balances);
         }
+
+        public Task<IReadOnlyList<InventoryBalance>> ListByProductAndZonesAsync(Guid productId, IReadOnlyList<ZoneType> zoneTypes, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(_balances.Where(b => b.ProductId == productId).ToList());
+
+        public Task<IReadOnlyList<InventoryBalance>> ListByZonesAsync(IReadOnlyList<ZoneType> zoneTypes, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<InventoryBalance>>(_balances.ToList());
     }
 
     private sealed class FakeOutboundOrderReservationRepository : IOutboundOrderReservationRepository
