@@ -1,6 +1,6 @@
-using DevcraftWMS.Api.Contracts;
-using DevcraftWMS.Api.Extensions;
+﻿using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.PickingTasks.Commands.ConfirmPickingTask;
+using DevcraftWMS.Application.Features.PickingTasks.Commands.StartPickingTask;
 using DevcraftWMS.Application.Features.PickingTasks.Queries.GetPickingTaskById;
 using DevcraftWMS.Application.Features.PickingTasks.Queries.ListPickingTasksPaged;
 using DevcraftWMS.Domain.Enums;
@@ -56,6 +56,14 @@ public sealed class PickingTasksController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetPickingTaskByIdQuery(id), cancellationToken);
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/start")]
+    [Authorize(Policy = "Role:Backoffice")]
+    public async Task<IActionResult> Start(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new StartPickingTaskCommand(id), cancellationToken);
         return this.ToActionResult(result);
     }
 
