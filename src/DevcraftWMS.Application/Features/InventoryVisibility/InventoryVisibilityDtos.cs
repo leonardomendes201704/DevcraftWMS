@@ -2,6 +2,11 @@ using DevcraftWMS.Domain.Enums;
 
 namespace DevcraftWMS.Application.Features.InventoryVisibility;
 
+public sealed record InventoryVisibilityAlertDto(
+    string Code,
+    string Severity,
+    string Message);
+
 public sealed record InventoryVisibilitySummaryDto(
     Guid ProductId,
     string ProductCode,
@@ -11,7 +16,8 @@ public sealed record InventoryVisibilitySummaryDto(
     decimal QuantityReserved,
     decimal QuantityBlocked,
     decimal QuantityInProcess,
-    decimal QuantityAvailable);
+    decimal QuantityAvailable,
+    IReadOnlyList<InventoryVisibilityAlertDto> Alerts);
 
 public sealed record InventoryVisibilityLocationDto(
     Guid LocationId,
@@ -38,7 +44,8 @@ public sealed record InventoryVisibilityLocationDto(
     InventoryBalanceStatus Status,
     bool IsActive,
     DateTime CreatedAtUtc,
-    IReadOnlyList<string> BlockedReasons);
+    IReadOnlyList<string> BlockedReasons,
+    IReadOnlyList<InventoryVisibilityAlertDto> Alerts);
 
 public sealed record InventoryVisibilityTraceDto(
     string EventType,

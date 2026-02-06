@@ -126,6 +126,27 @@
     string StatusBadgeClass(InventoryBalanceStatus status)
         => status == InventoryBalanceStatus.Available ? "text-bg-success" : "text-bg-warning";
 
+    string AlertBadgeClass(string severity)
+        => severity?.ToLowerInvariant() switch
+        {
+            "critical" => "text-bg-danger",
+            "warning" => "text-bg-warning",
+            "info" => "text-bg-info",
+            _ => "text-bg-secondary"
+        };
+
+    IHtmlContent RenderAlerts(IReadOnlyList<DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilityAlertViewModel> alerts)
+    {
+        if (alerts.Count == 0)
+        {
+            return new HtmlString("-");
+        }
+
+        var badges = string.Join(" ", alerts.Select(alert =>
+            $"<span class=\"badge {AlertBadgeClass(alert.Severity)}\">{HtmlEncoder.Default.Encode(alert.Message)}</span>"));
+        return new HtmlString(badges);
+    }
+
     var summaryGrid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilitySummaryViewModel>()
         .WithTitle("Summary by product")
         .WithSubtitle($"Total: {Model.SummaryItems.Count}")
@@ -139,6 +160,7 @@
         .AddColumn("Blocked", item => new HtmlString(item.QuantityBlocked.ToString("N2")))
         .AddColumn("In process", item => new HtmlString(item.QuantityInProcess.ToString("N2")))
         .AddColumn("Available", item => new HtmlString($"<strong>{item.QuantityAvailable:N2}</strong>"), "QuantityAvailable")
+        .AddColumn("Alerts", item => RenderAlerts(item.Alerts))
         .Build();
 
     var locationGrid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilityLocationViewModel>()
@@ -172,6 +194,7 @@
                 $"<span class=\"badge text-bg-warning\">{HtmlEncoder.Default.Encode(reason)}</span>"));
             return new HtmlString(badges);
         })
+        .AddColumn("Alerts", item => RenderAlerts(item.Alerts))
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .Build();
@@ -251,6 +274,41 @@
         <partial name="_Grid" model="locationGrid" />
     </div>
     <div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="timeline-tab">
+        <form method="get" class="mb-3">
+            <input type="hidden" name="WarehouseId" value="@Model.Query.WarehouseId" />
+            <input type="hidden" name="Sku" value="@Model.Query.Sku" />
+            <input type="hidden" name="LotCode" value="@Model.Query.LotCode" />
+            <input type="hidden" name="ExpirationFrom" value="@Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd")" />
+            <input type="hidden" name="ExpirationTo" value="@Model.Query.ExpirationTo?.ToString("yyyy-MM-dd")" />
+            <input type="hidden" name="Status" value="@Model.Query.Status?.ToString()" />
+            <input type="hidden" name="IsActive" value="@Model.Query.IsActive?.ToString()" />
+            <input type="hidden" name="IncludeInactive" value="@Model.Query.IncludeInactive.ToString()" />
+            <input type="hidden" name="OrderBy" value="@Model.Query.OrderBy" />
+            <input type="hidden" name="OrderDir" value="@Model.Query.OrderDir" />
+            <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+
+            <div class="d-flex flex-wrap gap-2 align-items-end">
+                <div>
+                    <label class="form-label mb-1">Product</label>
+                    <select class="form-select" name="ProductId">
+                        <option value="">Select a product</option>
+                        @foreach (var product in Model.Products)
+                        {
+                            <option value="@product.Value" selected="@(product.Selected ? "selected" : null)">@product.Text</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-primary" type="submit">Load timeline</button>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#inventoryVisibilityFilters">
+                        Open filters
+                    </button>
+                </div>
+            </div>
+        </form>
+
         @if (!Model.Query.ProductId.HasValue)
         {
             <div class="alert alert-info">

@@ -394,6 +394,8 @@ Replenishment:MaxTasksPerRun           -> Maximum replenishment tasks generated 
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 Dashboard:InboundWindowDays        -> Default KPI window (days) for inbound KPIs
 Dashboard:OutboundWindowDays       -> Default KPI window (days) for outbound KPIs
+InventoryVisibility:Alerts:ExpirationAlertDays -> Days threshold for expiring lot alerts in inventory visibility
+InventoryVisibility:Alerts:FragmentationLocationThreshold -> Location count threshold for fragmentation alerts
 Notifications:InboundOrders:EmailEnabled -> Enable inbound order email notifications
 Notifications:InboundOrders:WebhookEnabled -> Enable inbound order webhook notifications
 Notifications:InboundOrders:PortalEnabled -> Enable inbound order portal notifications

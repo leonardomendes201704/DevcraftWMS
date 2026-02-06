@@ -5,6 +5,18 @@
   - Key changes: added epic README and tasks 0200-0206.
 
 ## 2026-02-06
+- TASK-0205 - Alertas operacionais e inconsistencias na visibilidade de estoque.
+  - Key changes: added alert rules, UI badges, export columns, and alert configuration options.
+
+## 2026-02-06
+- TASK-0206 - Documentacao e manual interno da visibilidade de estoque.
+  - Key changes: added manual section, FAQ entry, and updated rules map.
+
+## 2026-02-06
+- Fix - Inventory visibility timeline selector.
+  - Key changes: added product selector and action button to load timeline.
+
+## 2026-02-06
 - Ensure seeded inventory counts are created as active records.
 - Ensure seed reset cleans inventory counts even when no inbound receipts exist.
 - Hard-delete seed inventory counts during reset to avoid soft-delete leftovers.

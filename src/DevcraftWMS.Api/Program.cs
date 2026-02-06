@@ -64,6 +64,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<DevcraftWMS.Application.Abstractions.Auth.ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection("Logging"));
 builder.Services.Configure<TelemetryOptions>(builder.Configuration.GetSection("Telemetry"));
+builder.Services.Configure<DevcraftWMS.Application.Features.InventoryVisibility.InventoryVisibilityAlertOptions>(
+    builder.Configuration.GetSection("InventoryVisibility:Alerts"));
 builder.Services.AddOptions<CustomerContextOptions>()
     .Bind(builder.Configuration.GetSection("CustomerContext"))
     .Validate(options => !string.IsNullOrWhiteSpace(options.HeaderName), "CustomerContext:HeaderName is required.")

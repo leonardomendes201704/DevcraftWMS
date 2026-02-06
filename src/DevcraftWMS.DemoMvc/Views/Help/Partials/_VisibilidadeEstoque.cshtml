@@ -1,0 +1,81 @@
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Visibilidade de Estoque (por cliente e armazem)</h2>
+        <p class="small text-muted">
+            Esta consulta responde: onde estao os produtos, quanto existe de saldo, o que esta reservado,
+            bloqueado ou em processo e quais riscos devem ser sinalizados.
+        </p>
+
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <h3 class="h6 text-uppercase text-muted">Como acessar</h3>
+                <ol class="small">
+                    <li>Acesse <a href="/InventoryVisibility" class="link-primary">/InventoryVisibility</a>.</li>
+                    <li>Selecione o cliente (header X-Customer-Id) e o armazem desejado.</li>
+                    <li>Aplique filtros por SKU, lote, validade e status.</li>
+                    <li>Use as abas Summary e Locations para ver consolidado e distribuicao fisica.</li>
+                    <li>Exportar: PDF/Excel/Print para enviar ao cliente.</li>
+                </ol>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h3 class="h6 text-uppercase text-muted">Filtros principais</h3>
+                <ul class="small mb-0">
+                    <li>Warehouse, Product, SKU, Lot, Expiration window.</li>
+                    <li>Status do saldo (Available/Blocked/Damaged).</li>
+                    <li>Ativo/Inativo (IsActive) e ordenacao.</li>
+                </ul>
+            </div>
+        </div>
+
+        <hr />
+
+        <h3 class="h6 text-uppercase text-muted">Calculo de disponibilidade</h3>
+        <div class="alert alert-info small">
+            Disponivel = OnHand - Reserved - Blocked - InProcess
+        </div>
+        <ul class="small">
+            <li><strong>Reserved</strong>: reservas de outbound em aberto.</li>
+            <li><strong>Blocked</strong>: saldo com status bloqueado/danificado ou inspeção de qualidade pendente.</li>
+            <li><strong>InProcess</strong>: itens em recebimento/conferencia que ainda nao liberaram saldo.</li>
+        </ul>
+
+        <h3 class="h6 text-uppercase text-muted">Alertas operacionais</h3>
+        <div class="row g-2 small">
+            <div class="col-12 col-md-6">
+                <ul class="mb-0">
+                    <li>Validade proxima (configuravel em dias).</li>
+                    <li>Saldo bloqueado por status.</li>
+                    <li>Inspecao de qualidade pendente.</li>
+                    <li>Restricao de endereco (sem lote/validade).</li>
+                </ul>
+            </div>
+            <div class="col-12 col-md-6">
+                <ul class="mb-0">
+                    <li>Fragmentacao de estoque (muitas localizacoes).</li>
+                    <li>Badges por severidade: warning/critical.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="h6 text-uppercase text-muted mt-4">Rastreabilidade</h3>
+        <p class="small mb-2">
+            Use a aba Timeline para ver a linha do tempo com eventos de movimentacao, recebimento,
+            reservas e contagens. Selecione um produto para habilitar a aba.
+        </p>
+
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <figure class="border rounded p-3 bg-light small">
+                    <figcaption class="text-muted mb-2">Print sugerido: Summary por produto</figcaption>
+                    <div class="text-muted">Capturar tabela de resumo com quantidades e alertas.</div>
+                </figure>
+            </div>
+            <div class="col-12 col-md-6">
+                <figure class="border rounded p-3 bg-light small">
+                    <figcaption class="text-muted mb-2">Print sugerido: Locations + alertas</figcaption>
+                    <div class="text-muted">Capturar distribuicao fisica e motivos de bloqueio.</div>
+                </figure>
+            </div>
+        </div>
+    </div>
+</div>

@@ -49,6 +49,10 @@ Este mapa lista regras confirmadas no codigo e onde elas aparecem.
 | Status de saldo | `src/DevcraftWMS.Domain/Enums/InventoryBalanceStatus.cs` | Define disponibilidade de estoque. |
 | Movimentacoes | `src/DevcraftWMS.Application/Features/InventoryMovements/*` | Auditoria de entradas/saidas. |
 | Lotes e validade | `src/DevcraftWMS.Domain/Entities/Lot.cs` + `OutboundOrderService.ValidateTrackingMode` | Rastreio por lote e vencimento. |
+| Disponibilidade real (on hand - reservado - bloqueado - em processo) | `src/DevcraftWMS.Application/Features/InventoryVisibility/InventoryVisibilityService.cs` | Base do calculo de disponibilidade na consulta. |
+| Alertas de validade e fragmentacao | `src/DevcraftWMS.Application/Features/InventoryVisibility/InventoryVisibilityService.cs` | Sinaliza riscos operacionais no resumo e localizacoes. |
+| Exportacao de visibilidade | `src/DevcraftWMS.Application/Features/InventoryVisibility/Queries/ExportInventoryVisibility/ExportInventoryVisibilityQueryHandler.cs` | Gera PDF/CSV/print com alertas. |
+| Timeline de eventos | `src/DevcraftWMS.Infrastructure/Persistence/InventoryVisibilityRepository.cs` | Consolida eventos de movimentacao, recebimento, reservas e contagens. |
 
 ## Permissoes e RBAC
 | Regra | Onde no codigo | Impacto |

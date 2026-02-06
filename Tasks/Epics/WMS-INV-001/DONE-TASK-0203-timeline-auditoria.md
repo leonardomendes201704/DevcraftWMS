@@ -31,11 +31,11 @@ DONE
   - Reservas outbound (OutboundOrderReservations)
   - Inventarios (InventoryCountItems)
 - Ordenacao por `OccurredAtUtc` desc no service.
-- UI Inventory Visibility agora exibe aba "Timeline" quando um produto e selecionado.
+- UI Inventory Visibility agora exibe seletor de produto na aba "Timeline" para carregar a linha do tempo.
 - Auditoria de consulta registrada via RequestLogs (LogsDb) com query string contendo `customerId`.
 
 ## How to Test
-- UI: selecione um produto na tela `/InventoryVisibility` e abra a aba Timeline.
+- UI: abra `/InventoryVisibility`, escolha um produto na aba Timeline e clique em "Load timeline".
 - Swagger: `GET /api/inventory-visibility/{productId}/timeline` com `customerId` e `warehouseId`.
 - Unit: `InventoryVisibilityServiceTests.GetTimelineAsync_Should_Order_By_Date`.
 - Integration: `InventoryVisibilityEndpointsTests.Get_Inventory_Visibility_Timeline_Should_Return_Movements`.

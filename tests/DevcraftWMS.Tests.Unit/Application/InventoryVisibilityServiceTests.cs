@@ -4,6 +4,7 @@ using DevcraftWMS.Application.Features.InventoryVisibility;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Tests.Unit.Application;
 
@@ -52,7 +53,8 @@ public sealed class InventoryVisibilityServiceTests
 
         var service = new InventoryVisibilityService(
             new FakeInventoryVisibilityRepository(balances),
-            new FakeCustomerContext(customerId));
+            new FakeCustomerContext(customerId),
+            Options.Create(new InventoryVisibilityAlertOptions()));
 
         var result = await service.GetAsync(
             customerId,
@@ -124,7 +126,8 @@ public sealed class InventoryVisibilityServiceTests
 
         var service = new InventoryVisibilityService(
             new FakeInventoryVisibilityRepository(new[] { balance }, reservations, inspections, inProcess),
-            new FakeCustomerContext(customerId));
+            new FakeCustomerContext(customerId),
+            Options.Create(new InventoryVisibilityAlertOptions()));
 
         var result = await service.GetAsync(
             customerId,
@@ -170,7 +173,8 @@ public sealed class InventoryVisibilityServiceTests
 
         var service = new InventoryVisibilityService(
             new FakeInventoryVisibilityRepository(Array.Empty<InventoryBalance>(), timeline: trace),
-            new FakeCustomerContext(customerId));
+            new FakeCustomerContext(customerId),
+            Options.Create(new InventoryVisibilityAlertOptions()));
 
         var result = await service.GetTimelineAsync(
             customerId,
@@ -182,6 +186,95 @@ public sealed class InventoryVisibilityServiceTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Select(t => t.Description).Should().ContainInOrder("newer", "middle", "older");
+    }
+
+    [Fact]
+    public async Task GetAsync_Should_Surface_Expiry_And_Fragmentation_Alerts()
+    {
+        var customerId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var warehouse = new Warehouse { Id = warehouseId, Name = "WH-1" };
+        var sector = new Sector { Id = Guid.NewGuid(), WarehouseId = warehouseId, Code = "S-01", Warehouse = warehouse };
+        var section = new Section { Id = Guid.NewGuid(), SectorId = sector.Id, Code = "SEC-01", Sector = sector };
+        var structure = new Structure { Id = Guid.NewGuid(), SectionId = section.Id, Code = "STR-01", Section = section };
+
+        var zone = new Zone { Id = Guid.NewGuid(), WarehouseId = warehouseId, Code = "Z-01", ZoneType = ZoneType.Storage };
+        var locationA = new Location { Id = Guid.NewGuid(), StructureId = structure.Id, Code = "A-01-01", Structure = structure, Zone = zone };
+        var locationB = new Location { Id = Guid.NewGuid(), StructureId = structure.Id, Code = "A-01-02", Structure = structure, Zone = zone };
+
+        var uom = new Uom { Id = Guid.NewGuid(), Code = "EA" };
+        var product = new Product { Id = Guid.NewGuid(), CustomerId = customerId, Code = "SKU-ALERT", Name = "Alert Product", BaseUom = uom };
+        var lot = new Lot
+        {
+            Id = Guid.NewGuid(),
+            ProductId = product.Id,
+            Code = "LOT-1",
+            ExpirationDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(5)
+        };
+
+        var balances = new List<InventoryBalance>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                LocationId = locationA.Id,
+                Location = locationA,
+                ProductId = product.Id,
+                Product = product,
+                LotId = lot.Id,
+                Lot = lot,
+                QuantityOnHand = 10,
+                Status = InventoryBalanceStatus.Available
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                LocationId = locationB.Id,
+                Location = locationB,
+                ProductId = product.Id,
+                Product = product,
+                LotId = lot.Id,
+                Lot = lot,
+                QuantityOnHand = 5,
+                Status = InventoryBalanceStatus.Available
+            }
+        };
+
+        var options = Options.Create(new InventoryVisibilityAlertOptions
+        {
+            ExpirationAlertDays = 15,
+            FragmentationLocationThreshold = 1
+        });
+
+        var service = new InventoryVisibilityService(
+            new FakeInventoryVisibilityRepository(balances),
+            new FakeCustomerContext(customerId),
+            options);
+
+        var visibility = await service.GetAsync(
+            customerId,
+            warehouseId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            1,
+            50,
+            "ProductCode",
+            "asc",
+            CancellationToken.None);
+
+        visibility.IsSuccess.Should().BeTrue();
+        var summaryAlerts = visibility.Value!.Summary.Items[0].Alerts;
+        summaryAlerts.Should().Contain(alert => alert.Code == "fragmented_stock");
+        visibility.Value.Locations.Items.Should().AllSatisfy(item =>
+        {
+            item.Alerts.Should().Contain(alert => alert.Code == "expiry_soon");
+        });
     }
 
     private sealed class FakeInventoryVisibilityRepository : IInventoryVisibilityRepository

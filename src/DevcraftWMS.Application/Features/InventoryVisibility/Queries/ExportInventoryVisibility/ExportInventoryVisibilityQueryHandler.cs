@@ -74,7 +74,7 @@ public sealed class ExportInventoryVisibilityQueryHandler
     private string BuildCsv(InventoryVisibilityResultDto data)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Section,ProductCode,ProductName,Uom,Location,Lot,ExpirationDate,OnHand,Reserved,Blocked,InProcess,Available,Status,Active,BlockedReasons");
+        sb.AppendLine("Section,ProductCode,ProductName,Uom,Location,Lot,ExpirationDate,OnHand,Reserved,Blocked,InProcess,Available,Status,Active,BlockedReasons,Alerts");
 
         foreach (var item in data.Summary.Items)
         {
@@ -100,6 +100,8 @@ public sealed class ExportInventoryVisibilityQueryHandler
             sb.Append(',');
             sb.Append(',');
             sb.Append(',');
+            sb.Append(',');
+            sb.Append(Escape(string.Join(" | ", item.Alerts.Select(a => a.Message))));
             sb.AppendLine();
         }
 
@@ -133,6 +135,8 @@ public sealed class ExportInventoryVisibilityQueryHandler
             sb.Append(item.IsActive ? "Yes" : "No");
             sb.Append(',');
             sb.Append(Escape(string.Join(" | ", item.BlockedReasons)));
+            sb.Append(',');
+            sb.Append(Escape(string.Join(" | ", item.Alerts.Select(a => a.Message))));
             sb.AppendLine();
         }
 
@@ -151,7 +155,7 @@ public sealed class ExportInventoryVisibilityQueryHandler
         sb.AppendLine($"<h1>Inventory Visibility</h1>");
         sb.AppendLine($"<small>Generated at UTC {generatedAtUtc:yyyy-MM-dd HH:mm} | User: {Escape(userLabel)} | Customer: {request.CustomerId} | Warehouse: {request.WarehouseId}</small>");
         sb.AppendLine("<h2>Summary</h2>");
-        sb.AppendLine("<table><thead><tr><th>Product</th><th>UoM</th><th>On hand</th><th>Reserved</th><th>Blocked</th><th>In process</th><th>Available</th></tr></thead><tbody>");
+        sb.AppendLine("<table><thead><tr><th>Product</th><th>UoM</th><th>On hand</th><th>Reserved</th><th>Blocked</th><th>In process</th><th>Available</th><th>Alerts</th></tr></thead><tbody>");
         foreach (var item in data.Summary.Items)
         {
             sb.Append("<tr>");
@@ -162,12 +166,13 @@ public sealed class ExportInventoryVisibilityQueryHandler
             sb.Append($"<td>{item.QuantityBlocked:N2}</td>");
             sb.Append($"<td>{item.QuantityInProcess:N2}</td>");
             sb.Append($"<td><strong>{item.QuantityAvailable:N2}</strong></td>");
+            sb.Append($"<td>{Escape(string.Join(", ", item.Alerts.Select(a => a.Message)))}</td>");
             sb.Append("</tr>");
         }
         sb.AppendLine("</tbody></table>");
 
         sb.AppendLine("<h2>Locations</h2>");
-        sb.AppendLine("<table><thead><tr><th>Location</th><th>Product</th><th>Lot</th><th>Expiration</th><th>On hand</th><th>Reserved</th><th>Blocked</th><th>In process</th><th>Available</th><th>Status</th><th>Active</th><th>Blocked reasons</th></tr></thead><tbody>");
+        sb.AppendLine("<table><thead><tr><th>Location</th><th>Product</th><th>Lot</th><th>Expiration</th><th>On hand</th><th>Reserved</th><th>Blocked</th><th>In process</th><th>Available</th><th>Status</th><th>Active</th><th>Blocked reasons</th><th>Alerts</th></tr></thead><tbody>");
         foreach (var item in data.Locations.Items)
         {
             sb.Append("<tr>");
@@ -183,6 +188,7 @@ public sealed class ExportInventoryVisibilityQueryHandler
             sb.Append($"<td>{item.Status}</td>");
             sb.Append($"<td>{(item.IsActive ? "Yes" : "No")}</td>");
             sb.Append($"<td>{Escape(string.Join(", ", item.BlockedReasons))}</td>");
+            sb.Append($"<td>{Escape(string.Join(", ", item.Alerts.Select(a => a.Message)))}</td>");
             sb.Append("</tr>");
         }
         sb.AppendLine("</tbody></table>");

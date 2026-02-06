@@ -3,6 +3,7 @@ using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Application.Common.Pagination;
 using DevcraftWMS.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DevcraftWMS.Application.Features.InventoryVisibility;
 
@@ -10,11 +11,16 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
 {
     private readonly IInventoryVisibilityRepository _repository;
     private readonly ICustomerContext _customerContext;
+    private readonly InventoryVisibilityAlertOptions _alertOptions;
 
-    public InventoryVisibilityService(IInventoryVisibilityRepository repository, ICustomerContext customerContext)
+    public InventoryVisibilityService(
+        IInventoryVisibilityRepository repository,
+        ICustomerContext customerContext,
+        IOptions<InventoryVisibilityAlertOptions> alertOptions)
     {
         _repository = repository;
         _customerContext = customerContext;
+        _alertOptions = alertOptions.Value ?? new InventoryVisibilityAlertOptions();
     }
 
     public async Task<RequestResult<InventoryVisibilityResultDto>> GetAsync(
@@ -103,7 +109,7 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
         return RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>.Success(ordered);
     }
 
-    private static IReadOnlyList<InventoryVisibilitySummaryDto> BuildSummary(IReadOnlyList<BalanceAvailability> balances)
+    private IReadOnlyList<InventoryVisibilitySummaryDto> BuildSummary(IReadOnlyList<BalanceAvailability> balances)
     {
         return balances
             .GroupBy(b => b.Balance.ProductId)
@@ -116,6 +122,7 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
                 var blocked = group.Sum(b => b.QuantityBlocked);
                 var inProcess = group.Sum(b => b.QuantityInProcess);
                 var available = Math.Max(0, onHand - reserved - blocked - inProcess);
+                var alerts = BuildSummaryAlerts(group);
 
                 return new InventoryVisibilitySummaryDto(
                     sample.ProductId,
@@ -126,7 +133,8 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
                     reserved,
                     blocked,
                     inProcess,
-                    available);
+                    available,
+                    alerts);
             })
             .ToList();
     }
@@ -170,11 +178,12 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
                 balance.Status,
                 balance.IsActive,
                 balance.CreatedAtUtc,
-                availability.BlockedReasons);
+                availability.BlockedReasons,
+                availability.Alerts);
         }).ToList();
     }
 
-    private static IReadOnlyList<BalanceAvailability> BuildAvailability(
+    private IReadOnlyList<BalanceAvailability> BuildAvailability(
         IReadOnlyList<DevcraftWMS.Domain.Entities.InventoryBalance> balances,
         IReadOnlyList<InventoryReservationSnapshot> reservations,
         IReadOnlyList<InventoryInspectionSnapshot> inspections,
@@ -214,13 +223,54 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
             var available = Math.Max(0, balance.QuantityOnHand - reserved - blocked - inProcess);
 
             var reasons = new List<string>();
+            var alerts = new List<InventoryVisibilityAlertDto>();
             if (blockedByStatus > 0)
             {
                 reasons.Add($"balance_status:{balance.Status}");
+                alerts.Add(new InventoryVisibilityAlertDto(
+                    "balance_blocked",
+                    "critical",
+                    $"Balance status is {balance.Status}."));
             }
             if (blockedByInspection > 0)
             {
                 reasons.Add("quality_inspection");
+                alerts.Add(new InventoryVisibilityAlertDto(
+                    "quality_inspection_pending",
+                    "warning",
+                    "Blocked by pending quality inspection."));
+            }
+
+            var location = balance.Location;
+            var lot = balance.Lot;
+            if (location is not null)
+            {
+                if (!location.AllowLotTracking && balance.LotId.HasValue)
+                {
+                    alerts.Add(new InventoryVisibilityAlertDto(
+                        "location_lot_restricted",
+                        "warning",
+                        "Location does not allow lot-tracked inventory."));
+                }
+
+                if (!location.AllowExpiryTracking && lot?.ExpirationDate.HasValue == true)
+                {
+                    alerts.Add(new InventoryVisibilityAlertDto(
+                        "location_expiry_restricted",
+                        "warning",
+                        "Location does not allow expiry-tracked inventory."));
+                }
+            }
+
+            var expirationThreshold = _alertOptions.ExpirationAlertDays > 0
+                ? DateOnly.FromDateTime(DateTime.UtcNow).AddDays(_alertOptions.ExpirationAlertDays)
+                : (DateOnly?)null;
+            if (expirationThreshold.HasValue && lot?.ExpirationDate.HasValue == true && lot.ExpirationDate.Value <= expirationThreshold.Value)
+            {
+                alerts.Add(new InventoryVisibilityAlertDto(
+                    "expiry_soon",
+                    "warning",
+                    $"Lot expires on {lot.ExpirationDate:yyyy-MM-dd}."));
             }
 
             availability.Add(new BalanceAvailability(
@@ -230,10 +280,34 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
                 blocked,
                 inProcess,
                 available,
-                reasons));
+                reasons,
+                alerts));
         }
 
         return availability;
+    }
+
+    private IReadOnlyList<InventoryVisibilityAlertDto> BuildSummaryAlerts(IGrouping<Guid, BalanceAvailability> group)
+    {
+        var alerts = group
+            .SelectMany(item => item.Alerts)
+            .GroupBy(alert => alert.Code, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToList();
+
+        if (_alertOptions.FragmentationLocationThreshold > 0)
+        {
+            var locationCount = group.Select(item => item.Balance.LocationId).Distinct().Count();
+            if (locationCount > _alertOptions.FragmentationLocationThreshold)
+            {
+                alerts.Add(new InventoryVisibilityAlertDto(
+                    "fragmented_stock",
+                    "warning",
+                    $"Stock spread across {locationCount} locations."));
+            }
+        }
+
+        return alerts;
     }
 
     private static IReadOnlyList<InventoryVisibilitySummaryDto> ApplySummaryOrdering(
@@ -287,7 +361,8 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
         decimal QuantityBlocked,
         decimal QuantityInProcess,
         decimal QuantityAvailable,
-        IReadOnlyList<string> BlockedReasons);
+        IReadOnlyList<string> BlockedReasons,
+        IReadOnlyList<InventoryVisibilityAlertDto> Alerts);
 
     private readonly record struct BalanceKey(Guid ProductId, Guid? LotId, Guid LocationId);
 }

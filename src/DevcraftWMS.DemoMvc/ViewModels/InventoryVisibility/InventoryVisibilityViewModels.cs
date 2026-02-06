@@ -30,7 +30,8 @@ public sealed record InventoryVisibilitySummaryViewModel(
     decimal QuantityReserved,
     decimal QuantityBlocked,
     decimal QuantityInProcess,
-    decimal QuantityAvailable);
+    decimal QuantityAvailable,
+    IReadOnlyList<InventoryVisibilityAlertViewModel> Alerts);
 
 public sealed record InventoryVisibilityLocationViewModel(
     Guid LocationId,
@@ -57,7 +58,13 @@ public sealed record InventoryVisibilityLocationViewModel(
     InventoryBalanceStatus Status,
     bool IsActive,
     DateTime CreatedAtUtc,
-    IReadOnlyList<string> BlockedReasons);
+    IReadOnlyList<string> BlockedReasons,
+    IReadOnlyList<InventoryVisibilityAlertViewModel> Alerts);
+
+public sealed record InventoryVisibilityAlertViewModel(
+    string Code,
+    string Severity,
+    string Message);
 
 public sealed record InventoryVisibilityTraceViewModel(
     string EventType,
