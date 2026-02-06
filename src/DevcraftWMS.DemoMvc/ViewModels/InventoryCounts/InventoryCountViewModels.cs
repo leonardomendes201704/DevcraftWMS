@@ -104,6 +104,9 @@ public sealed class InventoryCountListPageViewModel
     public InventoryCountListQueryViewModel Query { get; set; } = new(null, null, null, null, false, 1, 20, "CreatedAtUtc", "desc");
     public IReadOnlyList<InventoryCountListItemViewModel> Items { get; set; } = Array.Empty<InventoryCountListItemViewModel>();
     public DevcraftWMS.DemoMvc.ViewModels.Shared.PaginationViewModel? Pagination { get; set; }
+    public string? DebugCustomerId { get; set; }
+    public int? ApiStatusCode { get; set; }
+    public string? ApiError { get; set; }
 }
 
 public sealed class InventoryCountDetailsPageViewModel

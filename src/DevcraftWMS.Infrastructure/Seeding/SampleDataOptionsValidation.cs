@@ -76,6 +76,31 @@ public sealed class SampleDataOptionsValidation : IValidateOptions<SampleDataOpt
             return ValidateOptionsResult.Fail("Seed:SampleData:PickingTaskCount must be zero or greater.");
         }
 
+        if (options.InboundOrderCount <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:InboundOrderCount must be greater than zero.");
+        }
+
+        if (options.ReceiptItemsPerOrder <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:ReceiptItemsPerOrder must be greater than zero.");
+        }
+
+        if (options.UnitLoadsPerOrder <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:UnitLoadsPerOrder must be greater than zero.");
+        }
+
+        if (options.InventoryCountCount <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:InventoryCountCount must be greater than zero.");
+        }
+
+        if (options.InventoryCountItemsPerCount <= 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:InventoryCountItemsPerCount must be greater than zero.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

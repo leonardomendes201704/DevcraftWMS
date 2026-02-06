@@ -5,8 +5,28 @@
   - Key changes: added epic README and tasks 0200-0206.
 
 ## 2026-02-06
+- Ensure seeded inventory counts are created as active records.
+- Ensure seed reset cleans inventory counts even when no inbound receipts exist.
+- Hard-delete seed inventory counts during reset to avoid soft-delete leftovers.
+- Include inventory count items when listing to populate Items count.
 - TASK-0200 - Inventory visibility API consolidada concluida.
   - Key changes: added inventory visibility service, repository, API endpoint, and tests.
+- TASK-0201 - Inventory visibility Backoffice UI concluida.
+  - Key changes: added DemoMvc controller/view, filters, sidebar link, and API client.
+- Fix - Inventory counts query normalization.
+  - Key changes: clamp page size/number defaults to avoid API validation errors.
+- Seed - Inbound flow sample data added.
+  - Key changes: added ASN/InboundOrder/Receipt/UnitLoad/PutawayTask seed and inventory balance population for visibility.
+- Seed - Added reset option for inbound flow data.
+  - Key changes: cleanup of seed inbound flow data on startup when ResetSeedData is enabled.
+- Seed - Inventory counts sample data added.
+  - Key changes: seeded inventory count sessions and items from existing balances.
+- Fix - Inventory visibility default warehouse selection.
+  - Key changes: prefer primary warehouse when none is selected to avoid empty results.
+- Fix - Inventory visibility warehouse lookup page size.
+  - Key changes: cap warehouse lookup to API max page size (100).
+- Debug - Inventory counts banner.
+  - Key changes: optional debug banner to show customer context and API status on Inventory Counts.
 
 ## 2026-02-06
 - TASK-0104 - Mobile Conferencia fila concluida.

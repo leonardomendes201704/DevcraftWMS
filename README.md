@@ -382,6 +382,12 @@ Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back f
 Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
 Seed:SampleData:PickingTaskCount       -> Number of picking tasks to seed
+Seed:SampleData:InboundOrderCount      -> Number of inbound orders/receipts to seed
+Seed:SampleData:ReceiptItemsPerOrder   -> Items per inbound order receipt
+Seed:SampleData:UnitLoadsPerOrder      -> Unit loads per inbound order receipt
+Seed:SampleData:InventoryCountCount    -> Number of inventory counts to seed
+Seed:SampleData:InventoryCountItemsPerCount -> Items per inventory count
+Seed:SampleData:ResetSeedData          -> Remove previous seed inbound flow data before seeding
 Replenishment:PickingMinQuantity       -> Minimum available quantity in picking before replenishment triggers
 Replenishment:PickingTargetQuantity    -> Target quantity to reach after replenishment
 Replenishment:MaxTasksPerRun           -> Maximum replenishment tasks generated per run

@@ -125,4 +125,14 @@
     ButtonCssClass = "btn btn-outline-primary"
 })" />
 
+@if (Context.Request.Query.ContainsKey("debug"))
+{
+    <div class="alert alert-info">
+        <div><strong>Debug</strong></div>
+        <div>CustomerId: @(Model.DebugCustomerId ?? "not set")</div>
+        <div>API status: @(Model.ApiStatusCode?.ToString() ?? "n/a")</div>
+        <div>API error: @(string.IsNullOrWhiteSpace(Model.ApiError) ? "none" : Model.ApiError)</div>
+    </div>
+}
+
 <partial name="_Grid" model="grid" />

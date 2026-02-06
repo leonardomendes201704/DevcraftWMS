@@ -98,6 +98,7 @@ public sealed class InventoryCountRepository : IInventoryCountRepository
         return await query
             .Include(c => c.Warehouse)
             .Include(c => c.Location)
+            .Include(c => c.Items)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

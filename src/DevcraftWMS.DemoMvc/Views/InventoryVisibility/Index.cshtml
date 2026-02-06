@@ -1,0 +1,217 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using DevcraftWMS.DemoMvc.Enums
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilityPageViewModel
+@{
+    ViewData["Title"] = "Inventory Visibility";
+    ViewData["Subtitle"] = "Locate and explain stock by customer and warehouse";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "InventoryVisibility",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["ProductId"] = Model.Query.ProductId?.ToString(),
+            ["Sku"] = Model.Query.Sku,
+            ["LotCode"] = Model.Query.LotCode,
+            ["ExpirationFrom"] = Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd"),
+            ["ExpirationTo"] = Model.Query.ExpirationTo?.ToString("yyyy-MM-dd"),
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    List<GridSelectOption> SelectFromItems(IReadOnlyList<SelectListItem> items)
+        => items.Select(item => new GridSelectOption
+        {
+            Value = item.Value ?? string.Empty,
+            Text = item.Text ?? string.Empty,
+            Selected = item.Selected
+        }).ToList();
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null }
+    };
+    statusOptions.AddRange(Enum.GetValues<InventoryBalanceStatus>()
+        .Select(status => new GridSelectOption
+        {
+            Value = status.ToString(),
+            Text = status.ToString(),
+            Selected = Model.Query.Status == status
+        }));
+
+    var activeOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+        new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+        new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+    };
+
+    var orderOptions = new List<GridSelectOption>
+    {
+        new() { Value = "ProductCode", Text = "Product code", Selected = Model.Query.OrderBy == "ProductCode" },
+        new() { Value = "ProductName", Text = "Product name", Selected = Model.Query.OrderBy == "ProductName" },
+        new() { Value = "QuantityOnHand", Text = "Quantity on hand", Selected = Model.Query.OrderBy == "QuantityOnHand" },
+        new() { Value = "QuantityAvailable", Text = "Quantity available", Selected = Model.Query.OrderBy == "QuantityAvailable" },
+        new() { Value = "LocationCode", Text = "Location code", Selected = Model.Query.OrderBy == "LocationCode" },
+        new() { Value = "LotCode", Text = "Lot code", Selected = Model.Query.OrderBy == "LotCode" },
+        new() { Value = "ExpirationDate", Text = "Expiration date", Selected = Model.Query.OrderBy == "ExpirationDate" },
+        new() { Value = "CreatedAtUtc", Text = "Created at", Selected = Model.Query.OrderBy == "CreatedAtUtc" }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "InventoryVisibility",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "Warehouse", Name = "WarehouseId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Warehouses) },
+            new() { Label = "Product", Name = "ProductId", Type = GridFilterType.Select, Options = SelectFromItems(Model.Products) },
+            new() { Label = "SKU", Name = "Sku", Type = GridFilterType.Text, Value = Model.Query.Sku, Placeholder = "SKU code" },
+            new() { Label = "Lot", Name = "LotCode", Type = GridFilterType.Text, Value = Model.Query.LotCode, Placeholder = "Lot code" },
+            new() { Label = "Expiration from", Name = "ExpirationFrom", Type = GridFilterType.Date, Value = Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd") },
+            new() { Label = "Expiration to", Name = "ExpirationTo", Type = GridFilterType.Date, Value = Model.Query.ExpirationTo?.ToString("yyyy-MM-dd") },
+            new() { Label = "Status", Name = "Status", Type = GridFilterType.Select, Options = statusOptions },
+            new() { Label = "Active", Name = "IsActive", Type = GridFilterType.Select, Options = activeOptions },
+            new() { Label = "Order by", Name = "OrderBy", Type = GridFilterType.Select, Options = orderOptions },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "InventoryVisibility")
+    };
+
+    var filterDrawer = new FilterDrawerViewModel
+    {
+        Id = "inventoryVisibilityFilters",
+        Title = "Inventory visibility filters",
+        Filters = filters,
+        ButtonText = "Filters",
+        ButtonCssClass = "btn btn-outline-primary"
+    };
+
+    string StatusBadgeClass(InventoryBalanceStatus status)
+        => status == InventoryBalanceStatus.Available ? "text-bg-success" : "text-bg-warning";
+
+    var summaryGrid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilitySummaryViewModel>()
+        .WithTitle("Summary by product")
+        .WithSubtitle($"Total: {Model.SummaryItems.Count}")
+        .WithItems(Model.SummaryItems)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Product", item => new HtmlString(HtmlEncoder.Default.Encode($"{item.ProductCode} - {item.ProductName}")), "ProductCode")
+        .AddColumn("UoM", item => new HtmlString(HtmlEncoder.Default.Encode(item.UomCode ?? "-")))
+        .AddColumn("On hand", item => new HtmlString(item.QuantityOnHand.ToString("N2")), "QuantityOnHand")
+        .AddColumn("Reserved", item => new HtmlString(item.QuantityReserved.ToString("N2")))
+        .AddColumn("Blocked", item => new HtmlString(item.QuantityBlocked.ToString("N2")))
+        .AddColumn("In process", item => new HtmlString(item.QuantityInProcess.ToString("N2")))
+        .AddColumn("Available", item => new HtmlString($"<strong>{item.QuantityAvailable:N2}</strong>"), "QuantityAvailable")
+        .Build();
+
+    var locationGrid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.InventoryVisibility.InventoryVisibilityLocationViewModel>()
+        .WithTitle("Physical distribution")
+        .WithSubtitle($"Total: {Model.Pagination.TotalCount}")
+        .WithItems(Model.LocationItems)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Location", item => new HtmlString(HtmlEncoder.Default.Encode(item.LocationCode)), "LocationCode")
+        .AddColumn("Structure", item => new HtmlString(HtmlEncoder.Default.Encode(item.StructureCode ?? "-")))
+        .AddColumn("Section", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectionCode ?? "-")))
+        .AddColumn("Sector", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectorCode ?? "-")))
+        .AddColumn("Product", item => new HtmlString(HtmlEncoder.Default.Encode($"{item.ProductCode} - {item.ProductName}")), "ProductCode")
+        .AddColumn("Lot", item => new HtmlString(HtmlEncoder.Default.Encode(item.LotCode ?? "-")), "LotCode")
+        .AddColumn("Exp.", item => new HtmlString(item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"), "ExpirationDate")
+        .AddColumn("On hand", item => new HtmlString(item.QuantityOnHand.ToString("N2")), "QuantityOnHand")
+        .AddColumn("Reserved", item => new HtmlString(item.QuantityReserved.ToString("N2")))
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge {StatusBadgeClass(item.Status)}\">{item.Status}</span>"), "Status")
+        .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
+        .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
+        .Build();
+}
+
+@if (!Model.HasCustomerContext)
+{
+    <div class="alert alert-warning">
+        Select a customer context to load the inventory visibility data.
+    </div>
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#inventoryVisibilityHelp">
+        <i class="bi bi-question-circle me-1"></i>Help
+    </button>
+</div>
+
+<partial name="_FilterDrawer" model="filterDrawer" />
+
+<ul class="nav nav-pills mb-3" id="inventoryVisibilityTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="summary-tab" data-bs-toggle="pill" data-bs-target="#summary" type="button" role="tab">
+            Summary
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="locations-tab" data-bs-toggle="pill" data-bs-target="#locations" type="button" role="tab">
+            Locations
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="inventoryVisibilityTabsContent">
+    <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+        <partial name="_Grid" model="summaryGrid" />
+    </div>
+    <div class="tab-pane fade" id="locations" role="tabpanel" aria-labelledby="locations-tab">
+        <partial name="_Grid" model="locationGrid" />
+    </div>
+</div>
+
+<div class="modal fade" id="inventoryVisibilityHelp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inventory visibility tips</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="mb-0">
+                    <li>Use the filters to narrow by warehouse, SKU, lot, and expiration window.</li>
+                    <li>The summary tab aggregates quantities by product; locations show the physical spread.</li>
+                    <li>Availability is computed as on-hand minus reserved and blocked quantities.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

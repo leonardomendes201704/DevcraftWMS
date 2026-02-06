@@ -30,6 +30,11 @@ public sealed class SampleDataSeeder
             return;
         }
 
+        if (_options.ResetSeedData)
+        {
+            await CleanupSeedDataAsync(cancellationToken);
+        }
+
         var normalizedWarehouseCode = _options.WarehouseCode.Trim().ToUpperInvariant();
         var customer = await EnsureCustomerAsync(cancellationToken);
         var uoms = await EnsureUomsAsync(cancellationToken);
@@ -59,7 +64,9 @@ public sealed class SampleDataSeeder
 
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
         await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
+        await EnsureInboundFlowAsync(customer.Id, warehouse, locations, cancellationToken);
         await EnsureInventoryBalancesAndMovementsAsync(customer.Id, locations, cancellationToken);
+        await EnsureInventoryCountsAsync(customer.Id, warehouse.Id, cancellationToken);
         await EnsurePickingTasksAsync(customer.Id, warehouse, locations, crossDockLocations, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -67,6 +74,96 @@ public sealed class SampleDataSeeder
             "Sample data seed completed for customer {CustomerId} with {ProductCount} products.",
             customer.Id,
             _options.ProductCount);
+    }
+
+    private async Task CleanupSeedDataAsync(CancellationToken cancellationToken)
+    {
+        // Hard-delete seed inventory counts to avoid soft-delete (IsActive=false) leftovers.
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM InventoryCountItems WHERE InventoryCountId IN (SELECT Id FROM InventoryCounts WHERE Notes LIKE {0})",
+            new object[] { "SEED-COUNT-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM InventoryCounts WHERE Notes LIKE {0}",
+            new object[] { "SEED-COUNT-%" },
+            cancellationToken);
+
+        var seedReceipts = await _dbContext.Receipts
+            .Where(r => r.ReceiptNumber != null && EF.Functions.Like(r.ReceiptNumber, "RCV-SEED-INB-%"))
+            .ToListAsync(cancellationToken);
+
+        var seedReceiptIds = seedReceipts.Select(r => r.Id).ToList();
+        if (seedReceiptIds.Count == 0)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var seedReceiptItems = await _dbContext.ReceiptItems
+            .Where(ri => seedReceiptIds.Contains(ri.ReceiptId))
+            .ToListAsync(cancellationToken);
+
+        var balanceKeys = seedReceiptItems
+            .Select(ri => new BalanceKey(ri.LocationId, ri.ProductId, ri.LotId))
+            .Distinct()
+            .ToList();
+
+        if (balanceKeys.Count > 0)
+        {
+            var locationIds = balanceKeys.Select(k => k.LocationId).Distinct().ToList();
+            var productIds = balanceKeys.Select(k => k.ProductId).Distinct().ToList();
+
+            var balances = await _dbContext.InventoryBalances
+                .Where(b => locationIds.Contains(b.LocationId) && productIds.Contains(b.ProductId))
+                .ToListAsync(cancellationToken);
+
+            var balanceLookup = new HashSet<BalanceKey>(balanceKeys);
+            var balancesToRemove = balances
+                .Where(b => balanceLookup.Contains(new BalanceKey(b.LocationId, b.ProductId, b.LotId)))
+                .ToList();
+
+            if (balancesToRemove.Count > 0)
+            {
+                _dbContext.InventoryBalances.RemoveRange(balancesToRemove);
+            }
+        }
+
+        var seedPutawayTasks = await _dbContext.PutawayTasks
+            .Where(t => seedReceiptIds.Contains(t.ReceiptId))
+            .ToListAsync(cancellationToken);
+
+        var seedUnitLoads = await _dbContext.UnitLoads
+            .Where(ul => seedReceiptIds.Contains(ul.ReceiptId) && EF.Functions.Like(ul.SsccInternal, "SSCC-SEED-INB-%"))
+            .ToListAsync(cancellationToken);
+
+        var seedInboundOrders = await _dbContext.InboundOrders
+            .Where(o => o.OrderNumber != null && EF.Functions.Like(o.OrderNumber, "OE-SEED-INB-%"))
+            .ToListAsync(cancellationToken);
+
+        var seedInboundOrderIds = seedInboundOrders.Select(o => o.Id).ToList();
+        var seedInboundItems = await _dbContext.InboundOrderItems
+            .Where(i => seedInboundOrderIds.Contains(i.InboundOrderId))
+            .ToListAsync(cancellationToken);
+
+        var seedAsns = await _dbContext.Asns
+            .Where(a => a.AsnNumber != null && EF.Functions.Like(a.AsnNumber, "ASN-SEED-INB-%"))
+            .ToListAsync(cancellationToken);
+
+        var seedAsnIds = seedAsns.Select(a => a.Id).ToList();
+        var seedAsnItems = await _dbContext.AsnItems
+            .Where(i => seedAsnIds.Contains(i.AsnId))
+            .ToListAsync(cancellationToken);
+
+        _dbContext.PutawayTasks.RemoveRange(seedPutawayTasks);
+        _dbContext.UnitLoads.RemoveRange(seedUnitLoads);
+        _dbContext.ReceiptItems.RemoveRange(seedReceiptItems);
+        _dbContext.Receipts.RemoveRange(seedReceipts);
+        _dbContext.InboundOrderItems.RemoveRange(seedInboundItems);
+        _dbContext.InboundOrders.RemoveRange(seedInboundOrders);
+        _dbContext.AsnItems.RemoveRange(seedAsnItems);
+        _dbContext.Asns.RemoveRange(seedAsns);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Customer> EnsureCustomerAsync(CancellationToken cancellationToken)
@@ -856,6 +953,300 @@ public sealed class SampleDataSeeder
             }
         }
 
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureInboundFlowAsync(
+        Guid customerId,
+        Warehouse warehouse,
+        IReadOnlyList<Location> locations,
+        CancellationToken cancellationToken)
+    {
+        if (_options.InboundOrderCount <= 0)
+        {
+            return;
+        }
+
+        var existingSeedReceipts = await _dbContext.Receipts
+            .AnyAsync(
+                r => r.CustomerId == customerId &&
+                     r.ReceiptNumber != null &&
+                     EF.Functions.Like(r.ReceiptNumber, "RCV-SEED-INB-%"),
+                cancellationToken);
+
+        if (existingSeedReceipts)
+        {
+            return;
+        }
+
+        var products = await _dbContext.Products
+            .Where(p => p.CustomerId == customerId)
+            .ToListAsync(cancellationToken);
+
+        if (products.Count == 0 || locations.Count == 0)
+        {
+            return;
+        }
+
+        var productIds = products.Select(p => p.Id).ToList();
+        var lots = await _dbContext.Lots
+            .Where(l => productIds.Contains(l.ProductId))
+            .ToListAsync(cancellationToken);
+        var locationIds = locations.Select(l => l.Id).ToList();
+        var lotIds = lots.Select(l => l.Id).ToList();
+        var existingBalances = await _dbContext.InventoryBalances
+            .Where(b => locationIds.Contains(b.LocationId) && productIds.Contains(b.ProductId))
+            .ToListAsync(cancellationToken);
+        var balanceLookup = existingBalances
+            .ToDictionary(b => new BalanceKey(b.LocationId, b.ProductId, b.LotId));
+
+        var random = new Random(91);
+        var now = DateTime.UtcNow;
+
+        var asns = new List<Asn>();
+        var asnItems = new List<AsnItem>();
+        var inboundOrders = new List<InboundOrder>();
+        var inboundItems = new List<InboundOrderItem>();
+        var receipts = new List<Receipt>();
+        var receiptItems = new List<ReceiptItem>();
+        var unitLoads = new List<UnitLoad>();
+        var putawayTasks = new List<PutawayTask>();
+
+        for (var i = 1; i <= _options.InboundOrderCount; i++)
+        {
+            var expectedArrival = DateOnly.FromDateTime(now.AddDays(-random.Next(1, 10)));
+            var asn = new Asn
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                WarehouseId = warehouse.Id,
+                AsnNumber = $"ASN-SEED-INB-{i:000}",
+                SupplierName = "Seed Supplier",
+                DocumentNumber = $"NF-SEED-{i:000}",
+                ExpectedArrivalDate = expectedArrival,
+                Notes = "Seed inbound flow",
+                Status = AsnStatus.Converted
+            };
+
+            var inboundOrder = new InboundOrder
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                WarehouseId = warehouse.Id,
+                AsnId = asn.Id,
+                OrderNumber = $"OE-SEED-INB-{i:000}",
+                SupplierName = asn.SupplierName,
+                DocumentNumber = asn.DocumentNumber,
+                ExpectedArrivalDate = asn.ExpectedArrivalDate,
+                Status = InboundOrderStatus.Completed,
+                Priority = InboundOrderPriority.Normal,
+                InspectionLevel = InboundOrderInspectionLevel.None
+            };
+
+            var receiptStarted = now.AddHours(-random.Next(12, 72));
+            var receipt = new Receipt
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                WarehouseId = warehouse.Id,
+                InboundOrderId = inboundOrder.Id,
+                ReceiptNumber = $"RCV-SEED-INB-{i:000}",
+                DocumentNumber = asn.DocumentNumber,
+                SupplierName = asn.SupplierName,
+                Status = ReceiptStatus.Completed,
+                StartedAtUtc = receiptStarted,
+                ReceivedAtUtc = receiptStarted.AddHours(random.Next(2, 6)),
+                Notes = "Seed receipt completed"
+            };
+
+            var selectedProducts = products
+                .OrderBy(_ => random.Next())
+                .Take(Math.Min(_options.ReceiptItemsPerOrder, products.Count))
+                .ToList();
+
+            foreach (var product in selectedProducts)
+            {
+                var lot = lots.Where(l => l.ProductId == product.Id).OrderBy(_ => random.Next()).FirstOrDefault();
+                var quantity = Math.Max(5, random.Next(10, 120));
+                var location = locations[random.Next(locations.Count)];
+
+                asnItems.Add(new AsnItem
+                {
+                    Id = Guid.NewGuid(),
+                    AsnId = asn.Id,
+                    ProductId = product.Id,
+                    UomId = product.BaseUomId,
+                    Quantity = quantity,
+                    LotCode = lot?.Code,
+                    ExpirationDate = lot?.ExpirationDate
+                });
+
+                inboundItems.Add(new InboundOrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    InboundOrderId = inboundOrder.Id,
+                    ProductId = product.Id,
+                    UomId = product.BaseUomId,
+                    Quantity = quantity,
+                    LotCode = lot?.Code,
+                    ExpirationDate = lot?.ExpirationDate
+                });
+
+                receiptItems.Add(new ReceiptItem
+                {
+                    Id = Guid.NewGuid(),
+                    ReceiptId = receipt.Id,
+                    ProductId = product.Id,
+                    LotId = lot?.Id,
+                    LocationId = location.Id,
+                    UomId = product.BaseUomId,
+                    Quantity = quantity,
+                    UnitCost = 10 + random.Next(1, 50)
+                });
+
+                var lotId = lot?.Id;
+                var balanceKey = new BalanceKey(location.Id, product.Id, lotId);
+                if (!balanceLookup.TryGetValue(balanceKey, out var balance))
+                {
+                    balance = new InventoryBalance
+                    {
+                        Id = Guid.NewGuid(),
+                        LocationId = location.Id,
+                        ProductId = product.Id,
+                        LotId = lotId,
+                        QuantityOnHand = 0,
+                        QuantityReserved = 0,
+                        Status = InventoryBalanceStatus.Available
+                    };
+                    _dbContext.InventoryBalances.Add(balance);
+                    balanceLookup.Add(balanceKey, balance);
+                }
+
+                balance.QuantityOnHand += quantity;
+            }
+
+            for (var u = 1; u <= _options.UnitLoadsPerOrder; u++)
+            {
+                var unitLoad = new UnitLoad
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    WarehouseId = warehouse.Id,
+                    ReceiptId = receipt.Id,
+                    SsccInternal = $"SSCC-SEED-INB-{i:000}-{u:00}",
+                    Status = UnitLoadStatus.PutawayCompleted,
+                    PrintedAtUtc = receipt.ReceivedAtUtc,
+                    Notes = "Seed unit load"
+                };
+
+                unitLoads.Add(unitLoad);
+                putawayTasks.Add(new PutawayTask
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = customerId,
+                    WarehouseId = warehouse.Id,
+                    ReceiptId = receipt.Id,
+                    UnitLoadId = unitLoad.Id,
+                    Status = PutawayTaskStatus.Completed
+                });
+            }
+
+            asns.Add(asn);
+            inboundOrders.Add(inboundOrder);
+            receipts.Add(receipt);
+        }
+
+        _dbContext.Asns.AddRange(asns);
+        _dbContext.AsnItems.AddRange(asnItems);
+        _dbContext.InboundOrders.AddRange(inboundOrders);
+        _dbContext.InboundOrderItems.AddRange(inboundItems);
+        _dbContext.Receipts.AddRange(receipts);
+        _dbContext.ReceiptItems.AddRange(receiptItems);
+        _dbContext.UnitLoads.AddRange(unitLoads);
+        _dbContext.PutawayTasks.AddRange(putawayTasks);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private readonly record struct BalanceKey(Guid LocationId, Guid ProductId, Guid? LotId);
+
+    private async Task EnsureInventoryCountsAsync(Guid customerId, Guid warehouseId, CancellationToken cancellationToken)
+    {
+        if (_options.InventoryCountCount <= 0)
+        {
+            return;
+        }
+
+        var existingSeedCounts = await _dbContext.InventoryCounts
+            .AnyAsync(c => c.Notes != null && EF.Functions.Like(c.Notes, "SEED-COUNT-%"), cancellationToken);
+
+        if (existingSeedCounts)
+        {
+            return;
+        }
+
+        var balances = await _dbContext.InventoryBalances
+            .Include(b => b.Location)
+            .Include(b => b.Product)
+            .Where(b => b.Location != null && b.Product != null)
+            .ToListAsync(cancellationToken);
+
+        if (balances.Count == 0)
+        {
+            return;
+        }
+
+        var random = new Random(123);
+        var counts = new List<InventoryCount>();
+        var countItems = new List<InventoryCountItem>();
+
+        for (var i = 1; i <= _options.InventoryCountCount; i++)
+        {
+            var balanceSample = balances[random.Next(balances.Count)];
+            var count = new InventoryCount
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                WarehouseId = warehouseId,
+                LocationId = balanceSample.LocationId,
+                ZoneId = balanceSample.Location?.ZoneId,
+                Status = InventoryCountStatus.Draft,
+                Notes = $"SEED-COUNT-{i:000}",
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            counts.Add(count);
+
+            var selectedBalances = balances
+                .OrderBy(_ => random.Next())
+                .Take(Math.Min(_options.InventoryCountItemsPerCount, balances.Count))
+                .ToList();
+
+            foreach (var balance in selectedBalances)
+            {
+                if (balance.Product is null)
+                {
+                    continue;
+                }
+
+                countItems.Add(new InventoryCountItem
+                {
+                    Id = Guid.NewGuid(),
+                    InventoryCountId = count.Id,
+                    LocationId = balance.LocationId,
+                    ProductId = balance.ProductId,
+                    UomId = balance.Product.BaseUomId,
+                    LotId = balance.LotId,
+                    QuantityExpected = balance.QuantityOnHand,
+                    QuantityCounted = 0,
+                    IsActive = true,
+                });
+            }
+        }
+
+        _dbContext.InventoryCounts.AddRange(counts);
+        _dbContext.InventoryCountItems.AddRange(countItems);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

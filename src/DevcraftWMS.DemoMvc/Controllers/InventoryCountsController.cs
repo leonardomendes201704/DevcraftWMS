@@ -17,10 +17,12 @@ public sealed class InventoryCountsController : Controller
 
     public async Task<IActionResult> Index([FromQuery] InventoryCountListQueryViewModel query, CancellationToken cancellationToken)
     {
+        query = NormalizeQuery(query);
+        var customerId = HttpContext.Session.GetStringValue(SessionKeys.CustomerId);
         if (!HasCustomerContext())
         {
             TempData["Warning"] = "Select a customer to load inventory counts.";
-            return View(new InventoryCountListPageViewModel { Query = query });
+            return View(new InventoryCountListPageViewModel { Query = query, DebugCustomerId = customerId });
         }
 
         var result = await _countsClient.ListAsync(query, cancellationToken);
@@ -51,7 +53,10 @@ public sealed class InventoryCountsController : Controller
         {
             Query = query,
             Items = result.Data?.Items ?? Array.Empty<InventoryCountListItemViewModel>(),
-            Pagination = pagination
+            Pagination = pagination,
+            DebugCustomerId = customerId,
+            ApiStatusCode = result.StatusCode,
+            ApiError = result.Error
         });
     }
 
@@ -110,4 +115,25 @@ public sealed class InventoryCountsController : Controller
 
     private bool HasCustomerContext()
         => !string.IsNullOrWhiteSpace(HttpContext.Session.GetStringValue(SessionKeys.CustomerId));
+
+    private static InventoryCountListQueryViewModel NormalizeQuery(InventoryCountListQueryViewModel query)
+    {
+        var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+        var pageSize = query.PageSize <= 0 ? 20 : query.PageSize;
+        if (pageSize > 200)
+        {
+            pageSize = 200;
+        }
+
+        var orderBy = string.IsNullOrWhiteSpace(query.OrderBy) ? "CreatedAtUtc" : query.OrderBy;
+        var orderDir = string.IsNullOrWhiteSpace(query.OrderDir) ? "desc" : query.OrderDir;
+
+        return query with
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            OrderBy = orderBy,
+            OrderDir = orderDir
+        };
+    }
 }

@@ -16,4 +16,10 @@ public sealed class SampleDataOptions
     public decimal MovementQuantityMin { get; set; } = 1;
     public decimal MovementQuantityMax { get; set; } = 15;
     public int PickingTaskCount { get; set; } = 12;
+    public int InboundOrderCount { get; set; } = 6;
+    public int ReceiptItemsPerOrder { get; set; } = 4;
+    public int UnitLoadsPerOrder { get; set; } = 2;
+    public int InventoryCountCount { get; set; } = 4;
+    public int InventoryCountItemsPerCount { get; set; } = 8;
+    public bool ResetSeedData { get; set; }
 }
