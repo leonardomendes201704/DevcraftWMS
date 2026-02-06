@@ -19,6 +19,12 @@ public sealed class OutboundShipmentRepository : IOutboundShipmentRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<OutboundShipment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        => await _dbContext.OutboundShipments
+            .AsNoTracking()
+            .Include(s => s.Items)
+            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+
     public async Task<IReadOnlyList<OutboundShipment>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
         => await _dbContext.OutboundShipments
             .AsNoTracking()

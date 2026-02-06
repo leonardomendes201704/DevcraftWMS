@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- WMS backlog (WMS-TASK-0001/0002/0003) implemented.
+  - Key changes: added returns, inventory count, and dock schedule modules (domain, CQRS, API, DemoMvc), plus migrations, tests, and manual backlog updates.
+
+## 2026-02-06
 - TASK-0123 - Manual do Sistema WMS task created.
   - Key changes: defined scope, deliverables, and process for system manual + gaps/backlog.
 

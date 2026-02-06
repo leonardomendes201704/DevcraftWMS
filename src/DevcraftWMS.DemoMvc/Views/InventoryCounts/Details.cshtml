@@ -1,0 +1,67 @@
+@model DevcraftWMS.DemoMvc.ViewModels.InventoryCounts.InventoryCountDetailsPageViewModel
+@{
+    ViewData["Title"] = "Inventory Count Details";
+    ViewData["Subtitle"] = Model.Count.Id.ToString();
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Count</h6>
+                <p class="mb-1"><strong>Status:</strong> @Model.Count.Status</p>
+                <p class="mb-1"><strong>Warehouse:</strong> @Model.Count.WarehouseName</p>
+                <p class="mb-1"><strong>Location:</strong> @Model.Count.LocationCode</p>
+                <p class="mb-0"><strong>Notes:</strong> @(Model.Count.Notes ?? "-")</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <form asp-action="Start" method="post">
+                <input type="hidden" name="id" value="@Model.Count.Id" />
+                <button class="btn btn-outline-primary" type="submit">Start</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Complete" method="post">
+                    <input type="hidden" name="id" value="@Model.Count.Id" />
+                    <h6 class="text-uppercase text-muted">Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Lot</th>
+                                    <th>Expected</th>
+                                    <th>Counted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @for (var i = 0; i < Model.Count.Items.Count; i++)
+                            {
+                                var item = Model.Count.Items[i];
+                                <tr>
+                                    <td>@item.ProductCode - @item.ProductName</td>
+                                    <td>@(item.LotCode ?? "-")</td>
+                                    <td>@item.QuantityExpected</td>
+                                    <td>
+                                        <input class="form-control form-control-sm" name="Items[@i].QuantityCounted" value="@item.QuantityExpected" />
+                                        <input type="hidden" name="Items[@i].InventoryCountItemId" value="@item.Id" />
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="Notes"></textarea>
+                    </div>
+                    <button class="btn btn-success" type="submit">Complete count</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -74,6 +74,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.LotsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UomsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryBalancesApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryMovementsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryCountsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ReceiptsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UnitLoadsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.PutawayTasksApiClient>();
@@ -84,6 +85,8 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundPackingApiClie
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.OutboundShippingApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.PickingTasksApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.QualityInspectionsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ReturnsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.DockSchedulesApiClient>();
 
 var app = builder.Build();
 

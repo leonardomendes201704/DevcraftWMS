@@ -1,0 +1,82 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Returns.ReturnDetailsPageViewModel
+@{
+    ViewData["Title"] = "Return Details";
+    ViewData["Subtitle"] = Model.Order.ReturnNumber;
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Return</h6>
+                <h4>@Model.Order.ReturnNumber</h4>
+                <p class="mb-1"><strong>Status:</strong> @Model.Order.Status</p>
+                <p class="mb-1"><strong>Warehouse:</strong> @Model.Order.WarehouseName</p>
+                <p class="mb-1"><strong>Outbound order:</strong> @(Model.Order.OutboundOrderNumber ?? "-")</p>
+                <p class="mb-0"><strong>Notes:</strong> @(Model.Order.Notes ?? "-")</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <form asp-action="Receive" method="post">
+                <input type="hidden" name="id" value="@Model.Order.Id" />
+                <button class="btn btn-outline-primary" type="submit">Receive</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Complete" method="post">
+                    <input type="hidden" name="id" value="@Model.Order.Id" />
+                    <h6 class="text-uppercase text-muted">Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>UoM</th>
+                                    <th>Lot</th>
+                                    <th>Expected</th>
+                                    <th>Received</th>
+                                    <th>Disposition</th>
+                                    <th>Location</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @for (var i = 0; i < Model.Order.Items.Count; i++)
+                            {
+                                var item = Model.Order.Items[i];
+                                <tr>
+                                    <td>@item.ProductCode - @item.ProductName</td>
+                                    <td>@item.UomCode</td>
+                                    <td>@(item.LotCode ?? "-")</td>
+                                    <td>@item.QuantityExpected</td>
+                                    <td>
+                                        <input class="form-control form-control-sm" name="Items[@i].QuantityReceived" value="@item.QuantityExpected" />
+                                        <input type="hidden" name="Items[@i].ReturnItemId" value="@item.Id" />
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm" name="Items[@i].Disposition">
+                                            <option value="0">Restock</option>
+                                            <option value="1">Quarantine</option>
+                                            <option value="2">Discard</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input class="form-control form-control-sm" name="Items[@i].LocationId" placeholder="LocationId" />
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="Notes"></textarea>
+                    </div>
+                    <button class="btn btn-success" type="submit">Complete return</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

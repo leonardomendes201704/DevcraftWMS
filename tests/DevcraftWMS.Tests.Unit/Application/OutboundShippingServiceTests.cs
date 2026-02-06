@@ -203,6 +203,9 @@ public sealed class OutboundShippingServiceTests
         public Task AddAsync(OutboundShipment shipment, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
+        public Task<OutboundShipment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<OutboundShipment?>(null);
+
         public Task<IReadOnlyList<OutboundShipment>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OutboundShipment>>(Array.Empty<OutboundShipment>());
     }

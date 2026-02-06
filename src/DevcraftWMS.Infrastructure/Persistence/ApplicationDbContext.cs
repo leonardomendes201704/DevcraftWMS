@@ -67,6 +67,11 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<OutboundShipment> OutboundShipments => Set<OutboundShipment>();
     public DbSet<OutboundShipmentItem> OutboundShipmentItems => Set<OutboundShipmentItem>();
     public DbSet<OutboundOrderNotification> OutboundOrderNotifications => Set<OutboundOrderNotification>();
+    public DbSet<ReturnOrder> ReturnOrders => Set<ReturnOrder>();
+    public DbSet<ReturnItem> ReturnItems => Set<ReturnItem>();
+    public DbSet<InventoryCount> InventoryCounts => Set<InventoryCount>();
+    public DbSet<InventoryCountItem> InventoryCountItems => Set<InventoryCountItem>();
+    public DbSet<DockSchedule> DockSchedules => Set<DockSchedule>();
     public DbSet<GateCheckin> GateCheckins => Set<GateCheckin>();
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();

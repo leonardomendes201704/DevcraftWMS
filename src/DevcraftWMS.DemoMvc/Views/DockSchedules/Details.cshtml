@@ -1,0 +1,84 @@
+@model DevcraftWMS.DemoMvc.ViewModels.DockSchedules.DockScheduleDetailsPageViewModel
+@{
+    ViewData["Title"] = "Dock Schedule Details";
+    ViewData["Subtitle"] = Model.Schedule.DockCode;
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Schedule</h6>
+                <p class="mb-1"><strong>Status:</strong> @Model.Schedule.Status</p>
+                <p class="mb-1"><strong>Warehouse:</strong> @Model.Schedule.WarehouseName</p>
+                <p class="mb-1"><strong>Dock:</strong> @Model.Schedule.DockCode</p>
+                <p class="mb-1"><strong>Start:</strong> @Model.Schedule.SlotStartUtc.ToLocalTime().ToString("g")</p>
+                <p class="mb-1"><strong>End:</strong> @Model.Schedule.SlotEndUtc.ToLocalTime().ToString("g")</p>
+                <p class="mb-0"><strong>Notes:</strong> @(Model.Schedule.Notes ?? "-")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Reschedule</h6>
+                <form asp-action="Reschedule" method="post">
+                    <input type="hidden" name="id" value="@Model.Schedule.Id" />
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Start (UTC)</label>
+                            <input class="form-control" name="SlotStartUtc" value="@Model.Schedule.SlotStartUtc.ToString("s")" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End (UTC)</label>
+                            <input class="form-control" name="SlotEndUtc" value="@Model.Schedule.SlotEndUtc.ToString("s")" />
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label">Reason</label>
+                        <input class="form-control" name="Reason" />
+                    </div>
+                    <button class="btn btn-outline-primary mt-3" type="submit">Reschedule</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Assign</h6>
+                <form asp-action="Assign" method="post">
+                    <input type="hidden" name="id" value="@Model.Schedule.Id" />
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Outbound Order Id</label>
+                            <input class="form-control" name="OutboundOrderId" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Outbound Shipment Id</label>
+                            <input class="form-control" name="OutboundShipmentId" />
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label">Notes</label>
+                        <input class="form-control" name="Notes" />
+                    </div>
+                    <button class="btn btn-outline-success mt-3" type="submit">Assign</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted">Cancel</h6>
+                <form asp-action="Cancel" method="post">
+                    <input type="hidden" name="id" value="@Model.Schedule.Id" />
+                    <div class="mb-2">
+                        <label class="form-label">Reason</label>
+                        <input class="form-control" name="Reason" />
+                    </div>
+                    <button class="btn btn-outline-danger" type="submit">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

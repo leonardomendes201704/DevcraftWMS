@@ -1,6 +1,11 @@
 ﻿# Manual WMS - Backlog de Implementacao (Gaps)
 
+## Status (2026-02-06)
+Os itens abaixo foram implementados no backlog tecnico e encerrados.
+
+
 ## WMS-TASK-0001 - Modulo de devolucoes (returns)
+- Status: CONCLUIDO (2026-02-06)
 - Contexto: nao ha fluxo de devolucao registrado no codigo.
 - Objetivo: permitir registrar devolucoes de clientes, com inspecao e destino de estoque.
 - Escopo:
@@ -26,6 +31,7 @@
 - Prioridade: Media | Esforco: G
 
 ## WMS-TASK-0002 - Inventario ciclico (cycle count)
+- Status: CONCLUIDO (2026-02-06)
 - Contexto: nao existe processo de contagem ciclica no codigo.
 - Objetivo: permitir contagem periodica por localizacao e ajustes auditados.
 - Escopo:
@@ -49,6 +55,7 @@
 - Prioridade: Media | Esforco: M
 
 ## WMS-TASK-0003 - Agenda de doca outbound
+- Status: CONCLUIDO (2026-02-06)
 - Contexto: shipping nao possui agenda formal de doca no codigo.
 - Objetivo: controlar janelas de doca para embarque e evitar conflito de horarios.
 - Escopo:

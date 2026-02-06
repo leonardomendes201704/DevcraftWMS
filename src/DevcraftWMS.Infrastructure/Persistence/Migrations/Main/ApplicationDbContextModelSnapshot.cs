@@ -398,6 +398,82 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.DockSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DockCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OutboundOrderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OutboundShipmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RescheduleReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SlotEndUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SlotStartUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DockCode");
+
+                    b.HasIndex("OutboundOrderId");
+
+                    b.HasIndex("OutboundShipmentId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("DockSchedules", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.EmailDeliveryAttempt", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1029,6 +1105,140 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("InventoryBalances", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryCount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StartedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("StartedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ZoneId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.HasIndex("ZoneId");
+
+                    b.ToTable("InventoryCounts", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryCountItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InventoryCountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("LotId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("QuantityCounted")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("QuantityExpected")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UomId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryCountId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("LotId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UomId");
+
+                    b.ToTable("InventoryCountItems", (string)null);
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryMovement", b =>
@@ -3134,6 +3344,151 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.ToTable("ReceiptItems", (string)null);
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReturnItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Disposition")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DispositionNotes")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ExpirationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LotCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("LotId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("QuantityExpected")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("QuantityReceived")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ReturnOrderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UomId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LotId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ReturnOrderId");
+
+                    b.HasIndex("UomId");
+
+                    b.ToTable("ReturnItems", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReturnOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OutboundOrderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReceivedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ReceivedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReturnNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboundOrderId");
+
+                    b.HasIndex("ReturnNumber");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ReturnOrders", (string)null);
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4713,6 +5068,31 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Asn");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.DockSchedule", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.OutboundOrder", "OutboundOrder")
+                        .WithMany()
+                        .HasForeignKey("OutboundOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.OutboundShipment", "OutboundShipment")
+                        .WithMany()
+                        .HasForeignKey("OutboundShipmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OutboundOrder");
+
+                    b.Navigation("OutboundShipment");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.EmailDeliveryAttempt", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.EmailMessage", "EmailMessage")
@@ -4826,6 +5206,74 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Lot");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryCount", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Zone", "Zone")
+                        .WithMany()
+                        .HasForeignKey("ZoneId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Warehouse");
+
+                    b.Navigation("Zone");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryCountItem", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.InventoryCount", "InventoryCount")
+                        .WithMany("Items")
+                        .HasForeignKey("InventoryCountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Lot", "Lot")
+                        .WithMany()
+                        .HasForeignKey("LotId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Uom", "Uom")
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InventoryCount");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Lot");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Uom");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryMovement", b =>
@@ -5490,6 +5938,58 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("Uom");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReturnItem", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.Lot", "Lot")
+                        .WithMany()
+                        .HasForeignKey("LotId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.ReturnOrder", "ReturnOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("ReturnOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Uom", "Uom")
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lot");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ReturnOrder");
+
+                    b.Navigation("Uom");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReturnOrder", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.OutboundOrder", "OutboundOrder")
+                        .WithMany()
+                        .HasForeignKey("OutboundOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OutboundOrder");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("DevcraftWMS.Domain.Entities.Permission", "Permission")
@@ -5748,6 +6248,11 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Navigation("StatusEvents");
                 });
 
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.InventoryCount", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Location", b =>
                 {
                     b.Navigation("CustomerAccesses");
@@ -5821,6 +6326,11 @@ namespace DevcraftWMS.Infrastructure.Migrations
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReceiptDivergence", b =>
                 {
                     b.Navigation("Evidence");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.ReturnOrder", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.Role", b =>

@@ -39,6 +39,9 @@ using DevcraftWMS.Application.Features.Dashboard;
 using DevcraftWMS.Application.Features.Rbac;
 using DevcraftWMS.Application.Features.Users;
 using DevcraftWMS.Application.Features.PickingReplenishments;
+using DevcraftWMS.Application.Features.Returns;
+using DevcraftWMS.Application.Features.InventoryCounts;
+using DevcraftWMS.Application.Features.DockSchedules;
 
 namespace DevcraftWMS.Application;
 
@@ -82,6 +85,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitLoadService, UnitLoadService>();
         services.AddScoped<IReceiptCountService, ReceiptCountService>();
         services.AddScoped<IReceiptDivergenceService, ReceiptDivergenceService>();
+        services.AddScoped<IReturnService, ReturnService>();
+        services.AddScoped<IInventoryCountService, InventoryCountService>();
+        services.AddScoped<IDockScheduleService, DockScheduleService>();
         services.AddScoped<PickingReplenishmentService>();
         services.AddScoped<RoleService>();
         services.AddScoped<PermissionService>();

@@ -1,0 +1,132 @@
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+@using DevcraftWMS.DemoMvc.Enums
+@using DevcraftWMS.DemoMvc.Infrastructure
+@model DevcraftWMS.DemoMvc.ViewModels.DockSchedules.DockScheduleListPageViewModel
+@{
+    ViewData["Title"] = "Dock Schedules";
+    ViewData["Subtitle"] = "Outbound dock scheduling";
+
+    var queryOptions = new GridQueryOptions
+    {
+        Action = "Index",
+        Controller = "DockSchedules",
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir,
+        PageSize = Model.Query.PageSize,
+        Query = new Dictionary<string, string?>
+        {
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["DockCode"] = Model.Query.DockCode,
+            ["Status"] = Model.Query.Status?.ToString(),
+            ["FromUtc"] = Model.Query.FromUtc?.ToString("o"),
+            ["ToUtc"] = Model.Query.ToUtc?.ToString("o"),
+            ["IsActive"] = Model.Query.IsActive?.ToString(),
+            ["IncludeInactive"] = Model.Query.IncludeInactive.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        }
+    };
+
+    var statusOptions = new List<GridSelectOption>
+    {
+        new() { Value = string.Empty, Text = "Any", Selected = Model.Query.Status is null },
+        new() { Value = "0", Text = "Scheduled", Selected = Model.Query.Status == DockScheduleStatus.Scheduled },
+        new() { Value = "1", Text = "In progress", Selected = Model.Query.Status == DockScheduleStatus.InProgress },
+        new() { Value = "2", Text = "Completed", Selected = Model.Query.Status == DockScheduleStatus.Completed },
+        new() { Value = "3", Text = "Canceled", Selected = Model.Query.Status == DockScheduleStatus.Canceled }
+    };
+
+    var filters = new GridFilterViewModel
+    {
+        Action = "Index",
+        Controller = "DockSchedules",
+        Fields = new List<GridFilterField>
+        {
+            new() { Name = "OrderBy", Value = Model.Query.OrderBy, IsHidden = true },
+            new() { Name = "OrderDir", Value = Model.Query.OrderDir, IsHidden = true },
+            new() { Label = "WarehouseId", Name = "WarehouseId", Value = Model.Query.WarehouseId?.ToString() },
+            new() { Label = "Dock Code", Name = "DockCode", Value = Model.Query.DockCode },
+            new()
+            {
+                Label = "Status",
+                Name = "Status",
+                Type = GridFilterType.Select,
+                Options = statusOptions
+            },
+            new() { Label = "From (UTC)", Name = "FromUtc", Value = Model.Query.FromUtc?.ToString("o") },
+            new() { Label = "To (UTC)", Name = "ToUtc", Value = Model.Query.ToUtc?.ToString("o") },
+            new()
+            {
+                Label = "Active",
+                Name = "IsActive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = string.Empty, Text = "Any", Selected = Model.Query.IsActive is null },
+                    new() { Value = "true", Text = "Active", Selected = Model.Query.IsActive == true },
+                    new() { Value = "false", Text = "Inactive", Selected = Model.Query.IsActive == false }
+                }
+            },
+            new()
+            {
+                Label = "Include inactive",
+                Name = "IncludeInactive",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "false", Text = "No", Selected = Model.Query.IncludeInactive == false },
+                    new() { Value = "true", Text = "Yes", Selected = Model.Query.IncludeInactive }
+                }
+            },
+            new()
+            {
+                Label = "Page Size",
+                Name = "PageSize",
+                Type = GridFilterType.Select,
+                Options = new List<GridSelectOption>
+                {
+                    new() { Value = "10", Text = "10", Selected = Model.Query.PageSize == 10 },
+                    new() { Value = "25", Text = "25", Selected = Model.Query.PageSize == 25 },
+                    new() { Value = "50", Text = "50", Selected = Model.Query.PageSize == 50 }
+                }
+            }
+        },
+        ShowReset = true,
+        ResetUrl = Url.Action("Index", "DockSchedules")
+    };
+
+    string StatusLabel(DockScheduleStatus status) => status switch
+    {
+        DockScheduleStatus.Scheduled => "Scheduled",
+        DockScheduleStatus.InProgress => "In progress",
+        DockScheduleStatus.Completed => "Completed",
+        DockScheduleStatus.Canceled => "Canceled",
+        _ => $"Status {(int)status}"
+    };
+
+    var grid = new GridBuilder<DevcraftWMS.DemoMvc.ViewModels.DockSchedules.DockScheduleListItemViewModel>()
+        .WithTitle("Dock Schedules")
+        .WithSubtitle($"Total: {Model.Pagination?.TotalCount ?? 0}")
+        .WithItems(Model.Items)
+        .WithPagination(Model.Pagination)
+        .WithQueryOptions(queryOptions)
+        .WithFilters(filters)
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Dock", item => new HtmlString(HtmlEncoder.Default.Encode(item.DockCode)), "DockCode")
+        .AddColumn("Start", item => new HtmlString(item.SlotStartUtc.ToLocalTime().ToString("g")), "SlotStartUtc")
+        .AddColumn("End", item => new HtmlString(item.SlotEndUtc.ToLocalTime().ToString("g")), "SlotEndUtc")
+        .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-primary\">{HtmlEncoder.Default.Encode(StatusLabel(item.Status))}</span>"), "Status")
+        .AddAction("Details", item => Url.Action("Details", "DockSchedules", new { id = item.Id }))
+        .Build();
+}
+
+<partial name="_FilterDrawer" model="@(new FilterDrawerViewModel
+{
+    Id = "dockScheduleFilters",
+    Title = "Dock schedule filters",
+    Filters = filters,
+    ButtonText = "Filters",
+    ButtonCssClass = "btn btn-outline-primary"
+})" />
+
+<partial name="_Grid" model="grid" />
