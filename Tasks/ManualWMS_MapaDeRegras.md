@@ -25,6 +25,22 @@ Este mapa lista regras confirmadas no codigo e onde elas aparecem.
 | Packing (volumes) | `src/DevcraftWMS.Application/Features/OutboundPacking/OutboundPackingService.cs` | Cria volumes e itens de volume. |
 | Shipping (embarque) | `src/DevcraftWMS.Application/Features/OutboundShipping/OutboundShippingService.cs` | Registra doca e horarios; altera status. |
 | Outbound notifications | `src/DevcraftWMS.Application/Features/OutboundOrderNotifications/*` | Envia notificacoes de eventos outbound. |
+| Dock schedule (slots + conflito) | `src/DevcraftWMS.Application/Features/DockSchedules/DockScheduleService.cs` | Bloqueia sobreposicao de janelas e organiza docas. |
+| Dock schedule status | `src/DevcraftWMS.Domain/Enums/DockScheduleStatus.cs` | Define ciclo de vida da agenda. |
+
+## Logistica reversa (Returns)
+| Regra | Onde no codigo | Impacto no processo |
+| --- | --- | --- |
+| Return order status | `src/DevcraftWMS.Domain/Enums/ReturnStatus.cs` | Define etapas da devolucao. |
+| Registro de devolucao + validacoes de rastreio | `src/DevcraftWMS.Application/Features/Returns/ReturnService.cs` | Exige lote/validade quando produto possui rastreio. |
+| Conclusao de devolucao (destino) | `src/DevcraftWMS.Application/Features/Returns/ReturnService.cs` | Reintegracao ajusta saldo e gera movimentacao. |
+
+## Inventario ciclico
+| Regra | Onde no codigo | Impacto no processo |
+| --- | --- | --- |
+| Inventory count status | `src/DevcraftWMS.Domain/Enums/InventoryCountStatus.cs` | Define etapas da contagem ciclica. |
+| Criar contagem por localizacao | `src/DevcraftWMS.Application/Features/InventoryCounts/InventoryCountService.cs` | Gera itens com base no saldo da localizacao. |
+| Concluir contagem com ajuste | `src/DevcraftWMS.Application/Features/InventoryCounts/InventoryCountService.cs` | Divergencias geram ajuste e movimentacao. |
 
 ## Inventario e rastreio
 | Regra | Onde no codigo | Impacto no processo |

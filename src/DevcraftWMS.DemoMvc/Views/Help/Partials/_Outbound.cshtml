@@ -87,9 +87,26 @@
                 </div>
             </div>
             <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-dock">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-dock-body">
+                        6) Dock Schedule (agendamento de doca)
+                    </button>
+                </h2>
+                <div id="outbound-dock-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Acesse <a href="/DockSchedules" class="link-primary">/DockSchedules</a>.</li>
+                            <li>Crie um slot informando doca, inicio e fim.</li>
+                            <li>Associe a OS/embarque quando necessario.</li>
+                        </ol>
+                        <div class="alert alert-info">Regras: slots nao podem sobrepor horario; reagendamento exige motivo.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
                 <h2 class="accordion-header" id="outbound-ship">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-ship-body">
-                        6) Shipping (embarque)
+                        7) Shipping (embarque)
                     </button>
                 </h2>
                 <div id="outbound-ship-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
@@ -100,6 +117,33 @@
                         </ol>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="h6">Logistica reversa (Returns)</h3>
+            <ol class="small">
+                <li>Acesse <a href="/Returns" class="link-primary">/Returns</a> e registre a devolucao.</li>
+                <li>Informe OS de origem quando existir e itens devolvidos.</li>
+                <li>Receba a devolucao para iniciar a conferencia.</li>
+                <li>Finalize a devolucao definindo o destino do item:
+                    <strong>Reintegrar</strong>, <strong>Descartar</strong> ou <strong>Quarentena</strong>.</li>
+            </ol>
+            <div class="alert alert-info small">
+                Regras: produtos com rastreio exigem lote/validade; reintegro atualiza saldo e gera movimento.
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <h3 class="h6">Inventario ciclico (Cycle Count)</h3>
+            <ol class="small">
+                <li>Acesse <a href="/InventoryCounts" class="link-primary">/InventoryCounts</a>.</li>
+                <li>Crie uma contagem para uma localizacao.</li>
+                <li>Inicie a contagem e registre as quantidades.</li>
+                <li>Conclua a contagem e confirme ajustes, se houver divergencia.</li>
+            </ol>
+            <div class="alert alert-info small">
+                Regras: divergencia gera ajuste e movimentacao; contagem inicia em Draft e segue para InProgress e Completed.
             </div>
         </div>
     </div>

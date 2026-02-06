@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- Manual WMS atualizado com fluxos de devolucao, inventario ciclico e agenda de doca.
+  - Key changes: added detailed flows, statuses, glossary, checklist, FAQ, and rules map entries.
+
+## 2026-02-06
 - WMS backlog (WMS-TASK-0001/0002/0003) implemented.
   - Key changes: added returns, inventory count, and dock schedule modules (domain, CQRS, API, DemoMvc), plus migrations, tests, and manual backlog updates.
 

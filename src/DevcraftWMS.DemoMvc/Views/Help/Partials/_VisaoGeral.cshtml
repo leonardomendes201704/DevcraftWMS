@@ -1,7 +1,7 @@
 ﻿<div class="card shadow-sm mb-3">
     <div class="card-body">
         <h2 class="h5">Visao Geral do Processo</h2>
-        <p class="text-muted">Este manual descreve o fluxo completo do WMS, do recebimento ao embarque, com base nas telas e regras existentes no sistema.</p>
+        <p class="text-muted">Este manual descreve o fluxo completo do WMS, do recebimento ao embarque, incluindo logistica reversa e inventario ciclico, com base nas telas e regras existentes no sistema.</p>
         <div class="row g-3">
             <div class="col-12 col-lg-6">
                 <div class="border rounded p-3 h-100">
@@ -25,7 +25,31 @@
                         <li>Executar Picking Tasks e confirmar itens.</li>
                         <li>Realizar Outbound Check (conferencia).</li>
                         <li>Registrar Packing (volumes e etiquetas).</li>
+                        <li>Agendar doca (Dock Schedule) quando aplicavel.</li>
                         <li>Registrar Shipping (doca e embarque).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 mt-1">
+            <div class="col-12 col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h3 class="h6">Logistica reversa (Returns)</h3>
+                    <ol class="small mb-0">
+                        <li>Abrir Return Order (devolucao).</li>
+                        <li>Receber devolucao e inspecionar itens.</li>
+                        <li>Definir destino (reintegrar, descartar ou quarentena).</li>
+                        <li>Concluir devolucao e atualizar estoque.</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h3 class="h6">Inventario ciclico</h3>
+                    <ol class="small mb-0">
+                        <li>Criar contagem por localizacao.</li>
+                        <li>Iniciar e registrar quantidades.</li>
+                        <li>Concluir e ajustar saldos quando houver divergencia.</li>
                     </ol>
                 </div>
             </div>
