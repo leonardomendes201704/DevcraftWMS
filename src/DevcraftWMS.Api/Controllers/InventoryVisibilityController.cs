@@ -1,5 +1,6 @@
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.InventoryVisibility.Queries.GetInventoryVisibility;
+using DevcraftWMS.Application.Features.InventoryVisibility.Queries.GetInventoryVisibilityTimeline;
 using DevcraftWMS.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -53,6 +54,27 @@ public sealed class InventoryVisibilityController : ControllerBase
                 pageSize,
                 orderBy,
                 orderDir),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{productId:guid}/timeline")]
+    public async Task<IActionResult> Timeline(
+        Guid productId,
+        [FromQuery] Guid customerId,
+        [FromQuery] Guid warehouseId,
+        [FromQuery] string? lotCode = null,
+        [FromQuery] Guid? locationId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new GetInventoryVisibilityTimelineQuery(
+                customerId,
+                warehouseId,
+                productId,
+                lotCode,
+                locationId),
             cancellationToken);
 
         return this.ToActionResult(result);

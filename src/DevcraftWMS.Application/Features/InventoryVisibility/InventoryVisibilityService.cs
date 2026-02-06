@@ -78,6 +78,31 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
         return RequestResult<InventoryVisibilityResultDto>.Success(result);
     }
 
+    public async Task<RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>> GetTimelineAsync(
+        Guid customerId,
+        Guid warehouseId,
+        Guid productId,
+        string? lotCode,
+        Guid? locationId,
+        CancellationToken cancellationToken)
+    {
+        if (!_customerContext.CustomerId.HasValue)
+        {
+            return RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>.Failure("customers.context.required", "Customer context is required.");
+        }
+
+        if (_customerContext.CustomerId.Value != customerId)
+        {
+            return RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>.Failure("customers.context.mismatch", "Customer context does not match requested customer.");
+        }
+
+        var timeline = await _repository.ListTimelineAsync(warehouseId, productId, lotCode, locationId, cancellationToken);
+        var ordered = timeline
+            .OrderByDescending(t => t.OccurredAtUtc)
+            .ToList();
+        return RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>.Success(ordered);
+    }
+
     private static IReadOnlyList<InventoryVisibilitySummaryDto> BuildSummary(IReadOnlyList<BalanceAvailability> balances)
     {
         return balances

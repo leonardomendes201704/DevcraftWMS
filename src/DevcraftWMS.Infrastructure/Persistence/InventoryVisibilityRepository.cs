@@ -219,6 +219,153 @@ public sealed class InventoryVisibilityRepository : IInventoryVisibilityReposito
             .ToList();
     }
 
+    public async Task<IReadOnlyList<InventoryVisibilityTraceDto>> ListTimelineAsync(
+        Guid warehouseId,
+        Guid productId,
+        string? lotCode,
+        Guid? locationId,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetCustomerId();
+        Guid? lotId = null;
+        if (!string.IsNullOrWhiteSpace(lotCode))
+        {
+            var normalized = lotCode.Trim().ToUpperInvariant();
+            lotId = await _dbContext.Lots
+                .AsNoTracking()
+                .Where(l => l.ProductId == productId && l.Code.ToUpperInvariant() == normalized)
+                .Select(l => (Guid?)l.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        var traces = new List<InventoryVisibilityTraceDto>();
+
+        var movementQuery = _dbContext.InventoryMovements
+            .AsNoTracking()
+            .Include(m => m.FromLocation)
+            .Include(m => m.ToLocation)
+            .Where(m => m.CustomerId == customerId && m.ProductId == productId && m.Status == InventoryMovementStatus.Completed);
+
+        if (lotId.HasValue)
+        {
+            movementQuery = movementQuery.Where(m => m.LotId == lotId);
+        }
+
+        if (locationId.HasValue)
+        {
+            movementQuery = movementQuery.Where(m => m.FromLocationId == locationId || m.ToLocationId == locationId);
+        }
+
+        var movements = await movementQuery.ToListAsync(cancellationToken);
+        traces.AddRange(movements.Select(m => new InventoryVisibilityTraceDto(
+            "movement",
+            $"Movement {m.Quantity:N2} from {m.FromLocation?.Code ?? "-"} to {m.ToLocation?.Code ?? "-"} ({m.Reference ?? "N/A"})",
+            m.PerformedAtUtc,
+            null)));
+
+        var receiptItemQuery = from receiptItem in _dbContext.ReceiptItems.AsNoTracking()
+                               join receipt in _dbContext.Receipts.AsNoTracking()
+                                   on receiptItem.ReceiptId equals receipt.Id
+                               join location in _dbContext.Locations.AsNoTracking()
+                                   on receiptItem.LocationId equals location.Id
+                               where receipt.CustomerId == customerId
+                                     && receipt.WarehouseId == warehouseId
+                                     && receiptItem.ProductId == productId
+                               select new
+                               {
+                                   receiptItem,
+                                   receipt,
+                                   location
+                               };
+
+        if (lotId.HasValue)
+        {
+            receiptItemQuery = receiptItemQuery.Where(x => x.receiptItem.LotId == lotId);
+        }
+
+        if (locationId.HasValue)
+        {
+            receiptItemQuery = receiptItemQuery.Where(x => x.receiptItem.LocationId == locationId);
+        }
+
+        var receipts = await receiptItemQuery.ToListAsync(cancellationToken);
+        traces.AddRange(receipts.Select(r => new InventoryVisibilityTraceDto(
+            "receipt",
+            $"Receipt {r.receipt.ReceiptNumber} ({r.receipt.Status}) qty {r.receiptItem.Quantity:N2} at {r.location.Code}",
+            r.receipt.ReceivedAtUtc ?? r.receipt.CreatedAtUtc,
+            r.receipt.CreatedByUserId)));
+
+        var reservationQuery = from reservation in _dbContext.OutboundOrderReservations.AsNoTracking()
+                               join order in _dbContext.OutboundOrders.AsNoTracking()
+                                   on reservation.OutboundOrderId equals order.Id
+                               join balance in _dbContext.InventoryBalances.AsNoTracking()
+                                   on reservation.InventoryBalanceId equals balance.Id
+                               join location in _dbContext.Locations.AsNoTracking()
+                                   on balance.LocationId equals location.Id
+                               where reservation.CustomerId == customerId
+                                     && reservation.WarehouseId == warehouseId
+                                     && reservation.ProductId == productId
+                               select new
+                               {
+                                   reservation,
+                                   order,
+                                   location
+                               };
+
+        if (lotId.HasValue)
+        {
+            reservationQuery = reservationQuery.Where(x => x.reservation.LotId == lotId);
+        }
+
+        if (locationId.HasValue)
+        {
+            reservationQuery = reservationQuery.Where(x => x.location.Id == locationId);
+        }
+
+        var reservations = await reservationQuery.ToListAsync(cancellationToken);
+        traces.AddRange(reservations.Select(r => new InventoryVisibilityTraceDto(
+            "reservation",
+            $"Outbound {r.order.OrderNumber} ({r.order.Status}) reserved {r.reservation.QuantityReserved:N2} at {r.location.Code}",
+            r.reservation.CreatedAtUtc,
+            r.reservation.CreatedByUserId)));
+
+        var countQuery = from item in _dbContext.InventoryCountItems.AsNoTracking()
+                         join count in _dbContext.InventoryCounts.AsNoTracking()
+                             on item.InventoryCountId equals count.Id
+                         join location in _dbContext.Locations.AsNoTracking()
+                             on item.LocationId equals location.Id
+                         where count.CustomerId == customerId
+                               && count.WarehouseId == warehouseId
+                               && item.ProductId == productId
+                         select new
+                         {
+                             item,
+                             count,
+                             location
+                         };
+
+        if (lotId.HasValue)
+        {
+            countQuery = countQuery.Where(x => x.item.LotId == lotId);
+        }
+
+        if (locationId.HasValue)
+        {
+            countQuery = countQuery.Where(x => x.item.LocationId == locationId);
+        }
+
+        var counts = await countQuery.ToListAsync(cancellationToken);
+        traces.AddRange(counts.Select(c => new InventoryVisibilityTraceDto(
+            "inventory_count",
+            $"Inventory count {c.count.Id} ({c.count.Status}) expected {c.item.QuantityExpected:N2} at {c.location.Code}",
+            c.count.CreatedAtUtc,
+            c.count.CreatedByUserId)));
+
+        return traces
+            .OrderByDescending(t => t.OccurredAtUtc)
+            .ToList();
+    }
+
     private Guid GetCustomerId()
     {
         var customerId = _customerContext.CustomerId;

@@ -33,4 +33,11 @@ public interface IInventoryVisibilityRepository
         IReadOnlyCollection<Guid> productIds,
         IReadOnlyCollection<Guid> locationIds,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Features.InventoryVisibility.InventoryVisibilityTraceDto>> ListTimelineAsync(
+        Guid warehouseId,
+        Guid productId,
+        string? lotCode,
+        Guid? locationId,
+        CancellationToken cancellationToken = default);
 }

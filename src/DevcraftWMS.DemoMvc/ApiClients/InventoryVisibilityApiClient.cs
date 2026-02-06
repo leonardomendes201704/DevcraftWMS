@@ -40,4 +40,27 @@ public sealed class InventoryVisibilityApiClient : ApiClientBase
         var url = BuildUrl(basePath, queryParams);
         return GetAsync<InventoryVisibilityResultViewModel>(url, cancellationToken);
     }
+
+    public Task<ApiResult<IReadOnlyList<InventoryVisibilityTraceViewModel>>> GetTimelineAsync(
+        Guid productId,
+        Guid customerId,
+        Guid warehouseId,
+        string? lotCode,
+        Guid? locationId,
+        CancellationToken cancellationToken)
+    {
+        var url = $"/api/inventory-visibility/{productId}/timeline?customerId={customerId}&warehouseId={warehouseId}";
+
+        if (!string.IsNullOrWhiteSpace(lotCode))
+        {
+            url += $"&lotCode={Uri.EscapeDataString(lotCode)}";
+        }
+
+        if (locationId.HasValue)
+        {
+            url += $"&locationId={locationId}";
+        }
+
+        return GetAsync<IReadOnlyList<InventoryVisibilityTraceViewModel>>(url, cancellationToken);
+    }
 }

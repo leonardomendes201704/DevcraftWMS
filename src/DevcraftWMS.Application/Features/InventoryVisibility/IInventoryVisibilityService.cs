@@ -20,4 +20,12 @@ public interface IInventoryVisibilityService
         string orderBy,
         string orderDir,
         CancellationToken cancellationToken);
+
+    Task<RequestResult<IReadOnlyList<InventoryVisibilityTraceDto>>> GetTimelineAsync(
+        Guid customerId,
+        Guid warehouseId,
+        Guid productId,
+        string? lotCode,
+        Guid? locationId,
+        CancellationToken cancellationToken);
 }

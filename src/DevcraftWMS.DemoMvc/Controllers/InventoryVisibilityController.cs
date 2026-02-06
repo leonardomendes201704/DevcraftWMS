@@ -110,6 +110,23 @@ public sealed class InventoryVisibilityController : Controller
             }
         };
 
+        IReadOnlyList<InventoryVisibilityTraceViewModel> traceItems = Array.Empty<InventoryVisibilityTraceViewModel>();
+        if (normalizedQuery.ProductId.HasValue)
+        {
+            var timelineResult = await _visibilityClient.GetTimelineAsync(
+                normalizedQuery.ProductId.Value,
+                customerId.Value,
+                normalizedQuery.WarehouseId ?? Guid.Empty,
+                normalizedQuery.LotCode,
+                null,
+                cancellationToken);
+
+            if (timelineResult.IsSuccess && timelineResult.Data is not null)
+            {
+                traceItems = timelineResult.Data;
+            }
+        }
+
         return View(new InventoryVisibilityPageViewModel
         {
             Query = normalizedQuery,
@@ -117,7 +134,7 @@ public sealed class InventoryVisibilityController : Controller
             Products = productOptions,
             SummaryItems = result.Data.Summary.Items,
             LocationItems = result.Data.Locations.Items,
-            TraceItems = result.Data.Trace,
+            TraceItems = traceItems,
             Pagination = pagination,
             HasCustomerContext = true
         });

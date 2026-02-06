@@ -22,7 +22,7 @@ public sealed class InventoryVisibilityEndpointsTests : IClassFixture<CustomWebA
         var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         var warehouseId = await CreateWarehouseAsync(client);
         var locationId = await CreateLocationAsync(client, warehouseId);
-        var uomId = await CreateUomAsync(client, "EA", "Each", UomType.Unit);
+        var uomId = await CreateUomAsync(client, $"EA-{Guid.NewGuid():N}".Substring(0, 10).ToUpperInvariant(), "Each", UomType.Unit);
         var productId = await CreateProductAsync(client, uomId);
         var lotId = await CreateLotAsync(client, productId);
 
@@ -53,6 +53,56 @@ public sealed class InventoryVisibilityEndpointsTests : IClassFixture<CustomWebA
         summary[0].GetProperty("quantityAvailable").GetDecimal().Should().Be(8);
         summary[0].GetProperty("quantityOnHand").GetDecimal().Should().Be(10);
         summary[0].GetProperty("quantityReserved").GetDecimal().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Get_Inventory_Visibility_Timeline_Should_Return_Movements()
+    {
+        var client = _factory.CreateClient();
+        var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        var warehouseId = await CreateWarehouseAsync(client);
+        var fromLocationId = await CreateLocationAsync(client, warehouseId);
+        var toLocationId = await CreateLocationAsync(client, warehouseId);
+        var uomId = await CreateUomAsync(client, $"EA-{Guid.NewGuid():N}".Substring(0, 10).ToUpperInvariant(), "Each", UomType.Unit);
+        var productId = await CreateProductAsync(client, uomId);
+
+        var balancePayload = JsonSerializer.Serialize(new
+        {
+            productId,
+            lotId = (Guid?)null,
+            quantityOnHand = 10,
+            quantityReserved = 0,
+            status = InventoryBalanceStatus.Available
+        });
+
+        var balanceResponse = await client.PostAsync($"/api/locations/{fromLocationId}/inventory", new StringContent(balancePayload, Encoding.UTF8, "application/json"));
+        var balanceBody = await balanceResponse.Content.ReadAsStringAsync();
+        balanceResponse.IsSuccessStatusCode.Should().BeTrue(balanceBody);
+
+        var movementPayload = JsonSerializer.Serialize(new
+        {
+            fromLocationId,
+            toLocationId,
+            productId,
+            lotId = (Guid?)null,
+            quantity = 2,
+            reason = "Timeline test",
+            reference = "REF-TEST",
+            performedAtUtc = DateTime.UtcNow
+        });
+
+        var movementResponse = await client.PostAsync("/api/inventory/movements", new StringContent(movementPayload, Encoding.UTF8, "application/json"));
+        var movementBody = await movementResponse.Content.ReadAsStringAsync();
+        movementResponse.IsSuccessStatusCode.Should().BeTrue(movementBody);
+
+        var response = await client.GetAsync($"/api/inventory-visibility/{productId}/timeline?customerId={customerId}&warehouseId={warehouseId}&locationId={fromLocationId}");
+        var body = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.Should().BeTrue(body);
+
+        using var doc = JsonDocument.Parse(body);
+        doc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
+        doc.RootElement.GetArrayLength().Should().BeGreaterThan(0);
+        doc.RootElement[0].GetProperty("eventType").GetString().Should().Be("movement");
     }
 
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)

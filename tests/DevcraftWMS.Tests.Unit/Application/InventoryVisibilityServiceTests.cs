@@ -154,23 +154,56 @@ public sealed class InventoryVisibilityServiceTests
         locationItem.BlockedReasons.Should().Contain("quality_inspection");
     }
 
+    [Fact]
+    public async Task GetTimelineAsync_Should_Order_By_Date()
+    {
+        var customerId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var trace = new List<InventoryVisibilityTraceDto>
+        {
+            new("movement", "older", DateTime.UtcNow.AddHours(-5), null),
+            new("receipt", "newer", DateTime.UtcNow.AddHours(-1), null),
+            new("reservation", "middle", DateTime.UtcNow.AddHours(-3), null)
+        };
+
+        var service = new InventoryVisibilityService(
+            new FakeInventoryVisibilityRepository(Array.Empty<InventoryBalance>(), timeline: trace),
+            new FakeCustomerContext(customerId));
+
+        var result = await service.GetTimelineAsync(
+            customerId,
+            warehouseId,
+            productId,
+            null,
+            null,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Select(t => t.Description).Should().ContainInOrder("newer", "middle", "older");
+    }
+
     private sealed class FakeInventoryVisibilityRepository : IInventoryVisibilityRepository
     {
         private readonly IReadOnlyList<InventoryBalance> _balances;
         private readonly IReadOnlyList<InventoryReservationSnapshot> _reservations;
         private readonly IReadOnlyList<InventoryInspectionSnapshot> _inspections;
         private readonly IReadOnlyList<InventoryInProcessSnapshot> _inProcess;
+        private readonly IReadOnlyList<InventoryVisibilityTraceDto> _timeline;
 
         public FakeInventoryVisibilityRepository(
             IReadOnlyList<InventoryBalance> balances,
             IReadOnlyList<InventoryReservationSnapshot>? reservations = null,
             IReadOnlyList<InventoryInspectionSnapshot>? inspections = null,
-            IReadOnlyList<InventoryInProcessSnapshot>? inProcess = null)
+            IReadOnlyList<InventoryInProcessSnapshot>? inProcess = null,
+            IReadOnlyList<InventoryVisibilityTraceDto>? timeline = null)
         {
             _balances = balances;
             _reservations = reservations ?? Array.Empty<InventoryReservationSnapshot>();
             _inspections = inspections ?? Array.Empty<InventoryInspectionSnapshot>();
             _inProcess = inProcess ?? Array.Empty<InventoryInProcessSnapshot>();
+            _timeline = timeline ?? Array.Empty<InventoryVisibilityTraceDto>();
         }
 
         public Task<IReadOnlyList<InventoryBalance>> ListBalancesAsync(
@@ -205,6 +238,14 @@ public sealed class InventoryVisibilityServiceTests
             IReadOnlyCollection<Guid> locationIds,
             CancellationToken cancellationToken = default)
             => Task.FromResult(_inProcess);
+
+        public Task<IReadOnlyList<InventoryVisibilityTraceDto>> ListTimelineAsync(
+            Guid warehouseId,
+            Guid productId,
+            string? lotCode,
+            Guid? locationId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(_timeline);
     }
 
     private sealed class FakeCustomerContext : ICustomerContext

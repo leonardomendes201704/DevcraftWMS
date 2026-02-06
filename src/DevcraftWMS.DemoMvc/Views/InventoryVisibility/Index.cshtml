@@ -203,6 +203,11 @@
             Locations
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="timeline-tab" data-bs-toggle="pill" data-bs-target="#timeline" type="button" role="tab">
+            Timeline
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content" id="inventoryVisibilityTabsContent">
@@ -211,6 +216,44 @@
     </div>
     <div class="tab-pane fade" id="locations" role="tabpanel" aria-labelledby="locations-tab">
         <partial name="_Grid" model="locationGrid" />
+    </div>
+    <div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="timeline-tab">
+        @if (!Model.Query.ProductId.HasValue)
+        {
+            <div class="alert alert-info">
+                Select a product to view the timeline.
+            </div>
+        }
+        else if (Model.TraceItems.Count == 0)
+        {
+            <div class="alert alert-warning">
+                No timeline events found for the selected product.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.TraceItems)
+                        {
+                            <tr>
+                                <td>@item.OccurredAtUtc.ToLocalTime().ToString("g")</td>
+                                <td><span class="badge text-bg-secondary">@item.EventType</span></td>
+                                <td>@item.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 
