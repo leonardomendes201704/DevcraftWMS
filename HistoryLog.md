@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- TASK-0122 - Seed outbound check flow completed.
+  - Key changes: added outbound check seeding and ensured at least one seeded order has all picking tasks completed.
+
+## 2026-02-06
 - TASK-0121 - Outbound check queue API completed.
   - Key changes: added outbound check status/start fields, list/start endpoints, picking completion hook, migration, and unit/integration tests.
 

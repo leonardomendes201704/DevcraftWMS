@@ -34,4 +34,5 @@ Implementar o fluxo completo de saida e expedicao conforme o documento Especific
 - [DONE-TASK-0118] Fluxos alternativos (parcial, cancelamento pos separacao, cross-dock) | Prioridade: P2 | Dependencias: TASK-0106 | Estimativa: 6h
 - [DONE-TASK-0119] Reposicao automatica de picking | Prioridade: P2 | Dependencias: TASK-0106 | Estimativa: 6h
 - [DONE-TASK-0121] Outbound checks: fila + start API (mobile) | Prioridade: P1 | Dependencias: TASK-0109 | Estimativa: 6h
+- [DONE-TASK-0122] Seed outbound check flow (picking + checks) | Prioridade: P2 | Dependencias: TASK-0121 | Estimativa: 2h
 - [TASK-0120] RBAC outbound: permissoes por papel | Prioridade: P1 | Dependencias: TASK-0100 | Estimativa: 4h

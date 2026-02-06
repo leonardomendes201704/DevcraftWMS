@@ -1158,8 +1158,86 @@ public sealed class SampleDataSeeder
             });
         }
 
+        if (orders.Count > 0)
+        {
+            var completedOrderId = orders[0].Id;
+            foreach (var task in tasks.Where(t => t.OutboundOrderId == completedOrderId))
+            {
+                task.Status = PickingTaskStatus.Completed;
+                task.StartedAtUtc ??= now.AddMinutes(-60);
+                task.CompletedAtUtc = now.AddMinutes(-30);
+            }
+
+            foreach (var item in taskItems.Where(i => tasks.Any(t => t.Id == i.PickingTaskId && t.OutboundOrderId == completedOrderId)))
+            {
+                item.QuantityPicked = item.QuantityPlanned;
+            }
+        }
+
         _dbContext.PickingTasks.AddRange(tasks);
         _dbContext.PickingTaskItems.AddRange(taskItems);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        await EnsureOutboundChecksAsync(customerId, orders, tasks, cancellationToken);
+    }
+
+    private async Task EnsureOutboundChecksAsync(
+        Guid customerId,
+        IReadOnlyList<OutboundOrder> orders,
+        IReadOnlyList<PickingTask> tasks,
+        CancellationToken cancellationToken)
+    {
+        if (orders.Count == 0 || tasks.Count == 0)
+        {
+            return;
+        }
+
+        var completedOrders = tasks
+            .GroupBy(t => t.OutboundOrderId)
+            .Where(g => g.All(t => t.Status == PickingTaskStatus.Completed))
+            .Select(g => g.Key)
+            .ToHashSet();
+
+        if (completedOrders.Count == 0)
+        {
+            return;
+        }
+
+        var existingChecks = await _dbContext.OutboundChecks
+            .Where(c => c.CustomerId == customerId && completedOrders.Contains(c.OutboundOrderId))
+            .Select(c => c.OutboundOrderId)
+            .ToListAsync(cancellationToken);
+
+        var existingSet = existingChecks.ToHashSet();
+        var candidates = orders
+            .Where(o => completedOrders.Contains(o.Id) && !existingSet.Contains(o.Id))
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var checks = new List<OutboundCheck>();
+
+        for (var i = 0; i < candidates.Count; i++)
+        {
+            var order = candidates[i];
+            var status = i == 0 ? OutboundCheckStatus.InProgress : OutboundCheckStatus.Pending;
+            checks.Add(new OutboundCheck
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                OutboundOrderId = order.Id,
+                WarehouseId = order.WarehouseId,
+                Status = status,
+                Priority = order.Priority,
+                StartedAtUtc = status == OutboundCheckStatus.InProgress ? now.AddMinutes(-10) : null
+            });
+        }
+
+        _dbContext.OutboundChecks.AddRange(checks);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }
