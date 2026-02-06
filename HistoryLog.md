@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- EPIC WMS-INV-001 criado (Visibilidade Total de Estoque por Cliente e Armazem).
+  - Key changes: added epic README and tasks 0200-0206.
+
+## 2026-02-06
 - TASK-0104 - Mobile Conferencia fila concluida.
   - Key changes: documentacao finalizada e task marcada como DONE.
 
