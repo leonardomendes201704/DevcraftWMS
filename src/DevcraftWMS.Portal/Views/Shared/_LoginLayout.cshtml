@@ -1,0 +1,32 @@
+@{
+    var title = ViewData["Title"] as string ?? "Login";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - DevcraftWMS Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="bg-light">
+    <main class="container min-vh-100 d-flex flex-column justify-content-center py-4">
+        <div class="mb-4 text-center">
+            <div class="fw-semibold text-uppercase small text-muted">DevcraftWMS Portal</div>
+            <h1 class="h4 mb-1">@title</h1>
+            @if (ViewData["Subtitle"] is string subtitle && !string.IsNullOrWhiteSpace(subtitle))
+            {
+                <p class="text-muted mb-0">@subtitle</p>
+            }
+        </div>
+        <partial name="_Alerts" />
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -13,6 +13,14 @@
   - Key changes: added manual section, FAQ entry, and updated rules map.
 
 ## 2026-02-06
+- TASK-0124 - Pagina de login sem layout padrao.
+  - Key changes: added dedicated login layout for DemoMvc, Portal, and Portaria.
+
+## 2026-02-06
+- Fix - Portal/Portaria API base URL for login in development.
+  - Key changes: pointed ApiBaseUrl to http://localhost:5137 in dev settings.
+
+## 2026-02-06
 - Fix - Inventory visibility timeline selector.
   - Key changes: added product selector and action button to load timeline.
 
