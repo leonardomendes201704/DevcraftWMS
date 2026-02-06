@@ -3,12 +3,14 @@ using DevcraftWMS.Application.Features.OutboundChecks.Commands.StartOutboundChec
 using DevcraftWMS.Application.Features.OutboundChecks.Queries.ListOutboundChecksPaged;
 using DevcraftWMS.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
 [Route("api/outbound-checks")]
+[Authorize(Policy = "Role:Conferente")]
 public sealed class OutboundChecksController : ControllerBase
 {
     private readonly IMediator _mediator;

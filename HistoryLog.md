@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- TASK-0120 - Outbound RBAC policies applied.
+  - Key changes: added outbound role policies and protected picking/check/packing/shipping endpoints.
+
+## 2026-02-06
 - TASK-0122 - Seed outbound check flow completed.
   - Key changes: added outbound check seeding and ensured at least one seeded order has all picking tasks completed.
 

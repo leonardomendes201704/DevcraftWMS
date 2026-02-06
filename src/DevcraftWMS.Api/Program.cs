@@ -194,6 +194,29 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAssertion(context =>
             context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
             context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Putaway.ToString())));
+    options.AddPolicy("Role:OutboundOrders", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Backoffice.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Supervisor.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Cliente.ToString())));
+    options.AddPolicy("Role:OutboundOrdersManage", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Backoffice.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Supervisor.ToString())));
+    options.AddPolicy("Role:Picking", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Backoffice.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Supervisor.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Picking.ToString())));
+    options.AddPolicy("Role:Expedicao", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Admin.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Backoffice.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Supervisor.ToString()) ||
+            context.User.IsInRole(DevcraftWMS.Domain.Enums.UserRole.Expedicao.ToString())));
 });
 
 // --------------------------

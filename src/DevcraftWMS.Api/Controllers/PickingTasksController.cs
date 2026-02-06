@@ -23,7 +23,7 @@ public sealed class PickingTasksController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Role:Backoffice")]
+    [Authorize(Policy = "Role:Picking")]
     public async Task<IActionResult> List(
         [FromQuery] Guid? warehouseId,
         [FromQuery] Guid? outboundOrderId,
@@ -53,7 +53,7 @@ public sealed class PickingTasksController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize(Policy = "Role:Backoffice")]
+    [Authorize(Policy = "Role:Picking")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetPickingTaskByIdQuery(id), cancellationToken);
@@ -61,7 +61,7 @@ public sealed class PickingTasksController : ControllerBase
     }
 
     [HttpPost("{id:guid}/start")]
-    [Authorize(Policy = "Role:Backoffice")]
+    [Authorize(Policy = "Role:Picking")]
     public async Task<IActionResult> Start(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new StartPickingTaskCommand(id), cancellationToken);
@@ -69,7 +69,7 @@ public sealed class PickingTasksController : ControllerBase
     }
 
     [HttpPost("{id:guid}/confirm")]
-    [Authorize(Policy = "Role:Backoffice")]
+    [Authorize(Policy = "Role:Picking")]
     public async Task<IActionResult> Confirm(Guid id, [FromBody] ConfirmPickingTaskRequest request, CancellationToken cancellationToken)
     {
         var items = request.Items.Select(i => new ConfirmPickingTaskItemInput(i.PickingTaskItemId, i.QuantityPicked)).ToList();

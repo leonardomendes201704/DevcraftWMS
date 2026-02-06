@@ -19,6 +19,7 @@ using DevcraftWMS.Application.Features.OutboundOrderNotifications.Queries.ListOu
 using DevcraftWMS.Application.Features.OutboundOrderNotifications.Commands.ResendOutboundOrderNotification;
 using DevcraftWMS.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevcraftWMS.Api.Controllers;
@@ -35,6 +36,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> Create([FromBody] CreateOutboundOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
@@ -58,6 +60,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> List(
         [FromQuery] Guid? warehouseId = null,
         [FromQuery] string? orderNumber = null,
@@ -93,6 +96,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetOutboundOrderQuery(id), cancellationToken);
@@ -100,6 +104,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}/report")]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> GetShippingReport(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetOutboundOrderShippingReportQuery(id), cancellationToken);
@@ -107,6 +112,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}/report/export")]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> ExportShippingReport(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ExportOutboundOrderShippingReportQuery(id), cancellationToken);
@@ -119,6 +125,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}/notifications")]
+    [Authorize(Policy = "Role:OutboundOrders")]
     public async Task<IActionResult> ListNotifications(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ListOutboundOrderNotificationsQuery(id), cancellationToken);
@@ -126,6 +133,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/notifications/{notificationId:guid}/resend")]
+    [Authorize(Policy = "Role:OutboundOrdersManage")]
     public async Task<IActionResult> ResendNotification(Guid id, Guid notificationId, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ResendOutboundOrderNotificationCommand(id, notificationId), cancellationToken);
@@ -133,6 +141,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/release")]
+    [Authorize(Policy = "Role:OutboundOrdersManage")]
     public async Task<IActionResult> Release(Guid id, [FromBody] ReleaseOutboundOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
@@ -148,6 +157,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/cancel")]
+    [Authorize(Policy = "Role:OutboundOrdersManage")]
     public async Task<IActionResult> Cancel(Guid id, [FromBody] CancelOutboundOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CancelOutboundOrderCommand(id, request.Reason), cancellationToken);
@@ -155,6 +165,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/check")]
+    [Authorize(Policy = "Role:Conferente")]
     public async Task<IActionResult> Check(Guid id, [FromBody] RegisterOutboundCheckRequest request, CancellationToken cancellationToken)
     {
         var items = request.Items.Select(i => new OutboundCheckItemInput(
@@ -174,6 +185,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/pack")]
+    [Authorize(Policy = "Role:Expedicao")]
     public async Task<IActionResult> Pack(Guid id, [FromBody] RegisterOutboundPackingRequest request, CancellationToken cancellationToken)
     {
         var packages = request.Packages.Select(p => new OutboundPackageInput(
@@ -194,6 +206,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}/packages")]
+    [Authorize(Policy = "Role:Expedicao")]
     public async Task<IActionResult> ListPackages(Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ListOutboundPackagesQuery(id), cancellationToken);
@@ -201,6 +214,7 @@ public sealed class OutboundOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/ship")]
+    [Authorize(Policy = "Role:Expedicao")]
     public async Task<IActionResult> Ship(Guid id, [FromBody] RegisterOutboundShipmentRequest request, CancellationToken cancellationToken)
     {
         var input = new RegisterOutboundShipmentInput(
