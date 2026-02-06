@@ -1,6 +1,14 @@
 # History Log
 
 ## 2026-02-06
+- TASK-0123 - Manual do Sistema WMS task created.
+  - Key changes: defined scope, deliverables, and process for system manual + gaps/backlog.
+
+## 2026-02-06
+- TASK-0012 - Picking/expedicao task marked obsolete.
+  - Key changes: flagged as superseded by WMS-OUT-001 tasks.
+
+## 2026-02-06
 - TASK-0120 - Outbound RBAC policies applied.
   - Key changes: added outbound role policies and protected picking/check/packing/shipping endpoints.
 
