@@ -12,7 +12,7 @@ using DevcraftWMS.Domain.Enums;
 namespace DevcraftWMS.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = "Role:Backoffice")]
+[Authorize(Policy = "Role:Admin")]
 [Route("api/dashboard")]
 public sealed class DashboardController : ControllerBase
 {

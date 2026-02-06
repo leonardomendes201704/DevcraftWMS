@@ -10,5 +10,6 @@ public sealed record CreateOutboundOrderCommand(
     string? CarrierName,
     DateOnly? ExpectedShipDate,
     string? Notes,
+    bool IsCrossDock,
     IReadOnlyList<CreateOutboundOrderItemInput> Items)
     : IRequest<RequestResult<OutboundOrderDetailDto>>;

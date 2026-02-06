@@ -1508,6 +1508,9 @@ namespace DevcraftWMS.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsCrossDock")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
@@ -1694,6 +1697,69 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("OutboundOrderNotifications", (string)null);
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboundOrderReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InventoryBalanceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("LotId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OutboundOrderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OutboundOrderItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("QuantityReserved")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryBalanceId");
+
+                    b.HasIndex("OutboundOrderItemId");
+
+                    b.HasIndex("OutboundOrderId", "OutboundOrderItemId");
+
+                    b.ToTable("OutboundOrderReservations", (string)null);
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboundPackage", b =>
@@ -4861,6 +4927,33 @@ namespace DevcraftWMS.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("OutboundOrder");
+                });
+
+            modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboundOrderReservation", b =>
+                {
+                    b.HasOne("DevcraftWMS.Domain.Entities.InventoryBalance", "InventoryBalance")
+                        .WithMany()
+                        .HasForeignKey("InventoryBalanceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.OutboundOrder", "OutboundOrder")
+                        .WithMany()
+                        .HasForeignKey("OutboundOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DevcraftWMS.Domain.Entities.OutboundOrderItem", "OutboundOrderItem")
+                        .WithMany()
+                        .HasForeignKey("OutboundOrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InventoryBalance");
+
+                    b.Navigation("OutboundOrder");
+
+                    b.Navigation("OutboundOrderItem");
                 });
 
             modelBuilder.Entity("DevcraftWMS.Domain.Entities.OutboundPackage", b =>

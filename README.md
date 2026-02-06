@@ -381,6 +381,7 @@ Seed:SampleData:MovementCount          -> Number of sample movements to seed
 Seed:SampleData:MovementPerformedWindowDays -> Movement date window (days back from today)
 Seed:SampleData:MovementQuantityMin    -> Minimum quantity per movement
 Seed:SampleData:MovementQuantityMax    -> Maximum quantity per movement
+Seed:SampleData:PickingTaskCount       -> Number of picking tasks to seed
 Dashboard:ExpiringLotsDays         -> Default KPI window (days) for expiring lots
 Dashboard:InboundWindowDays        -> Default KPI window (days) for inbound KPIs
 Dashboard:OutboundWindowDays       -> Default KPI window (days) for outbound KPIs

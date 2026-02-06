@@ -32,6 +32,7 @@ public sealed class OutboundShippingServiceTests
             new FakeOutboundOrderRepository(order),
             new FakeOutboundPackageRepository(packages),
             new FakeOutboundShipmentRepository(),
+            new FakeOutboundOrderReservationRepository(),
             new FakeCustomerContext(customerId),
             new FakeDateTimeProvider(DateTime.UtcNow),
             new FakeOutboundOrderNotificationService());
@@ -71,6 +72,7 @@ public sealed class OutboundShippingServiceTests
             new FakeOutboundOrderRepository(order),
             new FakeOutboundPackageRepository(packages),
             new FakeOutboundShipmentRepository(),
+            new FakeOutboundOrderReservationRepository(),
             new FakeCustomerContext(customerId),
             new FakeDateTimeProvider(DateTime.UtcNow),
             new FakeOutboundOrderNotificationService());
@@ -86,6 +88,76 @@ public sealed class OutboundShippingServiceTests
 
         result.IsSuccess.Should().BeTrue();
         order.Status.Should().Be(OutboundOrderStatus.Shipped);
+    }
+
+    [Fact]
+    public async Task Register_Should_Release_Reservations_For_Shipped_Packages()
+    {
+        var customerId = Guid.NewGuid();
+        var orderItemId = Guid.NewGuid();
+        var balance = new InventoryBalance
+        {
+            Id = Guid.NewGuid(),
+            ProductId = Guid.NewGuid(),
+            QuantityOnHand = 5,
+            QuantityReserved = 3,
+            Status = InventoryBalanceStatus.Available
+        };
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            Status = OutboundOrderStatus.Packed,
+            Items = new List<OutboundOrderItem> { new() { Id = orderItemId, ProductId = balance.ProductId, UomId = Guid.NewGuid(), Quantity = 3 } }
+        };
+
+        var package = new OutboundPackage { Id = Guid.NewGuid(), OutboundOrderId = order.Id, PackageNumber = "PKG-1" };
+        package.Items.Add(new OutboundPackageItem
+        {
+            Id = Guid.NewGuid(),
+            OutboundPackageId = package.Id,
+            OutboundOrderItemId = orderItemId,
+            ProductId = balance.ProductId,
+            UomId = Guid.NewGuid(),
+            Quantity = 3
+        });
+
+        var reservations = new FakeOutboundOrderReservationRepository();
+        reservations.Stored.Add(new OutboundOrderReservation
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = order.WarehouseId,
+            OutboundOrderId = order.Id,
+            OutboundOrderItemId = orderItemId,
+            InventoryBalanceId = balance.Id,
+            ProductId = balance.ProductId,
+            QuantityReserved = 3,
+            InventoryBalance = balance
+        });
+
+        var service = new OutboundShippingService(
+            new FakeOutboundOrderRepository(order),
+            new FakeOutboundPackageRepository(new List<OutboundPackage> { package }),
+            new FakeOutboundShipmentRepository(),
+            reservations,
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider(DateTime.UtcNow),
+            new FakeOutboundOrderNotificationService());
+
+        var result = await service.RegisterAsync(order.Id, new RegisterOutboundShipmentInput(
+            "D1",
+            null,
+            null,
+            null,
+            null,
+            new List<OutboundShipmentPackageInput> { new(package.Id) }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        balance.QuantityReserved.Should().Be(0);
+        reservations.Stored.Should().BeEmpty();
     }
 
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
@@ -133,6 +205,30 @@ public sealed class OutboundShippingServiceTests
 
         public Task<IReadOnlyList<OutboundShipment>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OutboundShipment>>(Array.Empty<OutboundShipment>());
+    }
+
+    private sealed class FakeOutboundOrderReservationRepository : IOutboundOrderReservationRepository
+    {
+        public List<OutboundOrderReservation> Stored { get; } = new();
+
+        public Task AddRangeAsync(IReadOnlyList<OutboundOrderReservation> reservations, CancellationToken cancellationToken = default)
+        {
+            Stored.AddRange(reservations);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<OutboundOrderReservation>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<OutboundOrderReservation>>(Stored.Where(r => r.OutboundOrderId == outboundOrderId).ToList());
+
+        public Task RemoveRangeAsync(IReadOnlyList<OutboundOrderReservation> reservations, CancellationToken cancellationToken = default)
+        {
+            foreach (var reservation in reservations)
+            {
+                Stored.Remove(reservation);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeCustomerContext : ICustomerContext

@@ -59,6 +59,7 @@ public sealed class OutboundOrderRepository : IOutboundOrderRepository
                 .ThenInclude(i => i.Product)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Uom)
+            .Include(o => o.PickingTasks)
             .SingleOrDefaultAsync(o => o.CustomerId == customerId && o.Id == id, cancellationToken);
     }
 

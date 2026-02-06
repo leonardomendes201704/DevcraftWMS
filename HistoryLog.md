@@ -1,6 +1,18 @@
 # History Log
 
 ## 2026-02-05
+- Seed - Picking queue sample data added.
+  - Key changes: added picking task seeding (orders/tasks/items) with configurable count for mobile queue visibility.
+
+## 2026-02-05
+- TASK-0118 - Outbound alternative flows completed.
+  - Key changes: added outbound reservations, cancel endpoint with reservation release, partial shipping release, and cross-dock reservation filter with tests.
+
+## 2026-02-05
+- Tasking - Epic WMS-MOB-001 created.
+  - Key changes: created mobile epic README and tasks (0100-0121) covering the mobile app screens.
+
+## 2026-02-05
 - TASK-0117 - Outbound KPIs completed.
   - Key changes: added outbound KPI endpoint, dashboard cards, and integration tests.
 

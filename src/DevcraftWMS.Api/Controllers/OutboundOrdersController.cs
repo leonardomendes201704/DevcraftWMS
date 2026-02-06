@@ -2,6 +2,7 @@ using DevcraftWMS.Api.Contracts;
 using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.OutboundOrders;
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.CreateOutboundOrder;
+using DevcraftWMS.Application.Features.OutboundOrders.Commands.CancelOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundOrders.Commands.ReleaseOutboundOrder;
 using DevcraftWMS.Application.Features.OutboundChecks;
 using DevcraftWMS.Application.Features.OutboundChecks.Commands.RegisterOutboundCheck;
@@ -44,6 +45,7 @@ public sealed class OutboundOrdersController : ControllerBase
                 request.CarrierName,
                 request.ExpectedShipDate,
                 request.Notes,
+                request.IsCrossDock,
                 request.Items.Select(i => new CreateOutboundOrderItemInput(
                     i.ProductId,
                     i.UomId,
@@ -142,6 +144,13 @@ public sealed class OutboundOrdersController : ControllerBase
                 request.ShippingWindowEndUtc),
             cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id, [FromBody] CancelOutboundOrderRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new CancelOutboundOrderCommand(id, request.Reason), cancellationToken);
         return this.ToActionResult(result);
     }
 

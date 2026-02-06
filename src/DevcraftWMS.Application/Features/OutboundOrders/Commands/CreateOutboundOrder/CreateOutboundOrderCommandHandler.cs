@@ -23,6 +23,7 @@ public sealed class CreateOutboundOrderCommandHandler
             request.CarrierName,
             request.ExpectedShipDate,
             request.Notes,
+            request.IsCrossDock,
             request.Items,
             cancellationToken);
 }

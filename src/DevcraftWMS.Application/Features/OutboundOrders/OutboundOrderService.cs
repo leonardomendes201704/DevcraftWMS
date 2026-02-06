@@ -16,7 +16,9 @@ public sealed class OutboundOrderService : IOutboundOrderService
     private readonly IInventoryBalanceRepository _inventoryBalanceRepository;
     private readonly ILotRepository _lotRepository;
     private readonly IPickingTaskRepository _pickingTaskRepository;
+    private readonly IOutboundOrderReservationRepository _reservationRepository;
     private readonly ICustomerContext _customerContext;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     public OutboundOrderService(
         IOutboundOrderRepository orderRepository,
@@ -26,7 +28,9 @@ public sealed class OutboundOrderService : IOutboundOrderService
         IInventoryBalanceRepository inventoryBalanceRepository,
         ILotRepository lotRepository,
         IPickingTaskRepository pickingTaskRepository,
-        ICustomerContext customerContext)
+        IOutboundOrderReservationRepository reservationRepository,
+        ICustomerContext customerContext,
+        IDateTimeProvider dateTimeProvider)
     {
         _orderRepository = orderRepository;
         _warehouseRepository = warehouseRepository;
@@ -35,7 +39,9 @@ public sealed class OutboundOrderService : IOutboundOrderService
         _inventoryBalanceRepository = inventoryBalanceRepository;
         _lotRepository = lotRepository;
         _pickingTaskRepository = pickingTaskRepository;
+        _reservationRepository = reservationRepository;
         _customerContext = customerContext;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<RequestResult<OutboundOrderDetailDto>> CreateAsync(
@@ -45,6 +51,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
         string? carrierName,
         DateOnly? expectedShipDate,
         string? notes,
+        bool isCrossDock,
         IReadOnlyList<CreateOutboundOrderItemInput> items,
         CancellationToken cancellationToken)
     {
@@ -91,7 +98,8 @@ public sealed class OutboundOrderService : IOutboundOrderService
             ExpectedShipDate = expectedShipDate,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
             Status = OutboundOrderStatus.Registered,
-            Priority = OutboundOrderPriority.Normal
+            Priority = OutboundOrderPriority.Normal,
+            IsCrossDock = isCrossDock
         };
 
         await _orderRepository.AddAsync(order, cancellationToken);
@@ -238,6 +246,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
         }
 
         var reservationItems = new List<ReservationItem>();
+        var reservations = new List<OutboundOrderReservation>();
         foreach (var item in order.Items)
         {
             if (item.Quantity <= 0)
@@ -278,6 +287,7 @@ public sealed class OutboundOrderService : IOutboundOrderService
             var balances = await _inventoryBalanceRepository.ListAvailableForReservationAsync(
                 product.Id,
                 lotId,
+                order.IsCrossDock ? ZoneType.CrossDock : null,
                 cancellationToken);
 
             var available = balances.Sum(b => b.QuantityOnHand - b.QuantityReserved);
@@ -305,18 +315,97 @@ public sealed class OutboundOrderService : IOutboundOrderService
                 var reserve = Math.Min(balanceAvailable, remaining);
                 balance.QuantityReserved += reserve;
                 remaining -= reserve;
+
+                reservations.Add(new OutboundOrderReservation
+                {
+                    Id = Guid.NewGuid(),
+                    CustomerId = _customerContext.CustomerId.Value,
+                    WarehouseId = order.WarehouseId,
+                    OutboundOrderId = order.Id,
+                    OutboundOrderItemId = item.Id,
+                    InventoryBalanceId = balance.Id,
+                    ProductId = product.Id,
+                    LotId = lotId,
+                    QuantityReserved = reserve
+                });
             }
 
             reservationItems.Add(new ReservationItem(item, product, lotId, item.ExpirationDate ?? lot?.ExpirationDate));
         }
 
         await CreatePickingTasksAsync(order, reservationItems, cancellationToken);
+        await _reservationRepository.AddRangeAsync(reservations, cancellationToken);
 
         order.Priority = priority;
         order.PickingMethod = pickingMethod;
         order.ShippingWindowStartUtc = shippingWindowStartUtc;
         order.ShippingWindowEndUtc = shippingWindowEndUtc;
         order.Status = OutboundOrderStatus.Released;
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        var items = order.Items.Select(OutboundOrderMapping.MapItem).ToList();
+        return RequestResult<OutboundOrderDetailDto>.Success(OutboundOrderMapping.MapDetail(order, items));
+    }
+
+    public async Task<RequestResult<OutboundOrderDetailDto>> CancelAsync(
+        Guid id,
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.required", "Outbound order is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return RequestResult<OutboundOrderDetailDto>.ValidationFailure(new Dictionary<string, string[]>
+            {
+                ["CancelReason"] = new[] { "Cancel reason is required." }
+            });
+        }
+
+        var order = await _orderRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (order is null)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.not_found", "Outbound order not found.");
+        }
+
+        if (order.Status is OutboundOrderStatus.Canceled or OutboundOrderStatus.Shipped)
+        {
+            return RequestResult<OutboundOrderDetailDto>.Failure("outbound_orders.order.status_locked", "Outbound order status does not allow cancellation.");
+        }
+
+        var reservations = await _reservationRepository.ListByOrderIdAsync(order.Id, cancellationToken);
+        foreach (var reservation in reservations)
+        {
+            if (reservation.InventoryBalance is null)
+            {
+                continue;
+            }
+
+            reservation.InventoryBalance.QuantityReserved = Math.Max(0, reservation.InventoryBalance.QuantityReserved - reservation.QuantityReserved);
+        }
+
+        await _reservationRepository.RemoveRangeAsync(reservations, cancellationToken);
+
+        foreach (var task in order.PickingTasks)
+        {
+            if (task.Status is PickingTaskStatus.Completed or PickingTaskStatus.Canceled)
+            {
+                continue;
+            }
+
+            task.Status = PickingTaskStatus.Canceled;
+            task.Notes = string.IsNullOrWhiteSpace(task.Notes)
+                ? $"Canceled: {reason.Trim()}"
+                : $"{task.Notes} | Canceled: {reason.Trim()}";
+        }
+
+        order.Status = OutboundOrderStatus.Canceled;
+        order.CancelReason = reason.Trim();
+        order.CanceledAtUtc = _dateTimeProvider.UtcNow;
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 

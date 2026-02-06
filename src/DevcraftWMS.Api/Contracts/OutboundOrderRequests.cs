@@ -7,6 +7,7 @@ public sealed record CreateOutboundOrderRequest(
     string? CarrierName,
     DateOnly? ExpectedShipDate,
     string? Notes,
+    bool IsCrossDock,
     IReadOnlyList<CreateOutboundOrderItemRequest> Items);
 
 public sealed record CreateOutboundOrderItemRequest(
@@ -21,3 +22,5 @@ public sealed record ReleaseOutboundOrderRequest(
     DevcraftWMS.Domain.Enums.OutboundOrderPickingMethod PickingMethod,
     DateTime? ShippingWindowStartUtc,
     DateTime? ShippingWindowEndUtc);
+
+public sealed record CancelOutboundOrderRequest(string Reason);

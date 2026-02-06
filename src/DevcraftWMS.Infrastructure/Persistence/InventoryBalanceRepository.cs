@@ -163,6 +163,7 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
     public async Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(
         Guid productId,
         Guid? lotId,
+        ZoneType? zoneType = null,
         CancellationToken cancellationToken = default)
     {
         var customerId = GetCustomerId();
@@ -170,12 +171,19 @@ public sealed class InventoryBalanceRepository : IInventoryBalanceRepository
             .Include(b => b.Product)
             .Include(b => b.Location)
             .ThenInclude(l => l.CustomerAccesses)
+            .Include(b => b.Location)
+            .ThenInclude(l => l.Zone)
             .Where(b => b.ProductId == productId)
             .Where(b => b.Product != null && b.Product.CustomerId == customerId)
             .Where(b => b.Location != null && b.Location.CustomerAccesses.Any(a => a.CustomerId == customerId))
             .Where(b => b.Status == InventoryBalanceStatus.Available)
             .Where(b => b.IsActive)
             .Where(b => b.QuantityOnHand > b.QuantityReserved);
+
+        if (zoneType.HasValue)
+        {
+            query = query.Where(b => b.Location != null && b.Location.Zone != null && b.Location.Zone.ZoneType == zoneType.Value);
+        }
 
         if (lotId.HasValue)
         {

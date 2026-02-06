@@ -1,4 +1,5 @@
-﻿using DevcraftWMS.Api.Extensions;
+﻿using DevcraftWMS.Api.Contracts;
+using DevcraftWMS.Api.Extensions;
 using DevcraftWMS.Application.Features.PickingTasks.Commands.ConfirmPickingTask;
 using DevcraftWMS.Application.Features.PickingTasks.Commands.StartPickingTask;
 using DevcraftWMS.Application.Features.PickingTasks.Queries.GetPickingTaskById;

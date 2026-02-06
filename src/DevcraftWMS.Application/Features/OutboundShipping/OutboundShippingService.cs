@@ -12,6 +12,7 @@ public sealed class OutboundShippingService : IOutboundShippingService
     private readonly IOutboundOrderRepository _orderRepository;
     private readonly IOutboundPackageRepository _packageRepository;
     private readonly IOutboundShipmentRepository _shipmentRepository;
+    private readonly IOutboundOrderReservationRepository _reservationRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IOutboundOrderNotificationService _notificationService;
@@ -20,6 +21,7 @@ public sealed class OutboundShippingService : IOutboundShippingService
         IOutboundOrderRepository orderRepository,
         IOutboundPackageRepository packageRepository,
         IOutboundShipmentRepository shipmentRepository,
+        IOutboundOrderReservationRepository reservationRepository,
         ICustomerContext customerContext,
         IDateTimeProvider dateTimeProvider,
         IOutboundOrderNotificationService notificationService)
@@ -27,6 +29,7 @@ public sealed class OutboundShippingService : IOutboundShippingService
         _orderRepository = orderRepository;
         _packageRepository = packageRepository;
         _shipmentRepository = shipmentRepository;
+        _reservationRepository = reservationRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
         _notificationService = notificationService;
@@ -122,6 +125,12 @@ public sealed class OutboundShippingService : IOutboundShippingService
 
         await _shipmentRepository.AddAsync(shipment, cancellationToken);
 
+        var reservationResult = await ReleaseReservationsAsync(order.Id, input.Packages, packagesById, cancellationToken);
+        if (!reservationResult.IsSuccess)
+        {
+            return RequestResult<OutboundShipmentDto>.Failure(reservationResult.ErrorCode, reservationResult.ErrorMessage);
+        }
+
         order.Status = input.Packages.Count == packages.Count
             ? OutboundOrderStatus.Shipped
             : OutboundOrderStatus.PartiallyShipped;
@@ -132,5 +141,85 @@ public sealed class OutboundShippingService : IOutboundShippingService
         shipment.OutboundOrder = order;
         shipment.Warehouse = order.Warehouse;
         return RequestResult<OutboundShipmentDto>.Success(OutboundShippingMapping.Map(shipment));
+    }
+
+    private async Task<ReservationReleaseResult> ReleaseReservationsAsync(
+        Guid orderId,
+        IReadOnlyList<OutboundShipmentPackageInput> packagesToShip,
+        IReadOnlyDictionary<Guid, OutboundPackage> packagesById,
+        CancellationToken cancellationToken)
+    {
+        var shippedByItem = new Dictionary<Guid, decimal>();
+        foreach (var packageInput in packagesToShip)
+        {
+            var package = packagesById[packageInput.OutboundPackageId];
+            foreach (var item in package.Items)
+            {
+                if (!shippedByItem.TryGetValue(item.OutboundOrderItemId, out var current))
+                {
+                    current = 0;
+                }
+
+                shippedByItem[item.OutboundOrderItemId] = current + item.Quantity;
+            }
+        }
+
+        var reservations = await _reservationRepository.ListByOrderIdAsync(orderId, cancellationToken);
+        var toRemove = new List<OutboundOrderReservation>();
+
+        foreach (var entry in shippedByItem)
+        {
+            var remaining = entry.Value;
+            var itemReservations = reservations
+                .Where(r => r.OutboundOrderItemId == entry.Key)
+                .OrderBy(r => r.CreatedAtUtc)
+                .ToList();
+
+            foreach (var reservation in itemReservations)
+            {
+                if (remaining <= 0)
+                {
+                    break;
+                }
+
+                var release = Math.Min(reservation.QuantityReserved, remaining);
+                reservation.QuantityReserved -= release;
+                remaining -= release;
+
+                if (reservation.InventoryBalance is not null)
+                {
+                    reservation.InventoryBalance.QuantityReserved = Math.Max(
+                        0,
+                        reservation.InventoryBalance.QuantityReserved - release);
+                }
+
+                if (reservation.QuantityReserved <= 0)
+                {
+                    toRemove.Add(reservation);
+                }
+            }
+
+            if (remaining > 0)
+            {
+                return ReservationReleaseResult.Failure(
+                    "outbound_shipping.reservation.insufficient",
+                    "Reserved quantity is insufficient for shipped packages.");
+            }
+        }
+
+        if (toRemove.Count > 0)
+        {
+            await _reservationRepository.RemoveRangeAsync(toRemove, cancellationToken);
+        }
+
+        return ReservationReleaseResult.Success();
+    }
+
+    private sealed record ReservationReleaseResult(bool IsSuccess, string ErrorCode, string ErrorMessage)
+    {
+        public static ReservationReleaseResult Success() => new(true, string.Empty, string.Empty);
+
+        public static ReservationReleaseResult Failure(string errorCode, string errorMessage)
+            => new(false, errorCode, errorMessage);
     }
 }

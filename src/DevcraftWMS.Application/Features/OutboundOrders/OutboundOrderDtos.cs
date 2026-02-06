@@ -8,6 +8,7 @@ public sealed record OutboundOrderListItemDto(
     string WarehouseName,
     OutboundOrderStatus Status,
     OutboundOrderPriority Priority,
+    bool IsCrossDock,
     DateOnly? ExpectedShipDate,
     DateTime CreatedAtUtc,
     bool IsActive);
@@ -24,6 +25,7 @@ public sealed record OutboundOrderDetailDto(
     OutboundOrderStatus Status,
     OutboundOrderPriority Priority,
     OutboundOrderPickingMethod? PickingMethod,
+    bool IsCrossDock,
     DateTime? ShippingWindowStartUtc,
     DateTime? ShippingWindowEndUtc,
     string? CancelReason,

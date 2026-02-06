@@ -80,6 +80,79 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
         listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
     }
 
+    [Fact]
+    public async Task Cancel_Should_Release_Reservations_And_Cancel_Tasks()
+    {
+        var client = _factory.CreateClient();
+        var warehouseId = await CreateWarehouseAsync(client);
+        var uomId = await CreateUomAsync(client);
+        var productId = await CreateProductAsync(client, uomId);
+        await SeedInventoryBalanceAsync(_factory, warehouseId, productId, 10m);
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            warehouseId,
+            orderNumber = "OS-TEST-CANCEL",
+            customerReference = "REF-CANCEL",
+            carrierName = "Carrier",
+            expectedShipDate = new DateOnly(2026, 2, 15),
+            notes = "Outbound cancel",
+            isCrossDock = false,
+            items = new[]
+            {
+                new
+                {
+                    productId,
+                    uomId,
+                    quantity = 3m,
+                    lotCode = (string?)null,
+                    expirationDate = (DateOnly?)null
+                }
+            }
+        });
+
+        var response = await client.PostAsync("/api/outbound-orders", new StringContent(payload, Encoding.UTF8, "application/json"));
+        var body = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.Should().BeTrue(body);
+
+        using var doc = JsonDocument.Parse(body);
+        var orderId = doc.RootElement.GetProperty("id").GetGuid();
+
+        var releasePayload = JsonSerializer.Serialize(new
+        {
+            priority = 1,
+            pickingMethod = 0,
+            shippingWindowStartUtc = DateTime.UtcNow.AddHours(2),
+            shippingWindowEndUtc = DateTime.UtcNow.AddHours(4)
+        });
+
+        var releaseResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/release",
+            new StringContent(releasePayload, Encoding.UTF8, "application/json"));
+        var releaseBody = await releaseResponse.Content.ReadAsStringAsync();
+        releaseResponse.IsSuccessStatusCode.Should().BeTrue(releaseBody);
+
+        var cancelPayload = JsonSerializer.Serialize(new
+        {
+            reason = "Customer canceled"
+        });
+
+        var cancelResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/cancel",
+            new StringContent(cancelPayload, Encoding.UTF8, "application/json"));
+        var cancelBody = await cancelResponse.Content.ReadAsStringAsync();
+        cancelResponse.IsSuccessStatusCode.Should().BeTrue(cancelBody);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<DevcraftWMS.Infrastructure.Persistence.ApplicationDbContext>();
+        var order = await db.OutboundOrders.SingleAsync(o => o.Id == orderId);
+        order.Status.Should().Be(DevcraftWMS.Domain.Enums.OutboundOrderStatus.Canceled);
+
+        var balances = await db.InventoryBalances.Where(b => b.ProductId == productId).ToListAsync();
+        balances.Should().OnlyContain(b => b.QuantityReserved == 0);
+
+        var pickingTasks = await db.PickingTasks.Where(t => t.OutboundOrderId == orderId).ToListAsync();
+        pickingTasks.Should().OnlyContain(t => t.Status == DevcraftWMS.Domain.Enums.PickingTaskStatus.Canceled);
+    }
+
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
         var code = $"WH-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
@@ -144,13 +217,15 @@ public sealed class OutboundOrderCrudTests : IClassFixture<CustomWebApplicationF
     private static async Task<Guid> CreateProductAsync(HttpClient client, Guid baseUomId)
     {
         var code = $"SKU-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var ean = $"789{Guid.NewGuid():N}".Substring(0, 12);
+        var erpCode = $"ERP-OUT-{Guid.NewGuid():N}".Substring(0, 16).ToUpperInvariant();
         var payload = JsonSerializer.Serialize(new
         {
             code,
             name = "Outbound Product",
             description = "Outbound",
-            ean = "789000000333",
-            erpCode = "ERP-OUT",
+            ean,
+            erpCode,
             category = "Outbound",
             brand = "Devcraft",
             baseUomId,

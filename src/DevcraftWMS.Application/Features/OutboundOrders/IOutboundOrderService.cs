@@ -13,6 +13,7 @@ public interface IOutboundOrderService
         string? carrierName,
         DateOnly? expectedShipDate,
         string? notes,
+        bool isCrossDock,
         IReadOnlyList<CreateOutboundOrderItemInput> items,
         CancellationToken cancellationToken);
     Task<RequestResult<OutboundOrderDetailDto>> ReleaseAsync(
@@ -22,6 +23,7 @@ public interface IOutboundOrderService
         DateTime? shippingWindowStartUtc,
         DateTime? shippingWindowEndUtc,
         CancellationToken cancellationToken);
+    Task<RequestResult<OutboundOrderDetailDto>> CancelAsync(Guid id, string reason, CancellationToken cancellationToken);
 
     Task<RequestResult<PagedResult<OutboundOrderListItemDto>>> ListAsync(
         Guid? warehouseId,

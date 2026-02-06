@@ -15,4 +15,5 @@ public sealed class SampleDataOptions
     public int MovementPerformedWindowDays { get; set; } = 14;
     public decimal MovementQuantityMin { get; set; } = 1;
     public decimal MovementQuantityMax { get; set; } = 15;
+    public int PickingTaskCount { get; set; } = 12;
 }

@@ -55,6 +55,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<InboundOrderNotification> InboundOrderNotifications => Set<InboundOrderNotification>();
     public DbSet<OutboundOrder> OutboundOrders => Set<OutboundOrder>();
     public DbSet<OutboundOrderItem> OutboundOrderItems => Set<OutboundOrderItem>();
+    public DbSet<OutboundOrderReservation> OutboundOrderReservations => Set<OutboundOrderReservation>();
     public DbSet<PickingTask> PickingTasks => Set<PickingTask>();
     public DbSet<PickingTaskItem> PickingTaskItems => Set<PickingTaskItem>();
     public DbSet<OutboundCheck> OutboundChecks => Set<OutboundCheck>();

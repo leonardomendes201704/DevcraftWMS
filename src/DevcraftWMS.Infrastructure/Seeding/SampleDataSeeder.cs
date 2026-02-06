@@ -60,6 +60,7 @@ public sealed class SampleDataSeeder
         await EnsureProductsAsync(customer.Id, uoms.BaseUom.Id, uoms.BoxUom.Id, _options.ProductCount, cancellationToken);
         await EnsureLotsAsync(customer.Id, _options.LotsPerProduct, _options.LotExpirationWindowDays, cancellationToken);
         await EnsureInventoryBalancesAndMovementsAsync(customer.Id, locations, cancellationToken);
+        await EnsurePickingTasksAsync(customer.Id, warehouse, locations, crossDockLocations, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(
@@ -1008,5 +1009,157 @@ public sealed class SampleDataSeeder
 
         var next = (decimal)random.NextDouble();
         return Math.Round(min + (max - min) * next, 3);
+    }
+
+    private async Task EnsurePickingTasksAsync(
+        Guid customerId,
+        Warehouse warehouse,
+        IReadOnlyList<Location> locations,
+        IReadOnlyList<Location> crossDockLocations,
+        CancellationToken cancellationToken)
+    {
+        if (_options.PickingTaskCount <= 0)
+        {
+            return;
+        }
+
+        var existingSeedTasks = await _dbContext.PickingTasks
+            .Include(t => t.OutboundOrder)
+            .AnyAsync(t => t.OutboundOrder != null && EF.Functions.Like(t.OutboundOrder.OrderNumber, "OS-SEED-PICK-%"), cancellationToken);
+
+        if (existingSeedTasks)
+        {
+            return;
+        }
+
+        var products = await _dbContext.Products
+            .Where(p => p.CustomerId == customerId)
+            .ToListAsync(cancellationToken);
+
+        if (products.Count == 0 || locations.Count == 0)
+        {
+            return;
+        }
+
+        var productIds = products.Select(p => p.Id).ToList();
+        var lots = await _dbContext.Lots
+            .Where(l => productIds.Contains(l.ProductId))
+            .ToListAsync(cancellationToken);
+
+        var random = new Random(77);
+        var now = DateTime.UtcNow;
+
+        var orderCount = Math.Clamp(_options.PickingTaskCount / 3, 2, 4);
+        var orders = new List<OutboundOrder>();
+        var orderItems = new List<OutboundOrderItem>();
+
+        for (var i = 1; i <= orderCount; i++)
+        {
+            var isCrossDock = i % 3 == 0;
+            var order = new OutboundOrder
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                WarehouseId = warehouse.Id,
+                OrderNumber = $"OS-SEED-PICK-{i:000}",
+                Status = OutboundOrderStatus.Picking,
+                Priority = i % 2 == 0 ? OutboundOrderPriority.High : OutboundOrderPriority.Normal,
+                PickingMethod = (OutboundOrderPickingMethod)(i % 4),
+                IsCrossDock = isCrossDock
+            };
+
+            orders.Add(order);
+
+            var itemsCount = 2 + (i % 2);
+            for (var j = 0; j < itemsCount; j++)
+            {
+                var product = products[(i + j) % products.Count];
+                var lot = lots.FirstOrDefault(l => l.ProductId == product.Id);
+                var quantity = 2 + random.Next(1, 6);
+
+                orderItems.Add(new OutboundOrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OutboundOrderId = order.Id,
+                    ProductId = product.Id,
+                    UomId = product.BaseUomId,
+                    Quantity = quantity,
+                    LotCode = lot?.Code,
+                    ExpirationDate = lot?.ExpirationDate
+                });
+            }
+        }
+
+        _dbContext.OutboundOrders.AddRange(orders);
+        _dbContext.OutboundOrderItems.AddRange(orderItems);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var statusCycle = new[]
+        {
+            PickingTaskStatus.Pending,
+            PickingTaskStatus.InProgress,
+            PickingTaskStatus.Completed,
+            PickingTaskStatus.Pending,
+            PickingTaskStatus.Reassigned,
+            PickingTaskStatus.Canceled
+        };
+
+        var tasks = new List<PickingTask>();
+        var taskItems = new List<PickingTaskItem>();
+
+        for (var i = 0; i < _options.PickingTaskCount; i++)
+        {
+            var order = orders[i % orders.Count];
+            var itemsForOrder = orderItems.Where(oi => oi.OutboundOrderId == order.Id).ToList();
+            if (itemsForOrder.Count == 0)
+            {
+                continue;
+            }
+
+            var status = statusCycle[i % statusCycle.Length];
+            var task = new PickingTask
+            {
+                Id = Guid.NewGuid(),
+                OutboundOrderId = order.Id,
+                WarehouseId = warehouse.Id,
+                Sequence = i + 1,
+                Status = status,
+                StartedAtUtc = status is PickingTaskStatus.InProgress or PickingTaskStatus.Completed
+                    ? now.AddMinutes(-30 * (i + 1))
+                    : null,
+                CompletedAtUtc = status == PickingTaskStatus.Completed
+                    ? now.AddMinutes(-15 * (i + 1))
+                    : null,
+                Notes = status == PickingTaskStatus.Reassigned ? "Reassigned during seed." : null
+            };
+
+            tasks.Add(task);
+
+            var orderItem = itemsForOrder[i % itemsForOrder.Count];
+            var locationPool = order.IsCrossDock && crossDockLocations.Count > 0 ? crossDockLocations : locations;
+            var location = locationPool[random.Next(locationPool.Count)];
+            var picked = status == PickingTaskStatus.Completed
+                ? orderItem.Quantity
+                : status == PickingTaskStatus.InProgress
+                    ? Math.Max(0, orderItem.Quantity - 1)
+                    : 0;
+
+            taskItems.Add(new PickingTaskItem
+            {
+                Id = Guid.NewGuid(),
+                PickingTaskId = task.Id,
+                OutboundOrderItemId = orderItem.Id,
+                ProductId = orderItem.ProductId,
+                UomId = orderItem.UomId,
+                LotId = lots.FirstOrDefault(l => l.Code == orderItem.LotCode && l.ProductId == orderItem.ProductId)?.Id,
+                LocationId = location.Id,
+                QuantityPlanned = orderItem.Quantity,
+                QuantityPicked = picked
+            });
+        }
+
+        _dbContext.PickingTasks.AddRange(tasks);
+        _dbContext.PickingTaskItems.AddRange(taskItems);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

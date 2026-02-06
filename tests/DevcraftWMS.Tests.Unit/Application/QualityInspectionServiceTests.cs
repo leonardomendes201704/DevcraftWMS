@@ -194,7 +194,7 @@ public sealed class QualityInspectionServiceTests
         public Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(Guid lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<InventoryBalance>>(_balances.Where(b => b.LotId == lotId).ToList());
 
-        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, ZoneType? zoneType = null, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
     }
 

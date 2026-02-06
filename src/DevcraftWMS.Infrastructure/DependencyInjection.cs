@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IOutboundCheckRepository, OutboundCheckRepository>();
         services.AddScoped<IOutboundPackageRepository, OutboundPackageRepository>();
         services.AddScoped<IOutboundShipmentRepository, OutboundShipmentRepository>();
+        services.AddScoped<IOutboundOrderReservationRepository, OutboundOrderReservationRepository>();
         services.AddScoped<IOutboundOrderNotificationRepository, OutboundOrderNotificationRepository>();
         services.AddScoped<IDashboardKpiRepository, DashboardKpiRepository>();
         services.AddScoped<IAsnRepository, AsnRepository>();

@@ -14,6 +14,7 @@ public sealed class OutboundOrder : AuditableEntity
     public OutboundOrderStatus Status { get; set; } = OutboundOrderStatus.Registered;
     public OutboundOrderPriority Priority { get; set; } = OutboundOrderPriority.Normal;
     public OutboundOrderPickingMethod? PickingMethod { get; set; }
+    public bool IsCrossDock { get; set; }
     public DateTime? ShippingWindowStartUtc { get; set; }
     public DateTime? ShippingWindowEndUtc { get; set; }
     public string? CancelReason { get; set; }

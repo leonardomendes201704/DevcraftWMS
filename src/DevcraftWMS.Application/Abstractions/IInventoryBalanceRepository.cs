@@ -62,5 +62,6 @@ public interface IInventoryBalanceRepository
     Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(
         Guid productId,
         Guid? lotId,
+        ZoneType? zoneType = null,
         CancellationToken cancellationToken = default);
 }

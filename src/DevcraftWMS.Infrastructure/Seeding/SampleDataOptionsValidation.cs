@@ -71,6 +71,11 @@ public sealed class SampleDataOptionsValidation : IValidateOptions<SampleDataOpt
             return ValidateOptionsResult.Fail("Seed:SampleData:MovementQuantityMax must be greater than or equal to MovementQuantityMin.");
         }
 
+        if (options.PickingTaskCount < 0)
+        {
+            return ValidateOptionsResult.Fail("Seed:SampleData:PickingTaskCount must be zero or greater.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

@@ -11,6 +11,7 @@ public static class OutboundOrderMapping
             order.Warehouse?.Name ?? string.Empty,
             order.Status,
             order.Priority,
+            order.IsCrossDock,
             order.ExpectedShipDate,
             order.CreatedAtUtc,
             order.IsActive);
@@ -28,6 +29,7 @@ public static class OutboundOrderMapping
             order.Status,
             order.Priority,
             order.PickingMethod,
+            order.IsCrossDock,
             order.ShippingWindowStartUtc,
             order.ShippingWindowEndUtc,
             order.CancelReason,

@@ -20,7 +20,9 @@ public sealed class OutboundOrderServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeLotRepository(),
             new FakePickingTaskRepository(),
-            new FakeCustomerContext(null));
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(null),
+            new FakeDateTimeProvider());
 
         var result = await service.CreateAsync(
             Guid.NewGuid(),
@@ -29,6 +31,7 @@ public sealed class OutboundOrderServiceTests
             null,
             DateOnly.FromDateTime(DateTime.UtcNow),
             null,
+            false,
             new List<CreateOutboundOrderItemInput>
             {
                 new(Guid.NewGuid(), Guid.NewGuid(), 1, null, null)
@@ -54,7 +57,9 @@ public sealed class OutboundOrderServiceTests
             new FakeInventoryBalanceRepository(),
             new FakeLotRepository(),
             new FakePickingTaskRepository(),
-            new FakeCustomerContext(Guid.NewGuid()));
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeDateTimeProvider());
 
         var result = await service.CreateAsync(
             warehouse.Id,
@@ -63,6 +68,7 @@ public sealed class OutboundOrderServiceTests
             "Carrier",
             DateOnly.FromDateTime(DateTime.UtcNow),
             "Notes",
+            false,
             new List<CreateOutboundOrderItemInput>
             {
                 new(product.Id, uom.Id, 5, null, null)
@@ -121,7 +127,9 @@ public sealed class OutboundOrderServiceTests
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
             pickingRepository,
-            new FakeCustomerContext(customerId));
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider());
 
         var result = await service.ReleaseAsync(
             order.Id,
@@ -184,7 +192,9 @@ public sealed class OutboundOrderServiceTests
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
             new FakePickingTaskRepository(),
-            new FakeCustomerContext(customerId));
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider());
 
         var result = await service.ReleaseAsync(
             order.Id,
@@ -241,7 +251,9 @@ public sealed class OutboundOrderServiceTests
             new FakeInventoryBalanceRepository(balances),
             new FakeLotRepository(),
             new FakePickingTaskRepository(),
-            new FakeCustomerContext(customerId));
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider());
 
         var result = await service.ReleaseAsync(
             order.Id,
@@ -254,6 +266,107 @@ public sealed class OutboundOrderServiceTests
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("outbound_orders.stock.insufficient");
         balances.Single().QuantityReserved.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Cancel_Should_Release_Reservations_And_Cancel_Picking_Tasks()
+    {
+        var customerId = Guid.NewGuid();
+        var balance = new InventoryBalance
+        {
+            Id = Guid.NewGuid(),
+            ProductId = Guid.NewGuid(),
+            QuantityOnHand = 10,
+            QuantityReserved = 5,
+            Status = InventoryBalanceStatus.Available
+        };
+        var orderItem = new OutboundOrderItem
+        {
+            Id = Guid.NewGuid(),
+            ProductId = balance.ProductId,
+            UomId = Guid.NewGuid(),
+            Quantity = 5
+        };
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            OrderNumber = "OS-CANCEL-1",
+            Status = OutboundOrderStatus.Picking,
+            Items = new List<OutboundOrderItem> { orderItem }
+        };
+        order.PickingTasks.Add(new PickingTask
+        {
+            Id = Guid.NewGuid(),
+            OutboundOrderId = order.Id,
+            Status = PickingTaskStatus.InProgress
+        });
+
+        var reservations = new FakeOutboundOrderReservationRepository();
+        reservations.Stored.Add(new OutboundOrderReservation
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = order.WarehouseId,
+            OutboundOrderId = order.Id,
+            OutboundOrderItemId = orderItem.Id,
+            InventoryBalanceId = balance.Id,
+            ProductId = balance.ProductId,
+            QuantityReserved = 5,
+            InventoryBalance = balance
+        });
+
+        var service = new OutboundOrderService(
+            new FakeOutboundOrderRepository(order),
+            new FakeWarehouseRepository(),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(new List<InventoryBalance> { balance }),
+            new FakeLotRepository(),
+            new FakePickingTaskRepository(),
+            reservations,
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider());
+
+        var result = await service.CancelAsync(order.Id, "Customer canceled", CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OutboundOrderStatus.Canceled);
+        balance.QuantityReserved.Should().Be(0);
+        reservations.Stored.Should().BeEmpty();
+        order.PickingTasks.Single().Status.Should().Be(PickingTaskStatus.Canceled);
+    }
+
+    [Fact]
+    public async Task Cancel_Should_Require_Reason()
+    {
+        var customerId = Guid.NewGuid();
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            OrderNumber = "OS-CANCEL-2",
+            Status = OutboundOrderStatus.Released
+        };
+
+        var service = new OutboundOrderService(
+            new FakeOutboundOrderRepository(order),
+            new FakeWarehouseRepository(),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeInventoryBalanceRepository(),
+            new FakeLotRepository(),
+            new FakePickingTaskRepository(),
+            new FakeOutboundOrderReservationRepository(),
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider());
+
+        var result = await service.CancelAsync(order.Id, " ", CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("validation_error");
     }
 
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
@@ -538,7 +651,7 @@ public sealed class OutboundOrderServiceTests
         public Task<IReadOnlyList<InventoryBalance>> ListByLotAsync(Guid lotId, InventoryBalanceStatus? status, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<InventoryBalance>>(Array.Empty<InventoryBalance>());
 
-        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<InventoryBalance>> ListAvailableForReservationAsync(Guid productId, Guid? lotId, ZoneType? zoneType = null, CancellationToken cancellationToken = default)
         {
             var balances = _balances
                 .Where(b => b.ProductId == productId && b.LotId == lotId)
@@ -547,6 +660,35 @@ public sealed class OutboundOrderServiceTests
                 .ToList();
             return Task.FromResult<IReadOnlyList<InventoryBalance>>(balances);
         }
+    }
+
+    private sealed class FakeOutboundOrderReservationRepository : IOutboundOrderReservationRepository
+    {
+        public List<OutboundOrderReservation> Stored { get; } = new();
+
+        public Task AddRangeAsync(IReadOnlyList<OutboundOrderReservation> reservations, CancellationToken cancellationToken = default)
+        {
+            Stored.AddRange(reservations);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<OutboundOrderReservation>> ListByOrderIdAsync(Guid outboundOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<OutboundOrderReservation>>(Stored.Where(r => r.OutboundOrderId == outboundOrderId).ToList());
+
+        public Task RemoveRangeAsync(IReadOnlyList<OutboundOrderReservation> reservations, CancellationToken cancellationToken = default)
+        {
+            foreach (var reservation in reservations)
+            {
+                Stored.Remove(reservation);
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeDateTimeProvider : IDateTimeProvider
+    {
+        public DateTime UtcNow => new(2026, 2, 5, 12, 0, 0, DateTimeKind.Utc);
     }
 
     private sealed class FakeLotRepository : ILotRepository
