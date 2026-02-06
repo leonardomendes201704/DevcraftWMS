@@ -175,6 +175,25 @@
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .Build();
+
+    var summaryText = string.Join(Environment.NewLine, Model.SummaryItems.Select(item =>
+        $"{item.ProductCode} - {item.ProductName} | OnHand: {item.QuantityOnHand:N2} | Reserved: {item.QuantityReserved:N2} | Blocked: {item.QuantityBlocked:N2} | InProcess: {item.QuantityInProcess:N2} | Available: {item.QuantityAvailable:N2}"));
+
+    var exportRouteValues = new
+    {
+        Model.Query.CustomerId,
+        Model.Query.WarehouseId,
+        Model.Query.ProductId,
+        Model.Query.Sku,
+        Model.Query.LotCode,
+        ExpirationFrom = Model.Query.ExpirationFrom?.ToString("yyyy-MM-dd"),
+        ExpirationTo = Model.Query.ExpirationTo?.ToString("yyyy-MM-dd"),
+        Status = Model.Query.Status?.ToString(),
+        IsActive = Model.Query.IsActive?.ToString(),
+        IncludeInactive = Model.Query.IncludeInactive.ToString(),
+        OrderBy = Model.Query.OrderBy,
+        OrderDir = Model.Query.OrderDir
+    };
 }
 
 @if (!Model.HasCustomerContext)
@@ -185,10 +204,24 @@
 }
 
 <div class="d-flex justify-content-end gap-2 mb-3">
+    <a class="btn btn-outline-primary" href="@Url.Action("Export", "InventoryVisibility", exportRouteValues)?format=pdf">
+        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+    </a>
+    <a class="btn btn-outline-success" href="@Url.Action("Export", "InventoryVisibility", exportRouteValues)?format=xlsx">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+    </a>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Export", "InventoryVisibility", exportRouteValues)?format=print" target="_blank">
+        <i class="bi bi-printer me-1"></i>Print
+    </a>
+    <button class="btn btn-outline-dark" type="button" id="copySummaryButton" data-copy-target="inventorySummaryCopy">
+        <i class="bi bi-clipboard me-1"></i>Copy summary
+    </button>
     <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#inventoryVisibilityHelp">
         <i class="bi bi-question-circle me-1"></i>Help
     </button>
 </div>
+
+<textarea id="inventorySummaryCopy" class="visually-hidden">@summaryText</textarea>
 
 <partial name="_FilterDrawer" model="filterDrawer" />
 
@@ -274,3 +307,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById("copySummaryButton")?.addEventListener("click", async () => {
+        const target = document.getElementById("inventorySummaryCopy");
+        if (!target) {
+            return;
+        }
+
+        const text = target.value || target.textContent || "";
+        try {
+            await navigator.clipboard.writeText(text);
+            alert("Summary copied to clipboard.");
+        } catch {
+            target.select();
+            document.execCommand("copy");
+            alert("Summary copied to clipboard.");
+        }
+    });
+</script>

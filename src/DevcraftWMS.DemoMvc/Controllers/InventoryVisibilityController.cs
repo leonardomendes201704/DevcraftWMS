@@ -140,6 +140,40 @@ public sealed class InventoryVisibilityController : Controller
         });
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Export([FromQuery] InventoryVisibilityQuery query, [FromQuery] string format = "print", CancellationToken cancellationToken = default)
+    {
+        if (!HasCustomerContext())
+        {
+            TempData["Warning"] = "Select a customer to export inventory visibility.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+        {
+            TempData["Warning"] = "Select a customer to export inventory visibility.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var normalizedQuery = query with
+        {
+            CustomerId = customerId,
+            ProductId = query.ProductId is { } productId && productId == Guid.Empty ? null : query.ProductId,
+            Sku = string.IsNullOrWhiteSpace(query.Sku) ? null : query.Sku,
+            LotCode = string.IsNullOrWhiteSpace(query.LotCode) ? null : query.LotCode
+        };
+
+        var result = await _visibilityClient.ExportAsync(normalizedQuery, format, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error ?? "Unable to export inventory visibility.";
+            return RedirectToAction(nameof(Index), normalizedQuery);
+        }
+
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
     private bool HasCustomerContext()
         => !string.IsNullOrWhiteSpace(HttpContext.Session.GetStringValue(SessionKeys.CustomerId));
 

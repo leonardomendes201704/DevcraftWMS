@@ -1,4 +1,5 @@
 using DevcraftWMS.Api.Extensions;
+using DevcraftWMS.Application.Features.InventoryVisibility.Queries.ExportInventoryVisibility;
 using DevcraftWMS.Application.Features.InventoryVisibility.Queries.GetInventoryVisibility;
 using DevcraftWMS.Application.Features.InventoryVisibility.Queries.GetInventoryVisibilityTimeline;
 using DevcraftWMS.Domain.Enums;
@@ -78,5 +79,47 @@ public sealed class InventoryVisibilityController : ControllerBase
             cancellationToken);
 
         return this.ToActionResult(result);
+    }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(
+        [FromQuery] Guid customerId,
+        [FromQuery] Guid warehouseId,
+        [FromQuery] Guid? productId = null,
+        [FromQuery] string? sku = null,
+        [FromQuery] string? lotCode = null,
+        [FromQuery] DateOnly? expirationFrom = null,
+        [FromQuery] DateOnly? expirationTo = null,
+        [FromQuery] Domain.Enums.InventoryBalanceStatus? status = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool includeInactive = false,
+        [FromQuery] string format = "print",
+        [FromQuery] string orderBy = "ProductCode",
+        [FromQuery] string orderDir = "asc",
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ExportInventoryVisibilityQuery(
+                customerId,
+                warehouseId,
+                productId,
+                sku,
+                lotCode,
+                expirationFrom,
+                expirationTo,
+                status,
+                isActive,
+                includeInactive,
+                format,
+                orderBy,
+                orderDir),
+            cancellationToken);
+
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
     }
 }

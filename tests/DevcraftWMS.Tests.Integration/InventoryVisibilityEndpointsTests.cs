@@ -56,6 +56,36 @@ public sealed class InventoryVisibilityEndpointsTests : IClassFixture<CustomWebA
     }
 
     [Fact]
+    public async Task Export_Inventory_Visibility_Should_Return_Print_View()
+    {
+        var client = _factory.CreateClient();
+        var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        var warehouseId = await CreateWarehouseAsync(client);
+        var locationId = await CreateLocationAsync(client, warehouseId);
+        var uomId = await CreateUomAsync(client, $"EA-{Guid.NewGuid():N}".Substring(0, 10).ToUpperInvariant(), "Each", UomType.Unit);
+        var productId = await CreateProductAsync(client, uomId);
+
+        var balancePayload = JsonSerializer.Serialize(new
+        {
+            productId,
+            lotId = (Guid?)null,
+            quantityOnHand = 5,
+            quantityReserved = 0,
+            status = InventoryBalanceStatus.Available
+        });
+
+        var balanceResponse = await client.PostAsync($"/api/locations/{locationId}/inventory", new StringContent(balancePayload, Encoding.UTF8, "application/json"));
+        var balanceBody = await balanceResponse.Content.ReadAsStringAsync();
+        balanceResponse.IsSuccessStatusCode.Should().BeTrue(balanceBody);
+
+        var response = await client.GetAsync($"/api/inventory-visibility/export?format=print&customerId={customerId}&warehouseId={warehouseId}");
+        var body = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.Should().BeTrue(body);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+        body.Should().Contain("Inventory Visibility");
+    }
+
+    [Fact]
     public async Task Get_Inventory_Visibility_Timeline_Should_Return_Movements()
     {
         var client = _factory.CreateClient();

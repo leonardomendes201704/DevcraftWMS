@@ -63,4 +63,28 @@ public sealed class InventoryVisibilityApiClient : ApiClientBase
 
         return GetAsync<IReadOnlyList<InventoryVisibilityTraceViewModel>>(url, cancellationToken);
     }
+
+    public Task<ApiFileResult> ExportAsync(InventoryVisibilityQuery query, string format, CancellationToken cancellationToken)
+    {
+        var basePath = "/api/inventory-visibility/export";
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["customerId"] = query.CustomerId?.ToString(),
+            ["warehouseId"] = query.WarehouseId?.ToString(),
+            ["productId"] = query.ProductId?.ToString(),
+            ["sku"] = query.Sku,
+            ["lotCode"] = query.LotCode,
+            ["expirationFrom"] = query.ExpirationFrom?.ToString("yyyy-MM-dd"),
+            ["expirationTo"] = query.ExpirationTo?.ToString("yyyy-MM-dd"),
+            ["status"] = query.Status?.ToString(),
+            ["isActive"] = query.IsActive?.ToString(),
+            ["includeInactive"] = query.IncludeInactive ? "true" : "false",
+            ["format"] = format,
+            ["orderBy"] = query.OrderBy,
+            ["orderDir"] = query.OrderDir
+        };
+
+        var url = BuildUrl(basePath, queryParams);
+        return GetFileAsync(url, cancellationToken);
+    }
 }

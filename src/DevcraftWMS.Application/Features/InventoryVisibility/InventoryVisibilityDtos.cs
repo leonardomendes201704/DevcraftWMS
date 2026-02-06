@@ -50,3 +50,8 @@ public sealed record InventoryVisibilityResultDto(
     Application.Common.Pagination.PagedResult<InventoryVisibilitySummaryDto> Summary,
     Application.Common.Pagination.PagedResult<InventoryVisibilityLocationDto> Locations,
     IReadOnlyList<InventoryVisibilityTraceDto> Trace);
+
+public sealed record InventoryVisibilityExportDto(
+    string FileName,
+    string ContentType,
+    byte[] Content);

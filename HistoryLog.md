@@ -12,6 +12,7 @@
 - Add availability breakdown for inventory visibility (reserved, blocked, in-process, reasons).
 - Add inventory visibility timeline endpoint and UI tab with audit trail.
 - Fix integration test UOM creation to avoid duplicate code conflicts.
+- Add inventory visibility export (print/CSV) and UI buttons.
 - TASK-0200 - Inventory visibility API consolidada concluida.
   - Key changes: added inventory visibility service, repository, API endpoint, and tests.
 - TASK-0201 - Inventory visibility Backoffice UI concluida.
