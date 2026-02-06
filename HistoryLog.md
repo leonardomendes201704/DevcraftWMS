@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- TASK-0104 - Mobile Conferencia fila concluida.
+  - Key changes: documentacao finalizada e task marcada como DONE.
+
+## 2026-02-06
 - Manual WMS atualizado com fluxos de devolucao, inventario ciclico e agenda de doca.
   - Key changes: added detailed flows, statuses, glossary, checklist, FAQ, and rules map entries.
 

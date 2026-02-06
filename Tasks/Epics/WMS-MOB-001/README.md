@@ -14,7 +14,7 @@ Entregar o app mobile operacional integrado ao WMS para picking, conferencia, pa
 - [TASK-0101] Mobile: autenticacao + selecao de armazem | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
 - [TASK-0102] Mobile: Picking - fila de tarefas | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
 - [TASK-0103] Mobile: Picking - execucao da tarefa | Prioridade: P0 | Dependencias: TASK-0102 | Estimativa: 8h
-- [TASK-0104] Mobile: Conferencia - fila | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
+- [DONE-TASK-0104] Mobile: Conferencia - fila | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
 - [TASK-0105] Mobile: Conferencia - execucao | Prioridade: P0 | Dependencias: TASK-0104 | Estimativa: 8h
 - [TASK-0106] Mobile: Packing - fila | Prioridade: P0 | Dependencias: TASK-0100 | Estimativa: 6h
 - [TASK-0107] Mobile: Packing - execucao | Prioridade: P0 | Dependencias: TASK-0106 | Estimativa: 8h

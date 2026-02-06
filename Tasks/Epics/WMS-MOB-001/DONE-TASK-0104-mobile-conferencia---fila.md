@@ -177,4 +177,4 @@ Apos o picking, existem tarefas de conferencia (OutboundCheck) com status e prio
 - Swagger: `GET /api/outbound-checks` + `POST /api/outbound-checks/{id}/start`.
 
 ## Status
-PENDING
+DONE
