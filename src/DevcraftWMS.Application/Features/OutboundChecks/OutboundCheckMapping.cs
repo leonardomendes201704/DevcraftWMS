@@ -11,10 +11,27 @@ public static class OutboundCheckMapping
             check.WarehouseId,
             check.OutboundOrder?.OrderNumber ?? "-",
             check.Warehouse?.Name ?? "-",
+            check.Status,
+            check.Priority,
+            check.StartedByUserId,
+            check.StartedAtUtc,
             check.CheckedByUserId,
             check.CheckedAtUtc,
             check.Notes,
             check.Items.Select(MapItem).ToList());
+
+    public static OutboundCheckListItemDto MapListItem(OutboundCheck check)
+        => new(
+            check.Id,
+            check.OutboundOrderId,
+            check.WarehouseId,
+            check.OutboundOrder?.OrderNumber ?? "-",
+            check.Warehouse?.Name ?? "-",
+            check.Status,
+            check.Priority,
+            check.OutboundOrder?.Items.Count ?? 0,
+            check.CreatedAtUtc,
+            check.IsActive);
 
     public static OutboundCheckItemDto MapItem(OutboundCheckItem item)
         => new(

@@ -167,6 +167,7 @@ public sealed class PickingTaskConfirmEndpointsTests : IClassFixture<CustomWebAp
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
             notes = "Outbound picking",
+            isCrossDock = false,
             items = new[]
             {
                 new

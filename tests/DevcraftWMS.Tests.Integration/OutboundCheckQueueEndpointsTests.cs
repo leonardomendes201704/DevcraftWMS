@@ -7,17 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DevcraftWMS.Tests.Integration;
 
-public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebApplicationFactory>
+public sealed class OutboundCheckQueueEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly CustomWebApplicationFactory _factory;
 
-    public OutboundOrderCheckEndpointsTests(CustomWebApplicationFactory factory)
+    public OutboundCheckQueueEndpointsTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
     }
 
     [Fact]
-    public async Task Check_Should_Register_Divergence()
+    public async Task List_Should_Return_Pending_Checks_For_Order()
     {
         var client = _factory.CreateClient();
 
@@ -28,44 +28,22 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
 
         var orderId = await CreateOutboundOrderAsync(client, warehouseId, productId, uomId);
         await ReleaseOutboundOrderAsync(client, orderId);
+        await CompletePickingTasksAsync(client, orderId);
 
-        var orderResponse = await client.GetAsync($"/api/outbound-orders/{orderId}");
-        var orderBody = await orderResponse.Content.ReadAsStringAsync();
-        orderResponse.IsSuccessStatusCode.Should().BeTrue(orderBody);
-        using var orderDoc = JsonDocument.Parse(orderBody);
-        var orderItemId = orderDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+        var listResponse = await client.GetAsync($"/api/outbound-checks?pageNumber=1&pageSize=10&orderBy=CreatedAtUtc&orderDir=desc&outboundOrderId={orderId}");
+        var listBody = await listResponse.Content.ReadAsStringAsync();
+        listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
 
-        var checkPayload = JsonSerializer.Serialize(new
-        {
-            items = new[]
-            {
-                new
-                {
-                    outboundOrderItemId = orderItemId,
-                    quantityChecked = 2m,
-                    divergenceReason = "Short picked",
-                    evidence = Array.Empty<object>()
-                }
-            },
-            notes = "Checked"
-        });
-
-        var checkResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/check", new StringContent(checkPayload, Encoding.UTF8, "application/json"));
-        var checkBody = await checkResponse.Content.ReadAsStringAsync();
-        checkResponse.IsSuccessStatusCode.Should().BeTrue(checkBody);
-
-        using var checkDoc = JsonDocument.Parse(checkBody);
-        checkDoc.RootElement.GetProperty("items").GetArrayLength().Should().Be(1);
-
-        var refreshed = await client.GetAsync($"/api/outbound-orders/{orderId}");
-        var refreshedBody = await refreshed.Content.ReadAsStringAsync();
-        refreshed.IsSuccessStatusCode.Should().BeTrue(refreshedBody);
-        using var refreshedDoc = JsonDocument.Parse(refreshedBody);
-        refreshedDoc.RootElement.GetProperty("status").GetInt32().Should().Be(4);
+        using var listDoc = JsonDocument.Parse(listBody);
+        listDoc.RootElement.GetProperty("totalCount").GetInt32().Should().Be(1);
+        var item = listDoc.RootElement.GetProperty("items")[0];
+        item.GetProperty("status").GetInt32().Should().Be(0);
+        item.GetProperty("priority").GetInt32().Should().Be(2);
+        item.GetProperty("outboundOrderId").GetGuid().Should().Be(orderId);
     }
 
     [Fact]
-    public async Task Check_Should_Accept_Evidence_File()
+    public async Task Start_Should_Move_Check_To_InProgress()
     {
         var client = _factory.CreateClient();
 
@@ -76,54 +54,32 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
 
         var orderId = await CreateOutboundOrderAsync(client, warehouseId, productId, uomId);
         await ReleaseOutboundOrderAsync(client, orderId);
+        await CompletePickingTasksAsync(client, orderId);
 
-        var orderResponse = await client.GetAsync($"/api/outbound-orders/{orderId}");
-        var orderBody = await orderResponse.Content.ReadAsStringAsync();
-        orderResponse.IsSuccessStatusCode.Should().BeTrue(orderBody);
-        using var orderDoc = JsonDocument.Parse(orderBody);
-        var orderItemId = orderDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+        var listResponse = await client.GetAsync($"/api/outbound-checks?pageNumber=1&pageSize=10&orderBy=CreatedAtUtc&orderDir=desc&outboundOrderId={orderId}");
+        var listBody = await listResponse.Content.ReadAsStringAsync();
+        listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
 
-        var evidenceContent = Convert.ToBase64String(new byte[] { 10, 20, 30 });
-        var checkPayload = JsonSerializer.Serialize(new
-        {
-            items = new[]
-            {
-                new
-                {
-                    outboundOrderItemId = orderItemId,
-                    quantityChecked = 3m,
-                    divergenceReason = (string?)null,
-                    evidence = new[]
-                    {
-                        new
-                        {
-                            fileName = "photo.jpg",
-                            contentType = "image/jpeg",
-                            sizeBytes = 3,
-                            content = evidenceContent
-                        }
-                    }
-                }
-            },
-            notes = "Checked with evidence"
-        });
+        using var listDoc = JsonDocument.Parse(listBody);
+        var checkId = listDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
 
-        var checkResponse = await client.PostAsync($"/api/outbound-orders/{orderId}/check", new StringContent(checkPayload, Encoding.UTF8, "application/json"));
-        var checkBody = await checkResponse.Content.ReadAsStringAsync();
-        checkResponse.IsSuccessStatusCode.Should().BeTrue(checkBody);
+        var startResponse = await client.PostAsync($"/api/outbound-checks/{checkId}/start", null);
+        var startBody = await startResponse.Content.ReadAsStringAsync();
+        startResponse.IsSuccessStatusCode.Should().BeTrue(startBody);
 
-        using var checkDoc = JsonDocument.Parse(checkBody);
-        checkDoc.RootElement.GetProperty("items")[0].GetProperty("evidenceCount").GetInt32().Should().Be(1);
+        using var startDoc = JsonDocument.Parse(startBody);
+        startDoc.RootElement.GetProperty("status").GetInt32().Should().Be(1);
+        startDoc.RootElement.GetProperty("startedAtUtc").GetDateTime().Should().NotBe(default);
     }
 
     private static async Task<Guid> CreateWarehouseAsync(HttpClient client)
     {
-        var code = $"WH-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var code = $"WH-CHKQ-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
         var payload = JsonSerializer.Serialize(new
         {
             code,
-            name = "Check Warehouse",
-            shortName = "CHK",
+            name = "Check Queue Warehouse",
+            shortName = "CHQ",
             description = "Outbound",
             warehouseType = 0,
             isPrimary = true,
@@ -131,10 +87,10 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
             isReceivingEnabled = true,
             isShippingEnabled = true,
             isReturnsEnabled = true,
-            externalId = "EXT-CHK",
-            erpCode = "ERP-CHK",
-            costCenterCode = "CC-CHK",
-            costCenterName = "Check",
+            externalId = "EXT-CHQ",
+            erpCode = "ERP-CHQ",
+            costCenterCode = "CC-CHQ",
+            costCenterName = "Check Queue",
             cutoffTime = "18:00:00",
             timezone = "America/Sao_Paulo",
             address = new
@@ -179,12 +135,12 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
 
     private static async Task<Guid> CreateProductAsync(HttpClient client, Guid baseUomId)
     {
-        var code = $"SKU-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var code = $"SKU-CHKQ-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
         var ean = (DateTime.UtcNow.Ticks % 10000000000000L).ToString("D13");
         var payload = JsonSerializer.Serialize(new
         {
             code,
-            name = "Check Product",
+            name = "Check Queue Product",
             description = "Outbound",
             ean,
             erpCode = $"ERP-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
@@ -210,15 +166,15 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
 
     private static async Task<Guid> CreateOutboundOrderAsync(HttpClient client, Guid warehouseId, Guid productId, Guid uomId)
     {
-        var orderNumber = $"OS-CHK-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
+        var orderNumber = $"OS-CHKQ-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant();
         var payload = JsonSerializer.Serialize(new
         {
             warehouseId,
             orderNumber,
-            customerReference = "REF-CHK-100",
+            customerReference = "REF-CHKQ-100",
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
-            notes = "Outbound check",
+            notes = "Outbound check queue",
             isCrossDock = false,
             items = new[]
             {
@@ -256,6 +212,45 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
         response.IsSuccessStatusCode.Should().BeTrue(body);
     }
 
+    private static async Task CompletePickingTasksAsync(HttpClient client, Guid orderId)
+    {
+        var listResponse = await client.GetAsync($"/api/picking-tasks?pageNumber=1&pageSize=50&orderBy=CreatedAtUtc&orderDir=desc&outboundOrderId={orderId}");
+        var listBody = await listResponse.Content.ReadAsStringAsync();
+        listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
+
+        using var listDoc = JsonDocument.Parse(listBody);
+        foreach (var task in listDoc.RootElement.GetProperty("items").EnumerateArray())
+        {
+            var taskId = task.GetProperty("id").GetGuid();
+
+            var getResponse = await client.GetAsync($"/api/picking-tasks/{taskId}");
+            var getBody = await getResponse.Content.ReadAsStringAsync();
+            getResponse.IsSuccessStatusCode.Should().BeTrue(getBody);
+
+            using var getDoc = JsonDocument.Parse(getBody);
+            var item = getDoc.RootElement.GetProperty("items")[0];
+            var itemId = item.GetProperty("id").GetGuid();
+            var planned = item.GetProperty("quantityPlanned").GetDecimal();
+
+            var confirmPayload = JsonSerializer.Serialize(new
+            {
+                items = new[]
+                {
+                    new
+                    {
+                        pickingTaskItemId = itemId,
+                        quantityPicked = planned
+                    }
+                },
+                notes = "Picked"
+            });
+
+            var confirmResponse = await client.PostAsync($"/api/picking-tasks/{taskId}/confirm", new StringContent(confirmPayload, Encoding.UTF8, "application/json"));
+            var confirmBody = await confirmResponse.Content.ReadAsStringAsync();
+            confirmResponse.IsSuccessStatusCode.Should().BeTrue(confirmBody);
+        }
+    }
+
     private static async Task SeedInventoryBalanceAsync(CustomWebApplicationFactory factory, Guid warehouseId, Guid productId, decimal quantity)
     {
         var customerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -268,7 +263,7 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
             Id = Guid.NewGuid(),
             WarehouseId = warehouseId,
             Code = $"SEC-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
-            Name = "Check Sector"
+            Name = "Check Queue Sector"
         };
         sector.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.SectorCustomer
         {
@@ -282,7 +277,7 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
             Id = Guid.NewGuid(),
             SectorId = sector.Id,
             Code = $"SEC-A-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
-            Name = "Check Section"
+            Name = "Check Queue Section"
         };
         section.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.SectionCustomer
         {
@@ -296,7 +291,7 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
             Id = Guid.NewGuid(),
             SectionId = section.Id,
             Code = $"STR-{Guid.NewGuid():N}".Substring(0, 8).ToUpperInvariant(),
-            Name = "Check Structure",
+            Name = "Check Queue Structure",
             Levels = 1
         };
         structure.CustomerAccesses.Add(new DevcraftWMS.Domain.Entities.StructureCustomer
@@ -342,3 +337,4 @@ public sealed class OutboundOrderCheckEndpointsTests : IClassFixture<CustomWebAp
         await db.SaveChangesAsync();
     }
 }
+

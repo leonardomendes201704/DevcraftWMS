@@ -13,7 +13,11 @@ public sealed class ConfirmPickingTaskTests
     {
         var task = BuildTask();
         var now = new DateTime(2026, 2, 5, 12, 0, 0, DateTimeKind.Utc);
-        var handler = new ConfirmPickingTaskCommandHandler(new FakePickingTaskRepository(task), new FakeDateTimeProvider(now));
+        var handler = new ConfirmPickingTaskCommandHandler(
+            new FakePickingTaskRepository(task),
+            new FakeOutboundOrderRepository(),
+            new FakeOutboundCheckRepository(),
+            new FakeDateTimeProvider(now));
 
         var command = new ConfirmPickingTaskCommand(task.Id, new List<ConfirmPickingTaskItemInput>
         {
@@ -34,7 +38,11 @@ public sealed class ConfirmPickingTaskTests
     {
         var task = BuildTask();
         var now = new DateTime(2026, 2, 5, 12, 0, 0, DateTimeKind.Utc);
-        var handler = new ConfirmPickingTaskCommandHandler(new FakePickingTaskRepository(task), new FakeDateTimeProvider(now));
+        var handler = new ConfirmPickingTaskCommandHandler(
+            new FakePickingTaskRepository(task),
+            new FakeOutboundOrderRepository(),
+            new FakeOutboundCheckRepository(),
+            new FakeDateTimeProvider(now));
 
         var command = new ConfirmPickingTaskCommand(task.Id, new List<ConfirmPickingTaskItemInput>
         {
@@ -53,7 +61,11 @@ public sealed class ConfirmPickingTaskTests
     public async Task Confirm_Should_Fail_When_Quantity_Exceeds_Planned()
     {
         var task = BuildTask();
-        var handler = new ConfirmPickingTaskCommandHandler(new FakePickingTaskRepository(task), new FakeDateTimeProvider(DateTime.UtcNow));
+        var handler = new ConfirmPickingTaskCommandHandler(
+            new FakePickingTaskRepository(task),
+            new FakeOutboundOrderRepository(),
+            new FakeOutboundCheckRepository(),
+            new FakeDateTimeProvider(DateTime.UtcNow));
 
         var command = new ConfirmPickingTaskCommand(task.Id, new List<ConfirmPickingTaskItemInput>
         {
@@ -132,5 +144,30 @@ public sealed class ConfirmPickingTaskTests
         }
 
         public DateTime UtcNow { get; }
+    }
+
+    private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
+    {
+        public Task<bool> OrderNumberExistsAsync(string orderNumber, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task AddAsync(OutboundOrder order, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task AddItemAsync(OutboundOrderItem item, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<OutboundOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<OutboundOrder?>(null);
+        public Task<OutboundOrder?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<OutboundOrder?>(null);
+        public Task UpdateAsync(OutboundOrder order, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<int> CountAsync(Guid? warehouseId, string? orderNumber, OutboundOrderStatus? status, OutboundOrderPriority? priority, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<OutboundOrder>> ListAsync(Guid? warehouseId, int pageNumber, int pageSize, string orderBy, string orderDir, string? orderNumber, OutboundOrderStatus? status, OutboundOrderPriority? priority, DateTime? createdFromUtc, DateTime? createdToUtc, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<OutboundOrder>>(Array.Empty<OutboundOrder>());
+    }
+
+    private sealed class FakeOutboundCheckRepository : IOutboundCheckRepository
+    {
+        public Task AddAsync(OutboundCheck check, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<OutboundCheck?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<OutboundCheck?>(null);
+        public Task<OutboundCheck?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<OutboundCheck?>(null);
+        public Task UpdateAsync(OutboundCheck check, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<int> CountAsync(Guid? warehouseId, Guid? outboundOrderId, OutboundCheckStatus? status, OutboundOrderPriority? priority, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+        public Task<IReadOnlyList<OutboundCheck>> ListAsync(Guid? warehouseId, Guid? outboundOrderId, OutboundCheckStatus? status, OutboundOrderPriority? priority, bool? isActive, bool includeInactive, int pageNumber, int pageSize, string orderBy, string orderDir, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<OutboundCheck>>(Array.Empty<OutboundCheck>());
     }
 }

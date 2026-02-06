@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Features.OutboundChecks;
 using DevcraftWMS.Domain.Entities;
@@ -36,8 +37,10 @@ public sealed class OutboundCheckServiceTests
         var service = new OutboundCheckService(
             new FakeOutboundOrderRepository(order),
             new FakeOutboundCheckRepository(),
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(customerId),
-            new FakeDateTimeProvider(DateTime.UtcNow));
+            new FakeDateTimeProvider(DateTime.UtcNow),
+            new FakeCurrentUserService(Guid.NewGuid()));
 
         var result = await service.RegisterAsync(order.Id, new List<OutboundCheckItemInput>
         {
@@ -76,8 +79,10 @@ public sealed class OutboundCheckServiceTests
         var service = new OutboundCheckService(
             new FakeOutboundOrderRepository(order),
             checkRepository,
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(customerId),
-            new FakeDateTimeProvider(new DateTime(2026, 2, 5, 10, 0, 0, DateTimeKind.Utc)));
+            new FakeDateTimeProvider(new DateTime(2026, 2, 5, 10, 0, 0, DateTimeKind.Utc)),
+            new FakeCurrentUserService(Guid.NewGuid()));
 
         var result = await service.RegisterAsync(order.Id, new List<OutboundCheckItemInput>
         {
@@ -118,8 +123,10 @@ public sealed class OutboundCheckServiceTests
         var service = new OutboundCheckService(
             new FakeOutboundOrderRepository(order),
             checkRepository,
+            new FakePickingTaskRepository(),
             new FakeCustomerContext(customerId),
-            new FakeDateTimeProvider(DateTime.UtcNow));
+            new FakeDateTimeProvider(DateTime.UtcNow),
+            new FakeCurrentUserService(Guid.NewGuid()));
 
         var result = await service.RegisterAsync(order.Id, new List<OutboundCheckItemInput>
         {
@@ -131,6 +138,46 @@ public sealed class OutboundCheckServiceTests
 
         result.IsSuccess.Should().BeTrue();
         checkRepository.Stored.Single().Items.Single().Evidence.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Start_Should_Set_Check_In_Progress_When_Picking_Completed()
+    {
+        var customerId = Guid.NewGuid();
+        var order = new OutboundOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            WarehouseId = Guid.NewGuid(),
+            Status = OutboundOrderStatus.Picking
+        };
+        var check = new OutboundCheck
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            OutboundOrderId = order.Id,
+            WarehouseId = order.WarehouseId,
+            Status = OutboundCheckStatus.Pending
+        };
+
+        var checkRepository = new FakeOutboundCheckRepository(check);
+        var pickingTaskRepository = new FakePickingTaskRepository(totalTasks: 2, completedTasks: 2);
+        var currentUserId = Guid.NewGuid();
+
+        var service = new OutboundCheckService(
+            new FakeOutboundOrderRepository(order),
+            checkRepository,
+            pickingTaskRepository,
+            new FakeCustomerContext(customerId),
+            new FakeDateTimeProvider(new DateTime(2026, 2, 5, 11, 0, 0, DateTimeKind.Utc)),
+            new FakeCurrentUserService(currentUserId));
+
+        var result = await service.StartAsync(check.Id, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        checkRepository.Stored.Single().Status.Should().Be(OutboundCheckStatus.InProgress);
+        checkRepository.Stored.Single().StartedByUserId.Should().Be(currentUserId);
+        checkRepository.Stored.Single().StartedAtUtc.Should().NotBeNull();
     }
 
     private sealed class FakeOutboundOrderRepository : IOutboundOrderRepository
@@ -159,6 +206,15 @@ public sealed class OutboundCheckServiceTests
     {
         public List<OutboundCheck> Stored { get; } = new();
 
+        public FakeOutboundCheckRepository()
+        {
+        }
+
+        public FakeOutboundCheckRepository(OutboundCheck seed)
+        {
+            Stored.Add(seed);
+        }
+
         public Task AddAsync(OutboundCheck check, CancellationToken cancellationToken = default)
         {
             Stored.Add(check);
@@ -167,6 +223,112 @@ public sealed class OutboundCheckServiceTests
 
         public Task<OutboundCheck?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<OutboundCheck?>(Stored.SingleOrDefault(x => x.Id == id));
+
+        public Task<OutboundCheck?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<OutboundCheck?>(Stored.SingleOrDefault(x => x.Id == id));
+
+        public Task UpdateAsync(OutboundCheck check, CancellationToken cancellationToken = default)
+        {
+            var index = Stored.FindIndex(x => x.Id == check.Id);
+            if (index >= 0)
+            {
+                Stored[index] = check;
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task<int> CountAsync(
+            Guid? warehouseId,
+            Guid? outboundOrderId,
+            OutboundCheckStatus? status,
+            OutboundOrderPriority? priority,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Filter(outboundOrderId, status).Count);
+        }
+
+        public Task<IReadOnlyList<OutboundCheck>> ListAsync(
+            Guid? warehouseId,
+            Guid? outboundOrderId,
+            OutboundCheckStatus? status,
+            OutboundOrderPriority? priority,
+            bool? isActive,
+            bool includeInactive,
+            int pageNumber,
+            int pageSize,
+            string orderBy,
+            string orderDir,
+            CancellationToken cancellationToken = default)
+        {
+            var filtered = Filter(outboundOrderId, status);
+            return Task.FromResult<IReadOnlyList<OutboundCheck>>(filtered);
+        }
+
+        private List<OutboundCheck> Filter(Guid? outboundOrderId, OutboundCheckStatus? status)
+        {
+            var query = Stored.AsQueryable();
+            if (outboundOrderId.HasValue)
+            {
+                query = query.Where(x => x.OutboundOrderId == outboundOrderId.Value);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(x => x.Status == status.Value);
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private sealed class FakePickingTaskRepository : IPickingTaskRepository
+    {
+        private readonly int _totalTasks;
+        private readonly int _completedTasks;
+
+        public FakePickingTaskRepository(int totalTasks = 0, int completedTasks = 0)
+        {
+            _totalTasks = totalTasks;
+            _completedTasks = completedTasks;
+        }
+
+        public Task AddRangeAsync(IReadOnlyList<PickingTask> tasks, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateAsync(PickingTask task, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<PickingTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<PickingTask?>(null);
+        public Task<PickingTask?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<PickingTask?>(null);
+
+        public Task<int> CountAsync(
+            Guid? warehouseId,
+            Guid? outboundOrderId,
+            Guid? assignedUserId,
+            PickingTaskStatus? status,
+            bool? isActive,
+            bool includeInactive,
+            CancellationToken cancellationToken = default)
+        {
+            if (status == PickingTaskStatus.Completed)
+            {
+                return Task.FromResult(_completedTasks);
+            }
+
+            return Task.FromResult(_totalTasks);
+        }
+
+        public Task<IReadOnlyList<PickingTask>> ListAsync(
+            Guid? warehouseId,
+            Guid? outboundOrderId,
+            Guid? assignedUserId,
+            PickingTaskStatus? status,
+            bool? isActive,
+            bool includeInactive,
+            int pageNumber,
+            int pageSize,
+            string orderBy,
+            string orderDir,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<PickingTask>>(Array.Empty<PickingTask>());
     }
 
     private sealed class FakeCustomerContext : ICustomerContext
@@ -187,5 +349,16 @@ public sealed class OutboundCheckServiceTests
         }
 
         public DateTime UtcNow { get; }
+    }
+
+    private sealed class FakeCurrentUserService : ICurrentUserService
+    {
+        public FakeCurrentUserService(Guid? userId)
+        {
+            UserId = userId;
+        }
+
+        public Guid? UserId { get; }
+        public string? Email => null;
     }
 }

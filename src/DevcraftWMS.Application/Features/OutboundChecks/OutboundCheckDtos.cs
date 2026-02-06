@@ -27,10 +27,26 @@ public sealed record OutboundCheckDto(
     Guid WarehouseId,
     string OrderNumber,
     string WarehouseName,
+    DevcraftWMS.Domain.Enums.OutboundCheckStatus Status,
+    DevcraftWMS.Domain.Enums.OutboundOrderPriority Priority,
+    Guid? StartedByUserId,
+    DateTime? StartedAtUtc,
     Guid? CheckedByUserId,
-    DateTime CheckedAtUtc,
+    DateTime? CheckedAtUtc,
     string? Notes,
     IReadOnlyList<OutboundCheckItemDto> Items);
+
+public sealed record OutboundCheckListItemDto(
+    Guid Id,
+    Guid OutboundOrderId,
+    Guid WarehouseId,
+    string OrderNumber,
+    string WarehouseName,
+    DevcraftWMS.Domain.Enums.OutboundCheckStatus Status,
+    DevcraftWMS.Domain.Enums.OutboundOrderPriority Priority,
+    int ItemsCount,
+    DateTime CreatedAtUtc,
+    bool IsActive);
 
 public sealed record OutboundCheckEvidenceInput(
     string FileName,

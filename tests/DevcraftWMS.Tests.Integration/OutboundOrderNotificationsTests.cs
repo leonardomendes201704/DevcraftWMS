@@ -144,6 +144,7 @@ public sealed class OutboundOrderNotificationsTests : IClassFixture<CustomWebApp
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
             notes = "Outbound notify",
+            isCrossDock = false,
             items = new[]
             {
                 new

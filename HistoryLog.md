@@ -1,6 +1,10 @@
 # History Log
 
 ## 2026-02-06
+- TASK-0121 - Outbound check queue API completed.
+  - Key changes: added outbound check status/start fields, list/start endpoints, picking completion hook, migration, and unit/integration tests.
+
+## 2026-02-06
 - TASK-0119 - Picking replenishment automation completed.
   - Key changes: added replenishment task model/repository, generate/list endpoints, config options, and tests.
 

@@ -304,6 +304,7 @@ public sealed class OutboundOrderPackingEndpointsTests : IClassFixture<CustomWeb
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
             notes = "Outbound pack",
+            isCrossDock = false,
             items = new[]
             {
                 new

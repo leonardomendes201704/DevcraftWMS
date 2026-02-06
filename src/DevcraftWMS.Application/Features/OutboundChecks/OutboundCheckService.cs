@@ -1,4 +1,5 @@
 using DevcraftWMS.Application.Abstractions;
+using DevcraftWMS.Application.Abstractions.Auth;
 using DevcraftWMS.Application.Abstractions.Customers;
 using DevcraftWMS.Application.Common.Models;
 using DevcraftWMS.Domain.Entities;
@@ -10,19 +11,25 @@ public sealed class OutboundCheckService : IOutboundCheckService
 {
     private readonly IOutboundOrderRepository _orderRepository;
     private readonly IOutboundCheckRepository _checkRepository;
+    private readonly IPickingTaskRepository _pickingTaskRepository;
     private readonly ICustomerContext _customerContext;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ICurrentUserService _currentUserService;
 
     public OutboundCheckService(
         IOutboundOrderRepository orderRepository,
         IOutboundCheckRepository checkRepository,
+        IPickingTaskRepository pickingTaskRepository,
         ICustomerContext customerContext,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        ICurrentUserService currentUserService)
     {
         _orderRepository = orderRepository;
         _checkRepository = checkRepository;
+        _pickingTaskRepository = pickingTaskRepository;
         _customerContext = customerContext;
         _dateTimeProvider = dateTimeProvider;
+        _currentUserService = currentUserService;
     }
 
     public async Task<RequestResult<OutboundCheckDto>> RegisterAsync(
@@ -58,15 +65,36 @@ public sealed class OutboundCheckService : IOutboundCheckService
         }
 
         var now = _dateTimeProvider.UtcNow;
-        var check = new OutboundCheck
+        var existing = await _checkRepository.ListAsync(
+            null,
+            order.Id,
+            null,
+            null,
+            true,
+            false,
+            1,
+            1,
+            "CreatedAtUtc",
+            "desc",
+            cancellationToken);
+
+        var check = existing.FirstOrDefault();
+        if (check is null || check.Status is OutboundCheckStatus.Completed or OutboundCheckStatus.Canceled)
         {
-            Id = Guid.NewGuid(),
-            CustomerId = _customerContext.CustomerId.Value,
-            OutboundOrderId = order.Id,
-            WarehouseId = order.WarehouseId,
-            CheckedAtUtc = now,
-            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
-        };
+            check = new OutboundCheck
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = _customerContext.CustomerId.Value,
+                OutboundOrderId = order.Id,
+                WarehouseId = order.WarehouseId
+            };
+        }
+
+        check.Status = OutboundCheckStatus.Completed;
+        check.Priority = order.Priority;
+        check.CheckedByUserId = _currentUserService.UserId;
+        check.CheckedAtUtc = now;
+        check.Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
 
         foreach (var input in items)
         {
@@ -128,7 +156,14 @@ public sealed class OutboundCheckService : IOutboundCheckService
             check.Items.Add(checkItem);
         }
 
-        await _checkRepository.AddAsync(check, cancellationToken);
+        if (check.CreatedAtUtc == default)
+        {
+            await _checkRepository.AddAsync(check, cancellationToken);
+        }
+        else
+        {
+            await _checkRepository.UpdateAsync(check, cancellationToken);
+        }
 
         order.Status = OutboundOrderStatus.Checked;
         await _orderRepository.UpdateAsync(order, cancellationToken);
@@ -142,6 +177,64 @@ public sealed class OutboundCheckService : IOutboundCheckService
             item.Uom = orderItem.Uom;
         }
 
+        return RequestResult<OutboundCheckDto>.Success(OutboundCheckMapping.Map(check));
+    }
+
+    public async Task<RequestResult<OutboundCheckDto>> StartAsync(
+        Guid outboundCheckId,
+        CancellationToken cancellationToken)
+    {
+        if (!_customerContext.CustomerId.HasValue)
+        {
+            return RequestResult<OutboundCheckDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
+        if (outboundCheckId == Guid.Empty)
+        {
+            return RequestResult<OutboundCheckDto>.Failure("outbound_checks.check.required", "Outbound check is required.");
+        }
+
+        var check = await _checkRepository.GetTrackedByIdAsync(outboundCheckId, cancellationToken);
+        if (check is null)
+        {
+            return RequestResult<OutboundCheckDto>.Failure("outbound_checks.check.not_found", "Outbound check not found.");
+        }
+
+        if (check.Status is OutboundCheckStatus.Completed or OutboundCheckStatus.Canceled)
+        {
+            return RequestResult<OutboundCheckDto>.Failure("outbound_checks.check.status_locked", "Outbound check status does not allow start.");
+        }
+
+        var totalTasks = await _pickingTaskRepository.CountAsync(
+            null,
+            check.OutboundOrderId,
+            null,
+            null,
+            true,
+            false,
+            cancellationToken);
+
+        var completedTasks = await _pickingTaskRepository.CountAsync(
+            null,
+            check.OutboundOrderId,
+            null,
+            PickingTaskStatus.Completed,
+            true,
+            false,
+            cancellationToken);
+
+        if (totalTasks == 0 || completedTasks < totalTasks)
+        {
+            return RequestResult<OutboundCheckDto>.Failure(
+                "outbound_checks.check.picking_incomplete",
+                "Picking tasks must be completed before starting the check.");
+        }
+
+        check.Status = OutboundCheckStatus.InProgress;
+        check.StartedAtUtc = _dateTimeProvider.UtcNow;
+        check.StartedByUserId = _currentUserService.UserId;
+
+        await _checkRepository.UpdateAsync(check, cancellationToken);
         return RequestResult<OutboundCheckDto>.Success(OutboundCheckMapping.Map(check));
     }
 }

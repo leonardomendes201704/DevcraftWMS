@@ -9,11 +9,19 @@ public sealed class ConfirmPickingTaskCommandHandler
     : IRequestHandler<ConfirmPickingTaskCommand, RequestResult<PickingTaskDetailDto>>
 {
     private readonly IPickingTaskRepository _repository;
+    private readonly IOutboundOrderRepository _orderRepository;
+    private readonly IOutboundCheckRepository _checkRepository;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public ConfirmPickingTaskCommandHandler(IPickingTaskRepository repository, IDateTimeProvider dateTimeProvider)
+    public ConfirmPickingTaskCommandHandler(
+        IPickingTaskRepository repository,
+        IOutboundOrderRepository orderRepository,
+        IOutboundCheckRepository checkRepository,
+        IDateTimeProvider dateTimeProvider)
     {
         _repository = repository;
+        _orderRepository = orderRepository;
+        _checkRepository = checkRepository;
         _dateTimeProvider = dateTimeProvider;
     }
 
@@ -75,6 +83,57 @@ public sealed class ConfirmPickingTaskCommandHandler
         }
 
         await _repository.UpdateAsync(task, cancellationToken);
+
+        if (completed)
+        {
+            var totalTasks = await _repository.CountAsync(
+                null,
+                task.OutboundOrderId,
+                null,
+                null,
+                true,
+                false,
+                cancellationToken);
+
+            var completedTasks = await _repository.CountAsync(
+                null,
+                task.OutboundOrderId,
+                null,
+                PickingTaskStatus.Completed,
+                true,
+                false,
+                cancellationToken);
+
+            if (totalTasks > 0 && completedTasks == totalTasks)
+            {
+                var existingChecks = await _checkRepository.CountAsync(
+                    null,
+                    task.OutboundOrderId,
+                    null,
+                    null,
+                    null,
+                    false,
+                    cancellationToken);
+
+                if (existingChecks == 0)
+                {
+                    var order = await _orderRepository.GetTrackedByIdAsync(task.OutboundOrderId, cancellationToken);
+                    if (order is not null)
+                    {
+                        await _checkRepository.AddAsync(new Domain.Entities.OutboundCheck
+                        {
+                            Id = Guid.NewGuid(),
+                            CustomerId = order.CustomerId,
+                            OutboundOrderId = order.Id,
+                            WarehouseId = order.WarehouseId,
+                            Status = Domain.Enums.OutboundCheckStatus.Pending,
+                            Priority = order.Priority
+                        }, cancellationToken);
+                    }
+                }
+            }
+        }
+
         return RequestResult<PickingTaskDetailDto>.Success(PickingTaskMapping.MapDetail(task));
     }
 }

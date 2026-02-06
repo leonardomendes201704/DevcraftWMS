@@ -158,6 +158,7 @@ public sealed class OutboundOrderShippingEndpointsTests : IClassFixture<CustomWe
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
             notes = "Outbound ship",
+            isCrossDock = false,
             items = new[]
             {
                 new

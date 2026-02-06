@@ -15,6 +15,9 @@ public sealed class OutboundCheckConfiguration : IEntityTypeConfiguration<Outbou
             .HasForeignKey(i => i.OutboundCheckId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(x => x.Notes)
+            .HasMaxLength(500);
+
         builder.HasOne(x => x.OutboundOrder)
             .WithMany(o => o.OutboundChecks)
             .HasForeignKey(x => x.OutboundOrderId)
@@ -26,5 +29,7 @@ public sealed class OutboundCheckConfiguration : IEntityTypeConfiguration<Outbou
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.OutboundOrderId);
+        builder.HasIndex(x => x.Status);
+        builder.HasIndex(x => x.Priority);
     }
 }

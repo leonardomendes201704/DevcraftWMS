@@ -9,4 +9,5 @@ public interface IOutboundCheckService
         IReadOnlyList<OutboundCheckItemInput> items,
         string? notes,
         CancellationToken cancellationToken);
+    Task<RequestResult<OutboundCheckDto>> StartAsync(Guid outboundCheckId, CancellationToken cancellationToken);
 }

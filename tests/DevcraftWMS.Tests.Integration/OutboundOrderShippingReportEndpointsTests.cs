@@ -165,6 +165,7 @@ public sealed class OutboundOrderShippingReportEndpointsTests : IClassFixture<Cu
             carrierName = "Carrier",
             expectedShipDate = new DateOnly(2026, 2, 15),
             notes = "Outbound report",
+            isCrossDock = false,
             items = new[]
             {
                 new
