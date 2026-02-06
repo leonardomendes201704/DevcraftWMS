@@ -1,0 +1,106 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Outbound (Separacao e Expedicao)</h2>
+        <p class="text-muted">Fluxo principal de saida, desde a OS ate o embarque.</p>
+
+        <div class="accordion" id="outboundAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-os">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-os-body">
+                        1) Outbound Order (OS)
+                    </button>
+                </h2>
+                <div id="outbound-os-body" class="accordion-collapse collapse show" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Crie a OS em <a href="/OutboundOrders" class="link-primary">/OutboundOrders</a>.</li>
+                            <li>Informe itens, lote/validade quando aplicavel.</li>
+                            <li>Status inicia como Registered.</li>
+                        </ol>
+                        <div class="alert alert-info">Regras: quantidade deve ser > 0; produto e UoM validos; rastreio de lote/validade depende do produto.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-release">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-release-body">
+                        2) Release da OS
+                    </button>
+                </h2>
+                <div id="outbound-release-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Defina prioridade, metodo de picking e janela de embarque.</li>
+                            <li>O sistema valida saldo disponivel e reserva estoque.</li>
+                            <li>Em seguida, gera tarefas de picking.</li>
+                        </ol>
+                        <div class="alert alert-info">Metodos: Single, Batch, Wave, Cluster. Ordenacao FEFO quando houver validade.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-picking">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-picking-body">
+                        3) Picking (separacao)
+                    </button>
+                </h2>
+                <div id="outbound-picking-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Acesse <a href="/PickingTasks" class="link-primary">/PickingTasks</a>.</li>
+                            <li>Inicie a tarefa e confirme quantidades separadas.</li>
+                            <li>Quando todas as tarefas forem concluídas, a OS fica pronta para conferencia.</li>
+                        </ol>
+                        <div class="alert alert-info">Status: Pending, InProgress, Completed, Reassigned, Canceled.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-check">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-check-body">
+                        4) Outbound Check (conferencia)
+                    </button>
+                </h2>
+                <div id="outbound-check-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Acesse <a href="/OutboundChecks" class="link-primary">/OutboundChecks</a>.</li>
+                            <li>Inicie a conferencia e registre divergencias se houver.</li>
+                        </ol>
+                        <div class="alert alert-info">Se quantidade conferida for diferente, motivo e evidencia sao obrigatorios (quando aplicavel).</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-pack">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-pack-body">
+                        5) Packing (volumes)
+                    </button>
+                </h2>
+                <div id="outbound-pack-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Acesse <a href="/OutboundPacking" class="link-primary">/OutboundPacking</a>.</li>
+                            <li>Crie volumes informando peso, dimensoes e itens.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="outbound-ship">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#outbound-ship-body">
+                        6) Shipping (embarque)
+                    </button>
+                </h2>
+                <div id="outbound-ship-body" class="accordion-collapse collapse" data-bs-parent="#outboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Acesse <a href="/OutboundShipping" class="link-primary">/OutboundShipping</a>.</li>
+                            <li>Informe doca, horarios e confirme o embarque.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,18 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Regras Criticas (validacoes e bloqueios)</h2>
+        <ul class="small mb-0">
+            <li>Outbound Order: numero da OS deve ser unico e itens precisam ter quantidade &gt; 0.</li>
+            <li>Release: janela de embarque exige inicio + fim; fim nao pode ser menor que inicio.</li>
+            <li>Release: estoque disponivel precisa existir para reservar (saldo e lote validos).</li>
+            <li>Picking: quantidade separada nao pode exceder a planejada.</li>
+            <li>Outbound Check: divergencia exige motivo; evidencia pode ser obrigatoria conforme configuracao.</li>
+            <li>Outbound Check: so inicia quando todas as picking tasks da OS estiverem concluídas.</li>
+            <li>Outbound Shipping: embarque exige doca/horarios e volumes registrados.</li>
+            <li>Receipts: status concluido bloqueia edicao posterior (regra nao confirmada).</li>
+        </ul>
+        <div class="alert alert-info mt-3 mb-0">
+            Se alguma regra nao fizer sentido para o seu processo, consulte a equipe tecnica. Este manual reflete o comportamento atual do sistema.
+        </div>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Tratamento de erros e mensagens</h2>
+        <p class="text-muted">As APIs retornam codigos de erro para facilitar suporte. Exemplos reais:</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Quando ocorre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>customers.context.required</td><td>Header X-Customer-Id nao enviado.</td></tr>
+                    <tr><td>outbound_orders.order.not_found</td><td>OS nao encontrada.</td></tr>
+                    <tr><td>outbound_orders.order.window_invalid</td><td>Janela de embarque invalida.</td></tr>
+                    <tr><td>outbound_orders.item.product_not_found</td><td>Produto invalido na OS.</td></tr>
+                    <tr><td>picking.task.quantity_exceeded</td><td>Quantidade separada maior que planejada.</td></tr>
+                    <tr><td>outbound_checks.item.reason_required</td><td>Divergencia sem motivo.</td></tr>
+                    <tr><td>outbound_checks.check.picking_incomplete</td><td>Tentativa de iniciar conferencia sem picking completo.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-secondary mb-0">
+            Dica: ao abrir chamado, envie o codigo do erro + print da tela.
+        </div>
+    </div>
+</div>

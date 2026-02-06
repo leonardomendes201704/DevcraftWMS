@@ -5,6 +5,10 @@
   - Key changes: defined scope, deliverables, and process for system manual + gaps/backlog.
 
 ## 2026-02-06
+- TASK-0123 - Manual do Sistema WMS created.
+  - Key changes: added Help manual views, rules map, backlog, and navigation link.
+
+## 2026-02-06
 - TASK-0012 - Picking/expedicao task marked obsolete.
   - Key changes: flagged as superseded by WMS-OUT-001 tasks.
 

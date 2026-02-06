@@ -1,0 +1,31 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Papeis e Permissoes</h2>
+        <p class="text-muted">Os acessos sao controlados por roles. Abaixo, o que esta configurado nas policies atuais.</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Papel</th>
+                        <th>O que acessa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Admin</td><td>Acesso total.</td></tr>
+                    <tr><td>Backoffice</td><td>Cadastros base, inbound/outbound, inventario e relatorios.</td></tr>
+                    <tr><td>Supervisor</td><td>Operacoes gerais (sem gestao RBAC).</td></tr>
+                    <tr><td>Picking</td><td>Fila e execucao de picking tasks.</td></tr>
+                    <tr><td>Conferente</td><td>Fila de conferencia outbound e check.</td></tr>
+                    <tr><td>Expedicao</td><td>Packing, volumes e embarque.</td></tr>
+                    <tr><td>Portaria</td><td>Gate check-ins (entrada de veiculos).</td></tr>
+                    <tr><td>Qualidade</td><td>Inspecoes de qualidade.</td></tr>
+                    <tr><td>Putaway</td><td>Tarefas de putaway.</td></tr>
+                    <tr><td>Cliente</td><td>Portal e relatorios (escopo limitado).</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-warning mb-0">
+            Algumas permissoes detalhadas podem variar por politica. Se algo nao estiver claro, marque como "Regra nao confirmada" e valide com a equipe.
+        </div>
+    </div>
+</div>

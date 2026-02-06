@@ -1,0 +1,95 @@
+﻿@{
+    var title = ViewData["Title"] as string ?? "Manual do Sistema";
+}
+<section class="mb-4">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <h1 class="h3 mb-1">@title</h1>
+            <p class="text-muted mb-0">Guia operacional do WMS com base nas regras reais do sistema.</p>
+        </div>
+        <div class="text-muted small">
+            <div><strong>Versao:</strong> <span class="text-secondary">@ViewData["BuildVersion"] ?? "(definir)"</span></div>
+            <div><strong>Ultima atualizacao:</strong> <span class="text-secondary">@DateTime.UtcNow.ToString("yyyy-MM-dd")</span></div>
+        </div>
+    </div>
+</section>
+
+<partial name="Partials/_Resumo" />
+
+<div class="row g-4">
+    <div class="col-12 col-lg-3">
+        <div class="card shadow-sm sticky-top" style="top: 1rem;">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted">Indice</h2>
+                <nav class="d-grid gap-2 small">
+                    <a href="#sec-overview" class="text-decoration-none">Visao Geral</a>
+                    <a href="#sec-glossario" class="text-decoration-none">Glossario</a>
+                    <a href="#sec-papeis" class="text-decoration-none">Papeis e Permissoes</a>
+                    <a href="#sec-inbound" class="text-decoration-none">Inbound</a>
+                    <a href="#sec-outbound" class="text-decoration-none">Outbound</a>
+                    <a href="#sec-status" class="text-decoration-none">Status e Transicoes</a>
+                    <a href="#sec-regras" class="text-decoration-none">Regras Criticas</a>
+                    <a href="#sec-erros" class="text-decoration-none">Erros e Mensagens</a>
+                    <a href="#sec-checklist" class="text-decoration-none">Checklist Operacional</a>
+                    <a href="#sec-faq" class="text-decoration-none">FAQ e Troubleshooting</a>
+                    <a href="#sec-gaps" class="text-decoration-none">Fluxos Ausentes / Inconsistentes</a>
+                    <a href="#sec-backlog" class="text-decoration-none">Backlog de Implementacao</a>
+                    <a href="#sec-manter" class="text-decoration-none">Como manter este manual</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-9">
+        <section id="sec-overview" class="mb-5">
+            <partial name="Partials/_VisaoGeral" />
+        </section>
+
+        <section id="sec-glossario" class="mb-5">
+            <partial name="Partials/_Glossario" />
+        </section>
+
+        <section id="sec-papeis" class="mb-5">
+            <partial name="Partials/_Papeis" />
+        </section>
+
+        <section id="sec-inbound" class="mb-5">
+            <partial name="Partials/_Inbound" />
+        </section>
+
+        <section id="sec-outbound" class="mb-5">
+            <partial name="Partials/_Outbound" />
+        </section>
+
+        <section id="sec-status" class="mb-5">
+            <partial name="Partials/_Status" />
+        </section>
+
+        <section id="sec-regras" class="mb-5">
+            <partial name="Partials/_Regras" />
+        </section>
+
+        <section id="sec-erros" class="mb-5">
+            <partial name="Partials/_Erros" />
+        </section>
+
+        <section id="sec-checklist" class="mb-5">
+            <partial name="Partials/_Checklist" />
+        </section>
+
+        <section id="sec-faq" class="mb-5">
+            <partial name="Partials/_Faq" />
+        </section>
+
+        <section id="sec-gaps" class="mb-5">
+            <partial name="Partials/_Gaps" />
+        </section>
+
+        <section id="sec-backlog" class="mb-5">
+            <partial name="Partials/_TasksBacklog" />
+        </section>
+
+        <section id="sec-manter" class="mb-5">
+            <partial name="Partials/_Manter" />
+        </section>
+    </div>
+</div>

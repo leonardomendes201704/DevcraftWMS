@@ -1,0 +1,110 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Inbound (Recebimento e Armazenagem)</h2>
+        <p class="text-muted">Fluxo principal do recebimento ate o enderecamento final.</p>
+
+        <div class="accordion" id="inboundAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-asn">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-asn-body">
+                        1) ASN (previsao de recebimento)
+                    </button>
+                </h2>
+                <div id="inbound-asn-body" class="accordion-collapse collapse show" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Cadastre a ASN em <a href="/Asns" class="link-primary">/Asns</a>.</li>
+                            <li>Adicione itens e anexos quando necessario.</li>
+                            <li>Submeta/approve conforme o fluxo do fornecedor.</li>
+                        </ol>
+                        <div class="alert alert-info">Regra nao confirmada: aprovacao/convert pode exigir status especifico da ASN.</div>
+                        <figure class="border rounded p-3 bg-white">
+                            <img src="/img/placeholder-asn.png" class="img-fluid" alt="ASN" />
+                            <figcaption class="small text-muted mt-2">Print sugerido: lista e detalhes de ASN.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-inbound">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-inbound-body">
+                        2) Inbound Order (ordem de entrada)
+                    </button>
+                </h2>
+                <div id="inbound-inbound-body" class="accordion-collapse collapse" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Converta uma ASN em Inbound Order.</li>
+                            <li>Acompanhe status em <a href="/InboundOrders" class="link-primary">/InboundOrders</a>.</li>
+                        </ol>
+                        <div class="alert alert-info">Status: Issued, Scheduled, InProgress, Completed, Canceled, PartiallyCompleted.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-receipts">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-receipts-body">
+                        3) Receipts (recebimento fisico)
+                    </button>
+                </h2>
+                <div id="inbound-receipts-body" class="accordion-collapse collapse" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Abra um receipt em <a href="/Receipts" class="link-primary">/Receipts</a>.</li>
+                            <li>Informe quantidades recebidas, lote/validade quando aplicavel.</li>
+                            <li>Finalize o receipt quando tudo estiver conferido.</li>
+                        </ol>
+                        <div class="alert alert-info">Status: Draft, InProgress, Completed, Canceled.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-quality">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-quality-body">
+                        4) Quality Inspection
+                    </button>
+                </h2>
+                <div id="inbound-quality-body" class="accordion-collapse collapse" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Quando houver inspecao, acesse <a href="/QualityInspections" class="link-primary">/QualityInspections</a>.</li>
+                            <li>Aprove ou rejeite conforme as evidencias.</li>
+                        </ol>
+                        <div class="alert alert-info">Regra nao confirmada: gatilho automatico para criar inspecao.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-putaway">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-putaway-body">
+                        5) Putaway (enderecamento)
+                    </button>
+                </h2>
+                <div id="inbound-putaway-body" class="accordion-collapse collapse" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Veja tarefas em <a href="/PutawayTasks" class="link-primary">/PutawayTasks</a>.</li>
+                            <li>Confirme o endereco sugerido ou reatribua.</li>
+                        </ol>
+                        <div class="alert alert-info">Status: Pending, InProgress, Completed, Reassigned, Canceled.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="inbound-unitloads">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inbound-unitloads-body">
+                        6) Unit Loads (etiquetas)
+                    </button>
+                </h2>
+                <div id="inbound-unitloads-body" class="accordion-collapse collapse" data-bs-parent="#inboundAccordion">
+                    <div class="accordion-body small">
+                        <ol>
+                            <li>Gerencie unit loads em <a href="/UnitLoads" class="link-primary">/UnitLoads</a>.</li>
+                            <li>Imprima ou reetiquete quando necessario.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

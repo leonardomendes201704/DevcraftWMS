@@ -1,0 +1,42 @@
+﻿<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h2 class="h5">Visao Geral do Processo</h2>
+        <p class="text-muted">Este manual descreve o fluxo completo do WMS, do recebimento ao embarque, com base nas telas e regras existentes no sistema.</p>
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h3 class="h6">Inbound (armazenagem)</h3>
+                    <ol class="small mb-0">
+                        <li>Agendar/registrar ASNs (previa de recebimento).</li>
+                        <li>Converter ASN em Inbound Order.</li>
+                        <li>Executar Receipts (recebimento fisico).</li>
+                        <li>Realizar Quality Inspection quando aplicavel.</li>
+                        <li>Gerar Unit Loads e concluir Putaway.</li>
+                        <li>Atualizar saldos (Inventory Balances).</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h3 class="h6">Outbound (expedicao)</h3>
+                    <ol class="small mb-0">
+                        <li>Criar Outbound Order (OS).</li>
+                        <li>Release da OS com prioridade, metodo de picking e janela.</li>
+                        <li>Executar Picking Tasks e confirmar itens.</li>
+                        <li>Realizar Outbound Check (conferencia).</li>
+                        <li>Registrar Packing (volumes e etiquetas).</li>
+                        <li>Registrar Shipping (doca e embarque).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3 mb-0">
+            <strong>Dica:</strong> sempre mantenha o contexto de cliente selecionado. O sistema usa o header <code>X-Customer-Id</code> para filtrar dados.
+        </div>
+    </div>
+</div>
+
+<figure class="border rounded p-3 bg-white">
+    <img src="/img/placeholder-inbound-outbound.png" class="img-fluid" alt="Fluxo inbound/outbound (placeholder)" />
+    <figcaption class="small text-muted mt-2">Print sugerido: fluxo geral do WMS (inbound -> outbound).</figcaption>
+</figure>

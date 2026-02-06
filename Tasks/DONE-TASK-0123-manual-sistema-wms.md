@@ -98,4 +98,4 @@ Para cada gap:
 - API/Swagger: nao aplicavel (manual e view).
 
 ## Status
-PENDENTE
+PENDENTE\n## How to test\n- Unit tests: dotnet test DevcraftWMS.sln\n- Integration tests: dotnet test DevcraftWMS.sln\n- UI (DemoMvc): acessar /help/manual e navegar pelas secoes/ancoras.\n- Swagger/API: nao aplicavel (conteudo de view).\n
