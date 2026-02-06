@@ -9,6 +9,7 @@
 - Ensure seed reset cleans inventory counts even when no inbound receipts exist.
 - Hard-delete seed inventory counts during reset to avoid soft-delete leftovers.
 - Include inventory count items when listing to populate Items count.
+- Add availability breakdown for inventory visibility (reserved, blocked, in-process, reasons).
 - TASK-0200 - Inventory visibility API consolidada concluida.
   - Key changes: added inventory visibility service, repository, API endpoint, and tests.
 - TASK-0201 - Inventory visibility Backoffice UI concluida.

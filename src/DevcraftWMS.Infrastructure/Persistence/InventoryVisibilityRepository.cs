@@ -1,5 +1,6 @@
 using DevcraftWMS.Application.Abstractions;
 using DevcraftWMS.Application.Abstractions.Customers;
+using DevcraftWMS.Application.Features.InventoryVisibility;
 using DevcraftWMS.Domain.Entities;
 using DevcraftWMS.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -94,6 +95,128 @@ public sealed class InventoryVisibilityRepository : IInventoryVisibilityReposito
         }
 
         return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<InventoryReservationSnapshot>> ListReservationsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> balanceIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (balanceIds.Count == 0)
+        {
+            return Array.Empty<InventoryReservationSnapshot>();
+        }
+
+        var query = from reservation in _dbContext.OutboundOrderReservations.AsNoTracking()
+                    join balance in _dbContext.InventoryBalances.AsNoTracking()
+                        on reservation.InventoryBalanceId equals balance.Id
+                    join order in _dbContext.OutboundOrders.AsNoTracking()
+                        on reservation.OutboundOrderId equals order.Id
+                    where reservation.WarehouseId == warehouseId
+                          && balanceIds.Contains(reservation.InventoryBalanceId)
+                          && order.Status != OutboundOrderStatus.Canceled
+                          && order.Status != OutboundOrderStatus.Shipped
+                          && order.Status != OutboundOrderStatus.PartiallyShipped
+                    select new
+                    {
+                        reservation.InventoryBalanceId,
+                        reservation.ProductId,
+                        reservation.LotId,
+                        balance.LocationId,
+                        reservation.QuantityReserved
+                    };
+
+        var rows = await query.ToListAsync(cancellationToken);
+        return rows
+            .GroupBy(r => new { r.InventoryBalanceId, r.ProductId, r.LotId, r.LocationId })
+            .Select(g => new InventoryReservationSnapshot(
+                g.Key.InventoryBalanceId,
+                g.Key.ProductId,
+                g.Key.LotId,
+                g.Key.LocationId,
+                g.Sum(x => x.QuantityReserved)))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<InventoryInspectionSnapshot>> ListBlockedInspectionsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> productIds,
+        IReadOnlyCollection<Guid> locationIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (productIds.Count == 0 || locationIds.Count == 0)
+        {
+            return Array.Empty<InventoryInspectionSnapshot>();
+        }
+
+        var customerId = GetCustomerId();
+        var query = from inspection in _dbContext.QualityInspections.AsNoTracking()
+                    join receiptItem in _dbContext.ReceiptItems.AsNoTracking()
+                        on inspection.ReceiptItemId equals receiptItem.Id into itemJoin
+                    from receiptItem in itemJoin.DefaultIfEmpty()
+                    where inspection.WarehouseId == warehouseId
+                          && inspection.CustomerId == customerId
+                          && inspection.Status != QualityInspectionStatus.Approved
+                          && productIds.Contains(inspection.ProductId)
+                          && locationIds.Contains(inspection.LocationId)
+                    select new
+                    {
+                        inspection.ProductId,
+                        inspection.LotId,
+                        inspection.LocationId,
+                        Quantity = receiptItem != null ? receiptItem.Quantity : 0m,
+                        inspection.Status
+                    };
+
+        var rows = await query.ToListAsync(cancellationToken);
+        return rows
+            .GroupBy(r => new { r.ProductId, r.LotId, r.LocationId, r.Status })
+            .Select(g => new InventoryInspectionSnapshot(
+                g.Key.ProductId,
+                g.Key.LotId,
+                g.Key.LocationId,
+                g.Sum(x => x.Quantity),
+                g.Key.Status))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<InventoryInProcessSnapshot>> ListInProcessReceiptItemsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> productIds,
+        IReadOnlyCollection<Guid> locationIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (productIds.Count == 0 || locationIds.Count == 0)
+        {
+            return Array.Empty<InventoryInProcessSnapshot>();
+        }
+
+        var customerId = GetCustomerId();
+        var query = from receiptItem in _dbContext.ReceiptItems.AsNoTracking()
+                    join receipt in _dbContext.Receipts.AsNoTracking()
+                        on receiptItem.ReceiptId equals receipt.Id
+                    where receipt.CustomerId == customerId
+                          && receipt.WarehouseId == warehouseId
+                          && (receipt.Status == ReceiptStatus.Draft || receipt.Status == ReceiptStatus.InProgress)
+                          && productIds.Contains(receiptItem.ProductId)
+                          && locationIds.Contains(receiptItem.LocationId)
+                    select new
+                    {
+                        receiptItem.ProductId,
+                        receiptItem.LotId,
+                        receiptItem.LocationId,
+                        receiptItem.Quantity
+                    };
+
+        var rows = await query.ToListAsync(cancellationToken);
+        return rows
+            .GroupBy(r => new { r.ProductId, r.LotId, r.LocationId })
+            .Select(g => new InventoryInProcessSnapshot(
+                g.Key.ProductId,
+                g.Key.LotId,
+                g.Key.LocationId,
+                g.Sum(x => x.Quantity)))
+            .ToList();
     }
 
     private Guid GetCustomerId()

@@ -56,11 +56,21 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
             includeInactive,
             cancellationToken);
 
-        var summaryItems = BuildSummary(balances);
+        var balanceIds = balances.Select(b => b.Id).ToList();
+        var productIds = balances.Select(b => b.ProductId).Distinct().ToList();
+        var locationIds = balances.Select(b => b.LocationId).Distinct().ToList();
+
+        var reservations = await _repository.ListReservationsAsync(warehouseId, balanceIds, cancellationToken);
+        var inspections = await _repository.ListBlockedInspectionsAsync(warehouseId, productIds, locationIds, cancellationToken);
+        var inProcessReceipts = await _repository.ListInProcessReceiptItemsAsync(warehouseId, productIds, locationIds, cancellationToken);
+
+        var availability = BuildAvailability(balances, reservations, inspections, inProcessReceipts);
+
+        var summaryItems = BuildSummary(availability);
         var summaryOrdered = ApplySummaryOrdering(summaryItems, orderBy, orderDir);
         var summaryPaged = ToPaged(summaryOrdered, pageNumber, pageSize, orderBy, orderDir);
 
-        var locationItems = BuildLocations(balances);
+        var locationItems = BuildLocations(availability);
         var locationsOrdered = ApplyLocationOrdering(locationItems, orderBy, orderDir);
         var locationsPaged = ToPaged(locationsOrdered, pageNumber, pageSize, orderBy, orderDir);
 
@@ -68,22 +78,22 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
         return RequestResult<InventoryVisibilityResultDto>.Success(result);
     }
 
-    private static IReadOnlyList<InventoryVisibilitySummaryDto> BuildSummary(IReadOnlyList<DevcraftWMS.Domain.Entities.InventoryBalance> balances)
+    private static IReadOnlyList<InventoryVisibilitySummaryDto> BuildSummary(IReadOnlyList<BalanceAvailability> balances)
     {
         return balances
-            .GroupBy(b => b.ProductId)
+            .GroupBy(b => b.Balance.ProductId)
             .Select(group =>
             {
-                var sample = group.First();
+                var sample = group.First().Balance;
                 var product = sample.Product;
                 var onHand = group.Sum(b => b.QuantityOnHand);
                 var reserved = group.Sum(b => b.QuantityReserved);
-                var blocked = group.Where(b => b.Status != InventoryBalanceStatus.Available).Sum(b => b.QuantityOnHand);
-                var inProcess = 0m;
+                var blocked = group.Sum(b => b.QuantityBlocked);
+                var inProcess = group.Sum(b => b.QuantityInProcess);
                 var available = Math.Max(0, onHand - reserved - blocked - inProcess);
 
                 return new InventoryVisibilitySummaryDto(
-                    group.Key,
+                    sample.ProductId,
                     product?.Code ?? string.Empty,
                     product?.Name ?? string.Empty,
                     product?.BaseUom?.Code,
@@ -96,10 +106,11 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
             .ToList();
     }
 
-    private static IReadOnlyList<InventoryVisibilityLocationDto> BuildLocations(IReadOnlyList<DevcraftWMS.Domain.Entities.InventoryBalance> balances)
+    private static IReadOnlyList<InventoryVisibilityLocationDto> BuildLocations(IReadOnlyList<BalanceAvailability> balances)
     {
-        return balances.Select(balance =>
+        return balances.Select(availability =>
         {
+            var balance = availability.Balance;
             var location = balance.Location;
             var structure = location?.Structure;
             var section = structure?.Section;
@@ -126,12 +137,78 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
                 lot?.Code,
                 lot?.ExpirationDate,
                 null,
-                balance.QuantityOnHand,
-                balance.QuantityReserved,
+                availability.QuantityOnHand,
+                availability.QuantityReserved,
+                availability.QuantityBlocked,
+                availability.QuantityInProcess,
+                availability.QuantityAvailable,
                 balance.Status,
                 balance.IsActive,
-                balance.CreatedAtUtc);
+                balance.CreatedAtUtc,
+                availability.BlockedReasons);
         }).ToList();
+    }
+
+    private static IReadOnlyList<BalanceAvailability> BuildAvailability(
+        IReadOnlyList<DevcraftWMS.Domain.Entities.InventoryBalance> balances,
+        IReadOnlyList<InventoryReservationSnapshot> reservations,
+        IReadOnlyList<InventoryInspectionSnapshot> inspections,
+        IReadOnlyList<InventoryInProcessSnapshot> inProcessReceipts)
+    {
+        var reservationByBalanceId = reservations
+            .GroupBy(r => r.InventoryBalanceId)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.QuantityReserved));
+
+        var inspectionByKey = inspections
+            .GroupBy(i => new BalanceKey(i.ProductId, i.LotId, i.LocationId))
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.QuantityBlocked));
+
+        var inProcessByKey = inProcessReceipts
+            .GroupBy(i => new BalanceKey(i.ProductId, i.LotId, i.LocationId))
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.QuantityInProcess));
+
+        var availability = new List<BalanceAvailability>();
+        foreach (var balance in balances)
+        {
+            var reserved = reservationByBalanceId.TryGetValue(balance.Id, out var reservedValue)
+                ? reservedValue
+                : balance.QuantityReserved;
+            var blockedByStatus = balance.Status != InventoryBalanceStatus.Available
+                ? balance.QuantityOnHand
+                : 0m;
+
+            var key = new BalanceKey(balance.ProductId, balance.LotId, balance.LocationId);
+            var blockedByInspection = inspectionByKey.TryGetValue(key, out var inspectionValue)
+                ? inspectionValue
+                : 0m;
+            var inProcess = inProcessByKey.TryGetValue(key, out var inProcessValue)
+                ? inProcessValue
+                : 0m;
+
+            var blocked = blockedByStatus + blockedByInspection;
+            var available = Math.Max(0, balance.QuantityOnHand - reserved - blocked - inProcess);
+
+            var reasons = new List<string>();
+            if (blockedByStatus > 0)
+            {
+                reasons.Add($"balance_status:{balance.Status}");
+            }
+            if (blockedByInspection > 0)
+            {
+                reasons.Add("quality_inspection");
+            }
+
+            availability.Add(new BalanceAvailability(
+                balance,
+                balance.QuantityOnHand,
+                reserved,
+                blocked,
+                inProcess,
+                available,
+                reasons));
+        }
+
+        return availability;
     }
 
     private static IReadOnlyList<InventoryVisibilitySummaryDto> ApplySummaryOrdering(
@@ -163,6 +240,9 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
             "lotcode" => asc ? items.OrderBy(i => i.LotCode).ToList() : items.OrderByDescending(i => i.LotCode).ToList(),
             "expirationdate" => asc ? items.OrderBy(i => i.ExpirationDate).ToList() : items.OrderByDescending(i => i.ExpirationDate).ToList(),
             "quantityonhand" => asc ? items.OrderBy(i => i.QuantityOnHand).ToList() : items.OrderByDescending(i => i.QuantityOnHand).ToList(),
+            "quantityblocked" => asc ? items.OrderBy(i => i.QuantityBlocked).ToList() : items.OrderByDescending(i => i.QuantityBlocked).ToList(),
+            "quantityinprocess" => asc ? items.OrderBy(i => i.QuantityInProcess).ToList() : items.OrderByDescending(i => i.QuantityInProcess).ToList(),
+            "quantityavailable" => asc ? items.OrderBy(i => i.QuantityAvailable).ToList() : items.OrderByDescending(i => i.QuantityAvailable).ToList(),
             "createdatutc" => asc ? items.OrderBy(i => i.CreatedAtUtc).ToList() : items.OrderByDescending(i => i.CreatedAtUtc).ToList(),
             _ => asc ? items.OrderBy(i => i.CreatedAtUtc).ToList() : items.OrderByDescending(i => i.CreatedAtUtc).ToList()
         };
@@ -174,4 +254,15 @@ public sealed class InventoryVisibilityService : IInventoryVisibilityService
         var paged = items.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
         return new PagedResult<T>(paged, total, pageNumber, pageSize, orderBy, orderDir);
     }
+
+    private sealed record BalanceAvailability(
+        DevcraftWMS.Domain.Entities.InventoryBalance Balance,
+        decimal QuantityOnHand,
+        decimal QuantityReserved,
+        decimal QuantityBlocked,
+        decimal QuantityInProcess,
+        decimal QuantityAvailable,
+        IReadOnlyList<string> BlockedReasons);
+
+    private readonly record struct BalanceKey(Guid ProductId, Guid? LotId, Guid LocationId);
 }

@@ -16,4 +16,21 @@ public interface IInventoryVisibilityRepository
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Features.InventoryVisibility.InventoryReservationSnapshot>> ListReservationsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> balanceIds,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Features.InventoryVisibility.InventoryInspectionSnapshot>> ListBlockedInspectionsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> productIds,
+        IReadOnlyCollection<Guid> locationIds,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Features.InventoryVisibility.InventoryInProcessSnapshot>> ListInProcessReceiptItemsAsync(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> productIds,
+        IReadOnlyCollection<Guid> locationIds,
+        CancellationToken cancellationToken = default);
 }

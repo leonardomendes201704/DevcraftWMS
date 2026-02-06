@@ -32,9 +32,13 @@ public sealed record InventoryVisibilityLocationDto(
     string? UnitLoadCode,
     decimal QuantityOnHand,
     decimal QuantityReserved,
+    decimal QuantityBlocked,
+    decimal QuantityInProcess,
+    decimal QuantityAvailable,
     InventoryBalanceStatus Status,
     bool IsActive,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    IReadOnlyList<string> BlockedReasons);
 
 public sealed record InventoryVisibilityTraceDto(
     string EventType,

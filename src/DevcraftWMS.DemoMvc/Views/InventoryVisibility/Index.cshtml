@@ -62,6 +62,8 @@
         new() { Value = "ProductName", Text = "Product name", Selected = Model.Query.OrderBy == "ProductName" },
         new() { Value = "QuantityOnHand", Text = "Quantity on hand", Selected = Model.Query.OrderBy == "QuantityOnHand" },
         new() { Value = "QuantityAvailable", Text = "Quantity available", Selected = Model.Query.OrderBy == "QuantityAvailable" },
+        new() { Value = "QuantityBlocked", Text = "Quantity blocked", Selected = Model.Query.OrderBy == "QuantityBlocked" },
+        new() { Value = "QuantityInProcess", Text = "Quantity in process", Selected = Model.Query.OrderBy == "QuantityInProcess" },
         new() { Value = "LocationCode", Text = "Location code", Selected = Model.Query.OrderBy == "LocationCode" },
         new() { Value = "LotCode", Text = "Lot code", Selected = Model.Query.OrderBy == "LotCode" },
         new() { Value = "ExpirationDate", Text = "Expiration date", Selected = Model.Query.OrderBy == "ExpirationDate" },
@@ -155,7 +157,21 @@
         .AddColumn("Exp.", item => new HtmlString(item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-"), "ExpirationDate")
         .AddColumn("On hand", item => new HtmlString(item.QuantityOnHand.ToString("N2")), "QuantityOnHand")
         .AddColumn("Reserved", item => new HtmlString(item.QuantityReserved.ToString("N2")))
+        .AddColumn("Blocked", item => new HtmlString(item.QuantityBlocked.ToString("N2")), "QuantityBlocked")
+        .AddColumn("In process", item => new HtmlString(item.QuantityInProcess.ToString("N2")), "QuantityInProcess")
+        .AddColumn("Available", item => new HtmlString($"<strong>{item.QuantityAvailable:N2}</strong>"), "QuantityAvailable")
         .AddColumn("Status", item => new HtmlString($"<span class=\"badge {StatusBadgeClass(item.Status)}\">{item.Status}</span>"), "Status")
+        .AddColumn("Blocked reasons", item =>
+        {
+            if (item.BlockedReasons.Count == 0)
+            {
+                return new HtmlString("-");
+            }
+
+            var badges = string.Join(" ", item.BlockedReasons.Select(reason =>
+                $"<span class=\"badge text-bg-warning\">{HtmlEncoder.Default.Encode(reason)}</span>"));
+            return new HtmlString(badges);
+        })
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")
         .AddColumn("Created", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")), "CreatedAtUtc")
         .Build();
