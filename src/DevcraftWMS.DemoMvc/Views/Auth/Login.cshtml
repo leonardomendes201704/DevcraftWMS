@@ -2,64 +2,48 @@
 @{
     Layout = "_LoginLayout";
     ViewData["Title"] = "Login";
-    ViewData["Subtitle"] = "Store a JWT or authenticate with email/password";
+    ViewData["Subtitle"] = "Access the DemoMvc portal";
 }
 
-<div class="d-flex justify-content-end mb-3">
-    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#loginHelp">
-        <i class="bi bi-question-circle me-1"></i>Help
-    </button>
-</div>
-
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Login with API credentials</h5>
-                <form method="post" asp-action="Login">
-                    <div class="mb-3">
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-6 col-xl-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3">Sign in</h4>
+                <form asp-action="Login" method="post" class="d-grid gap-3">
+                    <div>
                         <label class="form-label">Email</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input asp-for="Email" class="form-control" />
+                            <input asp-for="Email" class="form-control" placeholder="you@example.com" />
                         </div>
                         <span class="text-danger small" asp-validation-for="Email"></span>
                     </div>
-                    <div class="mb-3">
+                    <div>
                         <label class="form-label">Password</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                            <input asp-for="Password" class="form-control" />
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" placeholder="********" />
                         </div>
                         <span class="text-danger small" asp-validation-for="Password"></span>
                     </div>
-                    <button class="btn btn-primary" type="submit">Login</button>
+                    <button type="submit" class="btn btn-primary">Login</button>
                 </form>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Paste a JWT token</h5>
-                <form method="post" asp-action="Login">
+                <hr class="my-4" />
+                <form asp-action="Login" method="post">
                     <input type="hidden" name="mode" value="token" />
-                    <div class="mb-3">
-                        <label class="form-label">Token</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                            <textarea asp-for="Token" class="form-control" rows="6"></textarea>
-                        </div>
-                        <span class="text-danger small" asp-validation-for="Token"></span>
+                    <label class="form-label">Paste JWT token</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                        <input asp-for="Token" class="form-control" placeholder="Bearer token" />
                     </div>
-                    <button class="btn btn-outline-primary" type="submit">Store Token</button>
+                    <span class="text-danger small" asp-validation-for="Token"></span>
+                    <button type="submit" class="btn btn-outline-secondary mt-3">Store token</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-<partial name="_LoginHelp" />
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
