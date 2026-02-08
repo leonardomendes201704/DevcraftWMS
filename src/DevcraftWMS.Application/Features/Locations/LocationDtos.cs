@@ -20,6 +20,13 @@ public sealed record LocationDto(
 public sealed record LocationListItemDto(
     Guid Id,
     Guid StructureId,
+    string StructureName,
+    Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     Guid? ZoneId,
     string? ZoneName,
     string Code,

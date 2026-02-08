@@ -1,11 +1,41 @@
 @model DevcraftWMS.DemoMvc.ViewModels.Locations.LocationFormViewModel
 
 <div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Warehouse</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+            <select class="form-select" asp-for="WarehouseId" asp-items="Model.Warehouses" data-location-warehouse>
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="WarehouseId"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Sector</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
+            <select class="form-select" asp-for="SectorId" asp-items="Model.Sectors" data-location-sector>
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="SectorId"></span>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Section</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-layout-text-sidebar"></i></span>
+            <select class="form-select" asp-for="SectionId" asp-items="Model.Sections" data-location-section>
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="SectionId"></span>
+    </div>
     <div class="col-md-6">
         <label class="form-label">Structure</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-stack"></i></span>
-            <select class="form-select" asp-for="StructureId" asp-items="Model.Structures">
+            <select class="form-select" asp-for="StructureId" asp-items="Model.Structures" data-location-structure>
                 <option value="">Select</option>
             </select>
         </div>
@@ -15,7 +45,7 @@
         <label class="form-label">Zone</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-diagram-3"></i></span>
-            <select class="form-select" asp-for="ZoneId" asp-items="Model.Zones">
+            <select class="form-select" asp-for="ZoneId" asp-items="Model.Zones" data-location-zone>
                 <option value="">Select...</option>
             </select>
         </div>

@@ -443,6 +443,368 @@
         });
     };
 
+    const attachLocationWarehouseCascade = () => {
+        const warehouseSelect = document.querySelector("[data-location-warehouse]");
+        const sectorSelect = document.querySelector("[data-location-sector]");
+        const sectionSelect = document.querySelector("[data-location-section]");
+        const structureSelect = document.querySelector("[data-location-structure]");
+        const zoneSelect = document.querySelector("[data-location-zone]");
+
+        if (!(warehouseSelect instanceof HTMLSelectElement)
+            || !(sectorSelect instanceof HTMLSelectElement)
+            || !(sectionSelect instanceof HTMLSelectElement)
+            || !(structureSelect instanceof HTMLSelectElement)
+            || !(zoneSelect instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const buildOption = (value, text, selected) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = text;
+            if (selected) {
+                option.selected = true;
+            }
+            return option;
+        };
+
+        const resetSelect = (select, placeholder) => {
+            select.innerHTML = "";
+            select.append(buildOption("", placeholder, true));
+        };
+
+        const loadSectors = async (warehouseId) => {
+            resetSelect(sectorSelect, "Loading...");
+            resetSelect(sectionSelect, "Select section");
+            resetSelect(structureSelect, "Select structure");
+            resetSelect(zoneSelect, "Select...");
+            sectorSelect.disabled = true;
+
+            if (!warehouseId) {
+                resetSelect(sectorSelect, "Select sector");
+                sectorSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/SectorOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sectors.");
+                }
+                const data = await response.json();
+                resetSelect(sectorSelect, data.length ? "Select sector" : "No sectors found");
+                data.forEach(item => {
+                    sectorSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectorSelect, "Failed to load sectors");
+            } finally {
+                sectorSelect.disabled = false;
+            }
+        };
+
+        const loadSections = async (sectorId) => {
+            resetSelect(sectionSelect, "Loading...");
+            resetSelect(structureSelect, "Select structure");
+            sectionSelect.disabled = true;
+
+            if (!sectorId) {
+                resetSelect(sectionSelect, "Select section");
+                sectionSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/SectionOptions?sectorId=${encodeURIComponent(sectorId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sections.");
+                }
+                const data = await response.json();
+                resetSelect(sectionSelect, data.length ? "Select section" : "No sections found");
+                data.forEach(item => {
+                    sectionSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectionSelect, "Failed to load sections");
+            } finally {
+                sectionSelect.disabled = false;
+            }
+        };
+
+        const loadStructures = async (sectionId) => {
+            resetSelect(structureSelect, "Loading...");
+            structureSelect.disabled = true;
+
+            if (!sectionId) {
+                resetSelect(structureSelect, "Select structure");
+                structureSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/StructureOptions?sectionId=${encodeURIComponent(sectionId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load structures.");
+                }
+                const data = await response.json();
+                resetSelect(structureSelect, data.length ? "Select structure" : "No structures found");
+                data.forEach(item => {
+                    structureSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(structureSelect, "Failed to load structures");
+            } finally {
+                structureSelect.disabled = false;
+            }
+        };
+
+        const loadZones = async (warehouseId) => {
+            resetSelect(zoneSelect, "Loading...");
+            zoneSelect.disabled = true;
+
+            if (!warehouseId) {
+                resetSelect(zoneSelect, "Select...");
+                zoneSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/ZoneOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load zones.");
+                }
+                const data = await response.json();
+                resetSelect(zoneSelect, data.length ? "Select..." : "No zones found");
+                data.forEach(item => {
+                    zoneSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(zoneSelect, "Failed to load zones");
+            } finally {
+                zoneSelect.disabled = false;
+            }
+        };
+
+        warehouseSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectorSelect.value = "";
+            sectionSelect.value = "";
+            structureSelect.value = "";
+            zoneSelect.value = "";
+            loadSectors(target.value);
+            loadZones(target.value);
+        });
+
+        sectorSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectionSelect.value = "";
+            structureSelect.value = "";
+            loadSections(target.value);
+        });
+
+        sectionSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            structureSelect.value = "";
+            loadStructures(target.value);
+        });
+
+        if (warehouseSelect.value && sectorSelect.options.length <= 1) {
+            loadSectors(warehouseSelect.value);
+            loadZones(warehouseSelect.value);
+        }
+
+        if (sectorSelect.value && sectionSelect.options.length <= 1) {
+            loadSections(sectorSelect.value);
+        }
+
+        if (sectionSelect.value && structureSelect.options.length <= 1) {
+            loadStructures(sectionSelect.value);
+        }
+    };
+
+    const attachLocationFilterCascade = () => {
+        const warehouseSelect = document.querySelector(".js-location-warehouse-filter");
+        const sectorSelect = document.querySelector(".js-location-sector-filter");
+        const sectionSelect = document.querySelector(".js-location-section-filter");
+        const structureSelect = document.querySelector(".js-location-structure-filter");
+        const zoneSelect = document.querySelector(".js-location-zone-filter");
+
+        if (!(warehouseSelect instanceof HTMLSelectElement)
+            || !(sectorSelect instanceof HTMLSelectElement)
+            || !(sectionSelect instanceof HTMLSelectElement)
+            || !(structureSelect instanceof HTMLSelectElement)
+            || !(zoneSelect instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const buildOption = (value, text, selected) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = text;
+            if (selected) {
+                option.selected = true;
+            }
+            return option;
+        };
+
+        const resetSelect = (select, placeholder) => {
+            select.innerHTML = "";
+            select.append(buildOption("", placeholder, true));
+        };
+
+        const loadSectors = async (warehouseId) => {
+            resetSelect(sectorSelect, "Loading...");
+            resetSelect(sectionSelect, "All sections");
+            resetSelect(structureSelect, "All structures");
+            sectorSelect.disabled = true;
+
+            if (!warehouseId) {
+                resetSelect(sectorSelect, "All sectors");
+                sectorSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/SectorOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sectors.");
+                }
+                const data = await response.json();
+                resetSelect(sectorSelect, data.length ? "All sectors" : "No sectors found");
+                data.forEach(item => {
+                    sectorSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectorSelect, "Failed to load sectors");
+            } finally {
+                sectorSelect.disabled = false;
+            }
+        };
+
+        const loadSections = async (sectorId) => {
+            resetSelect(sectionSelect, "Loading...");
+            resetSelect(structureSelect, "All structures");
+            sectionSelect.disabled = true;
+
+            if (!sectorId) {
+                resetSelect(sectionSelect, "All sections");
+                sectionSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/SectionOptions?sectorId=${encodeURIComponent(sectorId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sections.");
+                }
+                const data = await response.json();
+                resetSelect(sectionSelect, data.length ? "All sections" : "No sections found");
+                data.forEach(item => {
+                    sectionSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectionSelect, "Failed to load sections");
+            } finally {
+                sectionSelect.disabled = false;
+            }
+        };
+
+        const loadStructures = async (sectionId) => {
+            resetSelect(structureSelect, "Loading...");
+            structureSelect.disabled = true;
+
+            if (!sectionId) {
+                resetSelect(structureSelect, "All structures");
+                structureSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/StructureOptions?sectionId=${encodeURIComponent(sectionId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load structures.");
+                }
+                const data = await response.json();
+                resetSelect(structureSelect, data.length ? "All structures" : "No structures found");
+                data.forEach(item => {
+                    structureSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(structureSelect, "Failed to load structures");
+            } finally {
+                structureSelect.disabled = false;
+            }
+        };
+
+        const loadZones = async (warehouseId) => {
+            resetSelect(zoneSelect, "Loading...");
+            zoneSelect.disabled = true;
+
+            if (!warehouseId) {
+                resetSelect(zoneSelect, "All zones");
+                zoneSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Locations/ZoneOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load zones.");
+                }
+                const data = await response.json();
+                resetSelect(zoneSelect, data.length ? "All zones" : "No zones found");
+                data.forEach(item => {
+                    zoneSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(zoneSelect, "Failed to load zones");
+            } finally {
+                zoneSelect.disabled = false;
+            }
+        };
+
+        warehouseSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectorSelect.value = "";
+            sectionSelect.value = "";
+            structureSelect.value = "";
+            zoneSelect.value = "";
+            loadSectors(target.value);
+            loadZones(target.value);
+        });
+
+        sectorSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectionSelect.value = "";
+            structureSelect.value = "";
+            loadSections(target.value);
+        });
+
+        sectionSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            structureSelect.value = "";
+            loadStructures(target.value);
+        });
+    };
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             attachIndexHeaderActions();
@@ -450,6 +812,8 @@
             attachSectionFilterCascade();
             attachStructureWarehouseCascade();
             attachStructureFilterCascade();
+            attachLocationWarehouseCascade();
+            attachLocationFilterCascade();
         });
     } else {
         attachIndexHeaderActions();
@@ -457,5 +821,7 @@
         attachSectionFilterCascade();
         attachStructureWarehouseCascade();
         attachStructureFilterCascade();
+        attachLocationWarehouseCascade();
+        attachLocationFilterCascade();
     }
 })();

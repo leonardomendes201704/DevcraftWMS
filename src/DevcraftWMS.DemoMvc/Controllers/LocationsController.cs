@@ -49,72 +49,23 @@ public sealed class LocationsController : Controller
             });
         }
 
-        var selectedWarehouseId = query.WarehouseId == Guid.Empty
-            ? Guid.Parse(warehouseOptions[0].Value!)
-            : query.WarehouseId;
+        var sectorOptions = query.WarehouseId.HasValue
+            ? await LoadSectorOptionsAsync(query.WarehouseId.Value, query.SectorId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var sectorOptions = await LoadSectorOptionsAsync(selectedWarehouseId, query.SectorId, cancellationToken);
-        if (sectorOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a sector before managing locations.";
-            return View(new LocationListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Query = query with { WarehouseId = selectedWarehouseId }
-            });
-        }
+        var sectionOptions = query.SectorId.HasValue
+            ? await LoadSectionOptionsAsync(query.SectorId.Value, query.SectionId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var selectedSectorId = query.SectorId == Guid.Empty
-            ? Guid.Parse(sectorOptions[0].Value!)
-            : query.SectorId;
+        var structureOptions = query.SectionId.HasValue
+            ? await LoadStructureOptionsAsync(query.SectionId.Value, query.StructureId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var sectionOptions = await LoadSectionOptionsAsync(selectedSectorId, query.SectionId, cancellationToken);
-        if (sectionOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a section before managing locations.";
-            return View(new LocationListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Sections = sectionOptions,
-                Query = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId }
-            });
-        }
+        var zoneOptions = query.WarehouseId.HasValue
+            ? await LoadZoneOptionsAsync(query.WarehouseId.Value, query.ZoneId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var selectedSectionId = query.SectionId == Guid.Empty
-            ? Guid.Parse(sectionOptions[0].Value!)
-            : query.SectionId;
-
-        var structureOptions = await LoadStructureOptionsAsync(selectedSectionId, query.StructureId, cancellationToken);
-        if (structureOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a structure before managing locations.";
-            return View(new LocationListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Sections = sectionOptions,
-                Structures = structureOptions,
-                Query = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId, SectionId = selectedSectionId }
-            });
-        }
-
-        var selectedStructureId = query.StructureId == Guid.Empty
-            ? Guid.Parse(structureOptions[0].Value!)
-            : query.StructureId;
-
-        var normalizedQuery = query with
-        {
-            WarehouseId = selectedWarehouseId,
-            SectorId = selectedSectorId,
-            SectionId = selectedSectionId,
-            StructureId = selectedStructureId
-        };
-
-        var zoneOptions = await LoadZoneOptionsAsync(selectedWarehouseId, normalizedQuery.ZoneId, cancellationToken);
-
-        var result = await _locationsClient.ListAsync(normalizedQuery, cancellationToken);
+        var result = await _locationsClient.ListAsync(query, cancellationToken);
         if (!result.IsSuccess || result.Data is null)
         {
             TempData["Error"] = result.Error ?? "Failed to load locations.";
@@ -125,7 +76,7 @@ public sealed class LocationsController : Controller
                 Sections = sectionOptions,
                 Structures = structureOptions,
                 Zones = zoneOptions,
-                Query = normalizedQuery
+                Query = query
             });
         }
 
@@ -138,25 +89,25 @@ public sealed class LocationsController : Controller
             Controller = "Locations",
             Query = new Dictionary<string, string?>
             {
-                ["WarehouseId"] = normalizedQuery.WarehouseId.ToString(),
-                ["SectorId"] = normalizedQuery.SectorId.ToString(),
-                ["SectionId"] = normalizedQuery.SectionId.ToString(),
-                ["StructureId"] = normalizedQuery.StructureId.ToString(),
-                ["ZoneId"] = normalizedQuery.ZoneId?.ToString(),
-                ["OrderBy"] = normalizedQuery.OrderBy,
-                ["OrderDir"] = normalizedQuery.OrderDir,
-                ["Code"] = normalizedQuery.Code,
-                ["Barcode"] = normalizedQuery.Barcode,
-                ["IsActive"] = normalizedQuery.IsActive?.ToString(),
-                ["IncludeInactive"] = normalizedQuery.IncludeInactive.ToString(),
-                ["PageSize"] = normalizedQuery.PageSize.ToString()
+                ["WarehouseId"] = query.WarehouseId?.ToString(),
+                ["SectorId"] = query.SectorId?.ToString(),
+                ["SectionId"] = query.SectionId?.ToString(),
+                ["StructureId"] = query.StructureId?.ToString(),
+                ["ZoneId"] = query.ZoneId?.ToString(),
+                ["OrderBy"] = query.OrderBy,
+                ["OrderDir"] = query.OrderDir,
+                ["Code"] = query.Code,
+                ["Barcode"] = query.Barcode,
+                ["IsActive"] = query.IsActive?.ToString(),
+                ["IncludeInactive"] = query.IncludeInactive.ToString(),
+                ["PageSize"] = query.PageSize.ToString()
             }
         };
 
         var model = new LocationListPageViewModel
         {
             Items = result.Data.Items,
-            Query = normalizedQuery,
+            Query = query,
             Pagination = pagination,
             Warehouses = warehouseOptions,
             Sectors = sectorOptions,
@@ -266,6 +217,9 @@ public sealed class LocationsController : Controller
 
         var model = new LocationFormViewModel
         {
+            WarehouseId = selectedWarehouseId,
+            SectorId = selectedSectorId,
+            SectionId = selectedSectionId,
             StructureId = selectedStructureId,
             Warehouses = warehouses,
             Sectors = sectors,
@@ -428,6 +382,9 @@ public sealed class LocationsController : Controller
             ? Array.Empty<SelectListItem>()
             : await LoadStructureOptionsAsync(sectionId, structureId, cancellationToken);
 
+        model.WarehouseId = warehouseId == Guid.Empty ? model.WarehouseId : warehouseId;
+        model.SectorId = sectorId == Guid.Empty ? model.SectorId : sectorId;
+        model.SectionId = sectionId == Guid.Empty ? model.SectionId : sectionId;
         model.Warehouses = warehouses;
         model.Sectors = sectors;
         model.Sections = sections;
@@ -435,6 +392,34 @@ public sealed class LocationsController : Controller
         model.Zones = warehouseId == Guid.Empty
             ? Array.Empty<SelectListItem>()
             : await LoadZoneOptionsAsync(warehouseId, model.ZoneId, cancellationToken);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SectorOptions(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var sectors = await LoadSectorOptionsAsync(warehouseId, null, cancellationToken);
+        return Json(sectors.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SectionOptions(Guid sectorId, CancellationToken cancellationToken)
+    {
+        var sections = await LoadSectionOptionsAsync(sectorId, null, cancellationToken);
+        return Json(sections.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> StructureOptions(Guid sectionId, CancellationToken cancellationToken)
+    {
+        var structures = await LoadStructureOptionsAsync(sectionId, null, cancellationToken);
+        return Json(structures.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ZoneOptions(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var zones = await LoadZoneOptionsAsync(warehouseId, null, cancellationToken);
+        return Json(zones.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
     }
 
     private async Task<IReadOnlyList<SelectListItem>> LoadWarehouseOptionsAsync(Guid? selectedId, CancellationToken cancellationToken)
@@ -499,7 +484,7 @@ public sealed class LocationsController : Controller
     {
         var result = await _sectionsClient.ListAsync(
             new SectionQuery(
-                Guid.Empty,
+                null,
                 sectorId,
                 1,
                 100,
@@ -525,8 +510,8 @@ public sealed class LocationsController : Controller
     {
         var result = await _structuresClient.ListAsync(
             new StructureQuery(
-                Guid.Empty,
-                Guid.Empty,
+                null,
+                null,
                 sectionId,
                 1,
                 100,

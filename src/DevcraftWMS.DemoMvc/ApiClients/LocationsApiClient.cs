@@ -18,9 +18,13 @@ public sealed class LocationsApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<LocationListItemViewModel>>> ListAsync(LocationQuery query, CancellationToken cancellationToken)
     {
-        var basePath = $"/api/structures/{query.StructureId}/locations";
+        var basePath = "/api/locations";
         var queryParams = new Dictionary<string, string?>
         {
+            ["warehouseId"] = query.WarehouseId?.ToString(),
+            ["sectorId"] = query.SectorId?.ToString(),
+            ["sectionId"] = query.SectionId?.ToString(),
+            ["structureId"] = query.StructureId?.ToString(),
             ["pageNumber"] = query.PageNumber.ToString(),
             ["pageSize"] = query.PageSize.ToString(),
             ["orderBy"] = query.OrderBy,

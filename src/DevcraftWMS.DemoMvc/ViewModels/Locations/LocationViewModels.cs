@@ -5,10 +5,10 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Locations;
 
 public sealed record LocationQuery(
-    Guid WarehouseId = default,
-    Guid SectorId = default,
-    Guid SectionId = default,
-    Guid StructureId = default,
+    Guid? WarehouseId = null,
+    Guid? SectorId = null,
+    Guid? SectionId = null,
+    Guid? StructureId = null,
     Guid? ZoneId = null,
     int PageNumber = 1,
     int PageSize = 20,
@@ -22,6 +22,13 @@ public sealed record LocationQuery(
 public sealed record LocationListItemViewModel(
     Guid Id,
     Guid StructureId,
+    string StructureName,
+    Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     Guid? ZoneId,
     string? ZoneName,
     string Code,
@@ -56,6 +63,15 @@ public sealed record LocationDetailViewModel(
 public sealed class LocationFormViewModel
 {
     public Guid? Id { get; set; }
+
+    [Required]
+    public Guid WarehouseId { get; set; }
+
+    [Required]
+    public Guid SectorId { get; set; }
+
+    [Required]
+    public Guid SectionId { get; set; }
 
     [Required]
     public Guid StructureId { get; set; }
@@ -98,7 +114,7 @@ public sealed class LocationListPageViewModel
 {
     public IReadOnlyList<LocationListItemViewModel> Items { get; init; } = Array.Empty<LocationListItemViewModel>();
     public PaginationViewModel Pagination { get; init; } = new();
-    public LocationQuery Query { get; init; } = new(Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty, null, 1, 20, "CreatedAtUtc", "desc", null, null, null, false);
+    public LocationQuery Query { get; init; } = new(null, null, null, null, null, 1, 20, "CreatedAtUtc", "desc", null, null, null, false);
     public IReadOnlyList<SelectListItem> Warehouses { get; init; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sectors { get; init; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sections { get; init; } = Array.Empty<SelectListItem>();

@@ -64,7 +64,31 @@ public sealed class LocationsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListLocationsPagedQuery(structureId, zoneId, pageNumber, pageSize, orderBy, orderDir, code, barcode, isActive, includeInactive),
+            new ListLocationsPagedQuery(null, null, null, structureId, zoneId, pageNumber, pageSize, orderBy, orderDir, code, barcode, isActive, includeInactive),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("locations")]
+    public async Task<IActionResult> ListLocationsAll(
+        [FromQuery] Guid? warehouseId = null,
+        [FromQuery] Guid? sectorId = null,
+        [FromQuery] Guid? sectionId = null,
+        [FromQuery] Guid? structureId = null,
+        [FromQuery] Guid? zoneId = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string orderBy = "CreatedAtUtc",
+        [FromQuery] string orderDir = "desc",
+        [FromQuery] string? code = null,
+        [FromQuery] string? barcode = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ListLocationsPagedQuery(warehouseId, sectorId, sectionId, structureId, zoneId, pageNumber, pageSize, orderBy, orderDir, code, barcode, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);

@@ -60,7 +60,10 @@ public sealed class LocationRepository : ILocationRepository
     }
 
     public async Task<int> CountAsync(
-        Guid structureId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
+        Guid? structureId,
         Guid? zoneId,
         string? code,
         string? barcode,
@@ -68,12 +71,15 @@ public sealed class LocationRepository : ILocationRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(structureId, zoneId, code, barcode, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, sectionId, structureId, zoneId, code, barcode, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Location>> ListAsync(
-        Guid structureId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
+        Guid? structureId,
         Guid? zoneId,
         int pageNumber,
         int pageSize,
@@ -85,7 +91,7 @@ public sealed class LocationRepository : ILocationRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(structureId, zoneId, code, barcode, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, sectionId, structureId, zoneId, code, barcode, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -106,7 +112,10 @@ public sealed class LocationRepository : ILocationRepository
     }
 
     private IQueryable<Location> BuildQuery(
-        Guid structureId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
+        Guid? structureId,
         Guid? zoneId,
         string? code,
         string? barcode,
@@ -114,9 +123,39 @@ public sealed class LocationRepository : ILocationRepository
         bool includeInactive)
     {
         var customerId = GetCustomerId();
-        var query = _dbContext.Locations.AsNoTracking()
+        var query = _dbContext.Locations
+            .AsNoTracking()
             .Include(l => l.Zone)
-            .Where(l => l.StructureId == structureId && l.CustomerAccesses.Any(a => a.CustomerId == customerId));
+            .Include(l => l.Structure)
+            .ThenInclude(structure => structure!.Section)
+            .ThenInclude(section => section!.Sector)
+            .ThenInclude(sector => sector!.Warehouse)
+            .Where(l => l.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (warehouseId.HasValue && warehouseId.Value != Guid.Empty)
+        {
+            query = query.Where(l => l.Structure != null
+                && l.Structure.Section != null
+                && l.Structure.Section.Sector != null
+                && l.Structure.Section.Sector.WarehouseId == warehouseId.Value);
+        }
+
+        if (sectorId.HasValue && sectorId.Value != Guid.Empty)
+        {
+            query = query.Where(l => l.Structure != null
+                && l.Structure.Section != null
+                && l.Structure.Section.SectorId == sectorId.Value);
+        }
+
+        if (sectionId.HasValue && sectionId.Value != Guid.Empty)
+        {
+            query = query.Where(l => l.Structure != null && l.Structure.SectionId == sectionId.Value);
+        }
+
+        if (structureId.HasValue && structureId.Value != Guid.Empty)
+        {
+            query = query.Where(l => l.StructureId == structureId.Value);
+        }
 
         if (zoneId.HasValue && zoneId.Value != Guid.Empty)
         {

@@ -14,10 +14,10 @@
         PageSize = Model.Query.PageSize,
         Query = new Dictionary<string, string?>
         {
-            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
-            ["SectorId"] = Model.Query.SectorId == Guid.Empty ? null : Model.Query.SectorId.ToString(),
-            ["SectionId"] = Model.Query.SectionId == Guid.Empty ? null : Model.Query.SectionId.ToString(),
-            ["StructureId"] = Model.Query.StructureId == Guid.Empty ? null : Model.Query.StructureId.ToString(),
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["SectorId"] = Model.Query.SectorId?.ToString(),
+            ["SectionId"] = Model.Query.SectionId?.ToString(),
+            ["StructureId"] = Model.Query.StructureId?.ToString(),
             ["ZoneId"] = Model.Query.ZoneId?.ToString(),
             ["Code"] = Model.Query.Code,
             ["Barcode"] = Model.Query.Barcode,
@@ -36,7 +36,7 @@
         })
         .ToList();
 
-    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All warehouses", Selected = Model.Query.WarehouseId is null });
 
     var sectorOptions = Model.Sectors
         .Select(option => new GridSelectOption
@@ -47,7 +47,7 @@
         })
         .ToList();
 
-    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select sector", Selected = Model.Query.SectorId == Guid.Empty });
+    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All sectors", Selected = Model.Query.SectorId is null });
 
     var sectionOptions = Model.Sections
         .Select(option => new GridSelectOption
@@ -58,7 +58,7 @@
         })
         .ToList();
 
-    sectionOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select section", Selected = Model.Query.SectionId == Guid.Empty });
+    sectionOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All sections", Selected = Model.Query.SectionId is null });
 
     var structureOptions = Model.Structures
         .Select(option => new GridSelectOption
@@ -69,7 +69,7 @@
         })
         .ToList();
 
-    structureOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select structure", Selected = Model.Query.StructureId == Guid.Empty });
+    structureOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All structures", Selected = Model.Query.StructureId is null });
 
     var zoneOptions = Model.Zones
         .Select(option => new GridSelectOption
@@ -102,35 +102,40 @@
                 Label = "Warehouse",
                 Name = "WarehouseId",
                 Type = GridFilterType.Select,
-                Options = warehouseOptions
+                Options = warehouseOptions,
+                CssClass = "js-location-warehouse-filter"
             },
             new()
             {
                 Label = "Sector",
                 Name = "SectorId",
                 Type = GridFilterType.Select,
-                Options = sectorOptions
+                Options = sectorOptions,
+                CssClass = "js-location-sector-filter"
             },
             new()
             {
                 Label = "Section",
                 Name = "SectionId",
                 Type = GridFilterType.Select,
-                Options = sectionOptions
+                Options = sectionOptions,
+                CssClass = "js-location-section-filter"
             },
             new()
             {
                 Label = "Structure",
                 Name = "StructureId",
                 Type = GridFilterType.Select,
-                Options = structureOptions
+                Options = structureOptions,
+                CssClass = "js-location-structure-filter"
             },
             new()
             {
                 Label = "Zone",
                 Name = "ZoneId",
                 Type = GridFilterType.Select,
-                Options = zoneOptions
+                Options = zoneOptions,
+                CssClass = "js-location-zone-filter"
             },
             new()
             {
@@ -196,6 +201,10 @@
         .WithPagination(Model.Pagination)
         .WithQueryOptions(queryOptions)
         .WithFilters(filters)
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Sector", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectorName)), "SectorName")
+        .AddColumn("Section", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectionName)), "SectionName")
+        .AddColumn("Structure", item => new HtmlString(HtmlEncoder.Default.Encode(item.StructureName)), "StructureName")
         .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
         .AddColumn("Barcode", item => new HtmlString(HtmlEncoder.Default.Encode(item.Barcode)), "Barcode")
         .AddColumn("Zone", item => new HtmlString(HtmlEncoder.Default.Encode(item.ZoneName ?? "-")), "ZoneName")

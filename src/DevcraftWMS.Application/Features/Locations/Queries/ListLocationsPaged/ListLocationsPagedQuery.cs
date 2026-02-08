@@ -4,7 +4,10 @@ using DevcraftWMS.Application.Common.Pagination;
 namespace DevcraftWMS.Application.Features.Locations.Queries.ListLocationsPaged;
 
 public sealed record ListLocationsPagedQuery(
-    Guid StructureId,
+    Guid? WarehouseId,
+    Guid? SectorId,
+    Guid? SectionId,
+    Guid? StructureId,
     Guid? ZoneId,
     int PageNumber,
     int PageSize,

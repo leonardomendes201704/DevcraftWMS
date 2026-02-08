@@ -16,6 +16,9 @@ public sealed class ListLocationsPagedQueryHandler : MediatR.IRequestHandler<Lis
     public async Task<RequestResult<PagedResult<LocationListItemDto>>> Handle(ListLocationsPagedQuery request, CancellationToken cancellationToken)
     {
         var totalCount = await _locationRepository.CountAsync(
+            request.WarehouseId,
+            request.SectorId,
+            request.SectionId,
             request.StructureId,
             request.ZoneId,
             request.Code,
@@ -25,6 +28,9 @@ public sealed class ListLocationsPagedQueryHandler : MediatR.IRequestHandler<Lis
             cancellationToken);
 
         var items = await _locationRepository.ListAsync(
+            request.WarehouseId,
+            request.SectorId,
+            request.SectionId,
             request.StructureId,
             request.ZoneId,
             request.PageNumber,
