@@ -22,12 +22,14 @@
                 <small class="text-muted">@Model.Subtitle</small>
             }
         </div>
-        @if (!string.IsNullOrWhiteSpace(Model.PrimaryActionText) && !string.IsNullOrWhiteSpace(Model.PrimaryActionUrl))
-        {
-            <a class="btn btn-primary" href="@Model.PrimaryActionUrl">
-                <i class="bi bi-plus-lg me-1"></i>@Model.PrimaryActionText
-            </a>
-        }
+        <div class="d-flex align-items-center gap-2 grid-header-actions">
+            @if (!string.IsNullOrWhiteSpace(Model.PrimaryActionText) && !string.IsNullOrWhiteSpace(Model.PrimaryActionUrl))
+            {
+                <a class="btn btn-primary" href="@Model.PrimaryActionUrl">
+                    <i class="bi bi-plus-lg me-1"></i>@Model.PrimaryActionText
+                </a>
+            }
+        </div>
     </div>
 
     <div class="table-responsive">

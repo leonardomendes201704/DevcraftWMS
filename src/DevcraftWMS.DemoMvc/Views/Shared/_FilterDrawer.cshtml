@@ -1,6 +1,6 @@
 ﻿@model FilterDrawerViewModel
-<div class="d-flex justify-content-end mb-3">
-    <button class="@Model.ButtonCssClass" type="button" data-bs-toggle="offcanvas" data-bs-target="#@Model.Id" aria-controls="@Model.Id">
+<div class="filter-drawer-button">
+    <button class="@Model.ButtonCssClass" type="button" data-bs-toggle="offcanvas" data-bs-target="#@Model.Id" aria-controls="@Model.Id" data-grid-action="filters">
         <i class="bi bi-funnel me-1"></i>@Model.ButtonText
     </button>
 </div>

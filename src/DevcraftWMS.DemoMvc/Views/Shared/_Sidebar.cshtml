@@ -16,8 +16,27 @@
         <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">
             <i class="bi bi-speedometer2"></i> Painel
         </a>
+        <div class="nav-section">Preparação inicial</div>
         <a class="nav-link @Active("Customers")" asp-controller="Customers" asp-action="Index">
             <i class="bi bi-people"></i> Clientes
+        </a>
+        <a class="nav-link @Active("Warehouses")" asp-controller="Warehouses" asp-action="Index">
+            <i class="bi bi-box-seam"></i> Armazéns
+        </a>
+        <a class="nav-link @Active("Sectors")" asp-controller="Sectors" asp-action="Index">
+            <i class="bi bi-grid-3x3-gap"></i> Setores
+        </a>
+        <a class="nav-link @Active("Sections")" asp-controller="Sections" asp-action="Index">
+            <i class="bi bi-layout-text-sidebar"></i> Seções
+        </a>
+        <a class="nav-link @Active("Structures")" asp-controller="Structures" asp-action="Index">
+            <i class="bi bi-stack"></i> Estruturas
+        </a>
+        <a class="nav-link @Active("Locations")" asp-controller="Locations" asp-action="Index">
+            <i class="bi bi-geo-alt"></i> Endereços
+        </a>
+        <a class="nav-link @Active("Uoms")" asp-controller="Uoms" asp-action="Index">
+            <i class="bi bi-rulers"></i> Unidades de medida
         </a>
         <a class="nav-link @Active("Products")" asp-controller="Products" asp-action="Index">
             <i class="bi bi-upc"></i> Produtos
@@ -25,23 +44,28 @@
         <a class="nav-link @Active("Lots")" asp-controller="Lots" asp-action="Index">
             <i class="bi bi-collection"></i> Lotes
         </a>
+        <div class="nav-section">Inbound</div>
+        <a class="nav-link @Active("Asns")" asp-controller="Asns" asp-action="Index">
+            <i class="bi bi-clipboard-plus"></i> ASN (pré-aviso)
+        </a>
+        <a class="nav-link @Active("InboundOrders")" asp-controller="InboundOrders" asp-action="Index">
+            <i class="bi bi-truck"></i> Ordens de entrada
+        </a>
         <a class="nav-link @Active("Receipts")" asp-controller="Receipts" asp-action="Index">
             <i class="bi bi-receipt"></i> Recebimentos
-        </a>
-        <a class="nav-link @Active("Returns")" asp-controller="Returns" asp-action="Index">
-            <i class="bi bi-box-arrow-in-left"></i> Devoluções
         </a>
         <a class="nav-link @Active("QualityInspections")" asp-controller="QualityInspections" asp-action="Index">
             <i class="bi bi-shield-check"></i> Qualidade
         </a>
-        <a class="nav-link @Active("UnitLoads")" asp-controller="UnitLoads" asp-action="Index">
-            <i class="bi bi-boxes"></i> Unidades de carga
-        </a>
         <a class="nav-link @Active("PutawayTasks")" asp-controller="PutawayTasks" asp-action="Index">
             <i class="bi bi-box-arrow-in-down"></i> Tarefas de endereçamento
         </a>
-        <a class="nav-link @Active("InboundOrders")" asp-controller="InboundOrders" asp-action="Index">
-            <i class="bi bi-truck"></i> Ordens de entrada
+        <a class="nav-link @Active("InventoryBalances")" asp-controller="InventoryBalances" asp-action="Index">
+            <i class="bi bi-clipboard-check"></i> Estoque
+        </a>
+        <div class="nav-section">Outbound</div>
+        <a class="nav-link @Active("PickingTasks")" asp-controller="PickingTasks" asp-action="Index">
+            <i class="bi bi-hand-index-thumb"></i> Separação
         </a>
         <a class="nav-link @Active("OutboundOrders")" asp-controller="OutboundOrders" asp-action="Index">
             <i class="bi bi-box-arrow-up-right"></i> Ordens de saída
@@ -55,42 +79,7 @@
         <a class="nav-link @Active("OutboundShipping")" asp-controller="OutboundShipping" asp-action="Index">
             <i class="bi bi-truck-flatbed"></i> Expedição
         </a>
-        <a class="nav-link @Active("DockSchedules")" asp-controller="DockSchedules" asp-action="Index">
-            <i class="bi bi-calendar3"></i> Agenda de docas
-        </a>
-        <a class="nav-link @Active("PickingTasks")" asp-controller="PickingTasks" asp-action="Index">
-            <i class="bi bi-hand-index-thumb"></i> Separação
-        </a>
-        <a class="nav-link @Active("Uoms")" asp-controller="Uoms" asp-action="Index">
-            <i class="bi bi-rulers"></i> Unidades de medida
-        </a>
-        <a class="nav-link @Active("CostCenters")" asp-controller="CostCenters" asp-action="Index">
-            <i class="bi bi-diagram-2"></i> Centros de custo
-        </a>
-        <a class="nav-link @Active("Warehouses")" asp-controller="Warehouses" asp-action="Index">
-            <i class="bi bi-box-seam"></i> Armazéns
-        </a>
-        <a class="nav-link @Active("Zones")" asp-controller="Zones" asp-action="Index">
-            <i class="bi bi-diagram-3"></i> Zonas
-        </a>
-        <a class="nav-link @Active("Sectors")" asp-controller="Sectors" asp-action="Index">
-            <i class="bi bi-grid-3x3-gap"></i> Setores
-        </a>
-        <a class="nav-link @Active("Sections")" asp-controller="Sections" asp-action="Index">
-            <i class="bi bi-layout-text-sidebar"></i> Seções
-        </a>
-        <a class="nav-link @Active("Aisles")" asp-controller="Aisles" asp-action="Index">
-            <i class="bi bi-arrows-expand"></i> Corredores
-        </a>
-        <a class="nav-link @Active("Structures")" asp-controller="Structures" asp-action="Index">
-            <i class="bi bi-stack"></i> Estruturas
-        </a>
-        <a class="nav-link @Active("Locations")" asp-controller="Locations" asp-action="Index">
-            <i class="bi bi-geo-alt"></i> Endereços
-        </a>
-        <a class="nav-link @Active("InventoryBalances")" asp-controller="InventoryBalances" asp-action="Index">
-            <i class="bi bi-clipboard-check"></i> Estoque
-        </a>
+        <div class="nav-section">Operações</div>
         <a class="nav-link @Active("InventoryVisibility")" asp-controller="InventoryVisibility" asp-action="Index">
             <i class="bi bi-binoculars"></i> Visibilidade de estoque
         </a>
@@ -100,10 +89,25 @@
         <a class="nav-link @Active("InventoryMovements")" asp-controller="InventoryMovements" asp-action="Index">
             <i class="bi bi-arrow-left-right"></i> Movimentações
         </a>
+        <a class="nav-link @Active("UnitLoads")" asp-controller="UnitLoads" asp-action="Index">
+            <i class="bi bi-boxes"></i> Unidades de carga
+        </a>
+        <a class="nav-link @Active("Returns")" asp-controller="Returns" asp-action="Index">
+            <i class="bi bi-box-arrow-in-left"></i> Devoluções
+        </a>
+        <a class="nav-link @Active("DockSchedules")" asp-controller="DockSchedules" asp-action="Index">
+            <i class="bi bi-calendar3"></i> Agenda de docas
+        </a>
         <a class="nav-link @Active("Email")" asp-controller="Email" asp-action="Index">
             <i class="bi bi-envelope"></i> Teste de email
         </a>
         <div class="nav-section">Administração</div>
+        <a class="nav-link @Active("CostCenters")" asp-controller="CostCenters" asp-action="Index">
+            <i class="bi bi-diagram-2"></i> Centros de custo
+        </a>
+        <a class="nav-link @Active("Zones")" asp-controller="Zones" asp-action="Index">
+            <i class="bi bi-diagram-3"></i> Zonas
+        </a>
         <a class="nav-link @Active("Roles")" asp-controller="Roles" asp-action="Index">
             <i class="bi bi-shield-lock"></i> Perfis
         </a>

@@ -77,4 +77,38 @@
             sessionStorage.setItem(scrollKey, String(sidebarNav.scrollTop));
         });
     }
+
+    const attachIndexHeaderActions = () => {
+        const header = document.querySelector(".grid-header-actions");
+        if (!header) {
+            return;
+        }
+
+        const helpButtons = Array.from(document.querySelectorAll("button[data-bs-toggle=\"modal\"]"))
+            .filter(btn => {
+                const text = btn.textContent?.trim().toLowerCase();
+                return text === "help" || text === "ajuda";
+            });
+        const filterButtons = Array.from(document.querySelectorAll("[data-grid-action=\"filters\"]"));
+
+        const actions = [...helpButtons, ...filterButtons];
+        actions.forEach(btn => {
+            if (btn instanceof HTMLElement) {
+                header.insertBefore(btn, header.firstChild);
+                const parent = btn.parentElement;
+                if (parent && parent.classList.contains("filter-drawer-button") && parent.children.length === 0) {
+                    parent.remove();
+                }
+                if (parent && parent.classList.contains("index-actions") && parent.children.length === 0) {
+                    parent.remove();
+                }
+            }
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", attachIndexHeaderActions);
+    } else {
+        attachIndexHeaderActions();
+    }
 })();
