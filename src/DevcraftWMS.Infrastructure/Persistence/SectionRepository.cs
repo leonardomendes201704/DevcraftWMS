@@ -58,19 +58,21 @@ public sealed class SectionRepository : ISectionRepository
     }
 
     public async Task<int> CountAsync(
-        Guid sectorId,
+        Guid? warehouseId,
+        Guid? sectorId,
         string? code,
         string? name,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(sectorId, code, name, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, code, name, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Section>> ListAsync(
-        Guid sectorId,
+        Guid? warehouseId,
+        Guid? sectorId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -81,7 +83,7 @@ public sealed class SectionRepository : ISectionRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(sectorId, code, name, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, code, name, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -91,15 +93,29 @@ public sealed class SectionRepository : ISectionRepository
     }
 
     private IQueryable<Section> BuildQuery(
-        Guid sectorId,
+        Guid? warehouseId,
+        Guid? sectorId,
         string? code,
         string? name,
         bool? isActive,
         bool includeInactive)
     {
         var customerId = GetCustomerId();
-        var query = _dbContext.Sections.AsNoTracking()
-            .Where(s => s.SectorId == sectorId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+        var query = _dbContext.Sections
+            .AsNoTracking()
+            .Include(s => s.Sector)
+            .ThenInclude(sector => sector.Warehouse)
+            .Where(s => s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (warehouseId.HasValue && warehouseId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.Sector != null && s.Sector.WarehouseId == warehouseId.Value);
+        }
+
+        if (sectorId.HasValue && sectorId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.SectorId == sectorId.Value);
+        }
 
         if (isActive.HasValue)
         {

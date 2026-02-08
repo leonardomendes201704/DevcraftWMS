@@ -11,14 +11,16 @@ public interface ISectionRepository
     Task<Section?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Section?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
-        Guid sectorId,
+        Guid? warehouseId,
+        Guid? sectorId,
         string? code,
         string? name,
         bool? isActive,
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Section>> ListAsync(
-        Guid sectorId,
+        Guid? warehouseId,
+        Guid? sectorId,
         int pageNumber,
         int pageSize,
         string orderBy,

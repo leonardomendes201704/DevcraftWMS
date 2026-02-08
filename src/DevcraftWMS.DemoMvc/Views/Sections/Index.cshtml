@@ -14,8 +14,8 @@
         PageSize = Model.Query.PageSize,
         Query = new Dictionary<string, string?>
         {
-            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
-            ["SectorId"] = Model.Query.SectorId == Guid.Empty ? null : Model.Query.SectorId.ToString(),
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["SectorId"] = Model.Query.SectorId?.ToString(),
             ["Code"] = Model.Query.Code,
             ["Name"] = Model.Query.Name,
             ["IsActive"] = Model.Query.IsActive?.ToString(),
@@ -33,7 +33,7 @@
         })
         .ToList();
 
-    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All warehouses", Selected = Model.Query.WarehouseId is null });
 
     var sectorOptions = Model.Sectors
         .Select(option => new GridSelectOption
@@ -44,7 +44,7 @@
         })
         .ToList();
 
-    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select sector", Selected = Model.Query.SectorId == Guid.Empty });
+    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All sectors", Selected = Model.Query.SectorId is null });
 
     var statusOptions = new List<GridSelectOption>
     {
@@ -141,6 +141,8 @@
         .WithPagination(Model.Pagination)
         .WithQueryOptions(queryOptions)
         .WithFilters(filters)
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Sector", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectorName)), "SectorName")
         .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
         .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
         .AddColumn("Active", item => new HtmlString(item.IsActive ? "<span class=\"badge text-bg-success\">Active</span>" : "<span class=\"badge text-bg-secondary\">Inactive</span>"), "IsActive")

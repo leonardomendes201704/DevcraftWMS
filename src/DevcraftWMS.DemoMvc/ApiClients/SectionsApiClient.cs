@@ -18,9 +18,11 @@ public sealed class SectionsApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<SectionListItemViewModel>>> ListAsync(SectionQuery query, CancellationToken cancellationToken)
     {
-        var basePath = $"/api/sectors/{query.SectorId}/sections";
+        var basePath = "/api/sections";
         var queryParams = new Dictionary<string, string?>
         {
+            ["warehouseId"] = query.WarehouseId?.ToString(),
+            ["sectorId"] = query.SectorId?.ToString(),
             ["pageNumber"] = query.PageNumber.ToString(),
             ["pageSize"] = query.PageSize.ToString(),
             ["orderBy"] = query.OrderBy,

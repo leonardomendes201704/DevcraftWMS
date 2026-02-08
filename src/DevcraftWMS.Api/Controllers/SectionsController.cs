@@ -52,7 +52,28 @@ public sealed class SectionsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListSectionsPagedQuery(sectorId, pageNumber, pageSize, orderBy, orderDir, code, name, isActive, includeInactive),
+            new ListSectionsPagedQuery(null, sectorId, pageNumber, pageSize, orderBy, orderDir, code, name, isActive, includeInactive),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("sections")]
+    public async Task<IActionResult> ListSectionsAll(
+        [FromQuery] Guid? warehouseId = null,
+        [FromQuery] Guid? sectorId = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string orderBy = "CreatedAtUtc",
+        [FromQuery] string orderDir = "desc",
+        [FromQuery] string? code = null,
+        [FromQuery] string? name = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ListSectionsPagedQuery(warehouseId, sectorId, pageNumber, pageSize, orderBy, orderDir, code, name, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);

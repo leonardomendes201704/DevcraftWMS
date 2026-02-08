@@ -4,7 +4,8 @@ using DevcraftWMS.Application.Common.Pagination;
 namespace DevcraftWMS.Application.Features.Sections.Queries.ListSectionsPaged;
 
 public sealed record ListSectionsPagedQuery(
-    Guid SectorId,
+    Guid? WarehouseId,
+    Guid? SectorId,
     int PageNumber,
     int PageSize,
     string OrderBy,

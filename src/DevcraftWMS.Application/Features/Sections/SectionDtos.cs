@@ -14,6 +14,9 @@ public sealed record SectionDto(
 public sealed record SectionListItemDto(
     Guid Id,
     Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     bool IsActive,

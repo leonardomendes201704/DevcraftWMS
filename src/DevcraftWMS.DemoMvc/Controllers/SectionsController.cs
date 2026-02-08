@@ -35,28 +35,11 @@ public sealed class SectionsController : Controller
             });
         }
 
-        var selectedWarehouseId = query.WarehouseId == Guid.Empty
-            ? Guid.Parse(warehouseOptions[0].Value!)
-            : query.WarehouseId;
+        var sectorOptions = query.WarehouseId.HasValue
+            ? await LoadSectorOptionsAsync(query.WarehouseId.Value, query.SectorId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var sectorOptions = await LoadSectorOptionsAsync(selectedWarehouseId, query.SectorId, cancellationToken);
-        if (sectorOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a sector before managing sections.";
-            return View(new SectionListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Query = query with { WarehouseId = selectedWarehouseId }
-            });
-        }
-
-        var selectedSectorId = query.SectorId == Guid.Empty
-            ? Guid.Parse(sectorOptions[0].Value!)
-            : query.SectorId;
-
-        var normalizedQuery = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId };
-        var result = await _sectionsClient.ListAsync(normalizedQuery, cancellationToken);
+        var result = await _sectionsClient.ListAsync(query, cancellationToken);
         if (!result.IsSuccess || result.Data is null)
         {
             TempData["Error"] = result.Error ?? "Failed to load sections.";
@@ -64,7 +47,7 @@ public sealed class SectionsController : Controller
             {
                 Warehouses = warehouseOptions,
                 Sectors = sectorOptions,
-                Query = normalizedQuery
+                Query = query
             });
         }
 
@@ -77,22 +60,22 @@ public sealed class SectionsController : Controller
             Controller = "Sections",
             Query = new Dictionary<string, string?>
             {
-                ["WarehouseId"] = normalizedQuery.WarehouseId.ToString(),
-                ["SectorId"] = normalizedQuery.SectorId.ToString(),
-                ["OrderBy"] = normalizedQuery.OrderBy,
-                ["OrderDir"] = normalizedQuery.OrderDir,
-                ["Code"] = normalizedQuery.Code,
-                ["Name"] = normalizedQuery.Name,
-                ["IsActive"] = normalizedQuery.IsActive?.ToString(),
-                ["IncludeInactive"] = normalizedQuery.IncludeInactive.ToString(),
-                ["PageSize"] = normalizedQuery.PageSize.ToString()
+                ["WarehouseId"] = query.WarehouseId?.ToString(),
+                ["SectorId"] = query.SectorId?.ToString(),
+                ["OrderBy"] = query.OrderBy,
+                ["OrderDir"] = query.OrderDir,
+                ["Code"] = query.Code,
+                ["Name"] = query.Name,
+                ["IsActive"] = query.IsActive?.ToString(),
+                ["IncludeInactive"] = query.IncludeInactive.ToString(),
+                ["PageSize"] = query.PageSize.ToString()
             }
         };
 
         var model = new SectionListPageViewModel
         {
             Items = result.Data.Items,
-            Query = normalizedQuery,
+            Query = query,
             Pagination = pagination,
             Warehouses = warehouseOptions,
             Sectors = sectorOptions

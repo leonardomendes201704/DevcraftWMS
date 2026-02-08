@@ -16,6 +16,7 @@ public sealed class ListSectionsPagedQueryHandler : MediatR.IRequestHandler<List
     public async Task<RequestResult<PagedResult<SectionListItemDto>>> Handle(ListSectionsPagedQuery request, CancellationToken cancellationToken)
     {
         var totalCount = await _sectionRepository.CountAsync(
+            request.WarehouseId,
             request.SectorId,
             request.Code,
             request.Name,
@@ -24,6 +25,7 @@ public sealed class ListSectionsPagedQueryHandler : MediatR.IRequestHandler<List
             cancellationToken);
 
         var items = await _sectionRepository.ListAsync(
+            request.WarehouseId,
             request.SectorId,
             request.PageNumber,
             request.PageSize,

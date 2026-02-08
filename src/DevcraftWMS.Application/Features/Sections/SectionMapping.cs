@@ -8,5 +8,14 @@ public static class SectionMapping
         => new(section.Id, section.SectorId, section.Code, section.Name, section.Description, section.IsActive, section.CreatedAtUtc);
 
     public static SectionListItemDto MapListItem(Section section)
-        => new(section.Id, section.SectorId, section.Code, section.Name, section.IsActive, section.CreatedAtUtc);
+        => new(
+            section.Id,
+            section.SectorId,
+            section.Sector?.Name ?? string.Empty,
+            section.Sector?.WarehouseId ?? Guid.Empty,
+            section.Sector?.Warehouse?.Name ?? string.Empty,
+            section.Code,
+            section.Name,
+            section.IsActive,
+            section.CreatedAtUtc);
 }

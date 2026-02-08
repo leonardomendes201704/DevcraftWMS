@@ -6,6 +6,7 @@
 - Added warehouse-to-sector cascading dropdown on Sections create/edit.
 - Added warehouse-to-sector cascading filter on Sections index.
 - Reset sector selection when warehouse changes on Sections filters.
+- Updated Sections index to list all warehouses/sectors by default and show Warehouse/Sector columns.
 
 ## 2026-02-06
 - 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.

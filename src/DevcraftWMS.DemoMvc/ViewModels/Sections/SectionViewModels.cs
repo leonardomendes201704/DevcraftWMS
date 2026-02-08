@@ -5,8 +5,8 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Sections;
 
 public sealed record SectionQuery(
-    Guid WarehouseId = default,
-    Guid SectorId = default,
+    Guid? WarehouseId = null,
+    Guid? SectorId = null,
     int PageNumber = 1,
     int PageSize = 20,
     string OrderBy = "CreatedAtUtc",
@@ -19,6 +19,9 @@ public sealed record SectionQuery(
 public sealed record SectionListItemViewModel(
     Guid Id,
     Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     bool IsActive,
@@ -62,7 +65,7 @@ public sealed class SectionListPageViewModel
 {
     public IReadOnlyList<SectionListItemViewModel> Items { get; init; } = Array.Empty<SectionListItemViewModel>();
     public PaginationViewModel Pagination { get; init; } = new();
-    public SectionQuery Query { get; init; } = new(Guid.Empty, Guid.Empty, 1, 20, "CreatedAtUtc", "desc", null, null, null, false);
+    public SectionQuery Query { get; init; } = new(null, null, 1, 20, "CreatedAtUtc", "desc", null, null, null, false);
     public IReadOnlyList<SelectListItem> Warehouses { get; init; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sectors { get; init; } = Array.Empty<SelectListItem>();
 }
