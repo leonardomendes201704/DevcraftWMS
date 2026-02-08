@@ -330,6 +330,14 @@
             sectionSelect.value = "";
             loadSections(target.value);
         });
+
+        if (warehouseSelect.value && sectorSelect.options.length <= 1) {
+            loadSectors(warehouseSelect.value);
+        }
+
+        if (sectorSelect.value && sectionSelect.options.length <= 1) {
+            loadSections(sectorSelect.value);
+        }
     };
 
     const attachStructureFilterCascade = () => {

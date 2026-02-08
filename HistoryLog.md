@@ -8,6 +8,7 @@
 - Reset sector selection when warehouse changes on Sections filters.
 - Updated Sections index to list all warehouses/sectors by default and show Warehouse/Sector columns.
 - Updated Structures index/create to list all by default and use warehouse/sector/section cascading selection with columns for Warehouse/Sector/Section.
+- Ensured Structures edit cascades reload options when preselected lists are empty.
 
 ## 2026-02-06
 - 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.
