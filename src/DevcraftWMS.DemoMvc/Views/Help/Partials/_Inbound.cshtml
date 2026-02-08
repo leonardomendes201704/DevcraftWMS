@@ -3,6 +3,64 @@
         <h2 class="h5">Inbound (Recebimento e Armazenagem)</h2>
         <p class="text-muted">Fluxo principal do recebimento ate o enderecamento final.</p>
 
+        <div class="alert alert-primary">
+            <h3 class="h6 mb-2">Passo a passo do zero (sistema vazio, login admin)</h3>
+            <p class="small mb-2">Use este roteiro quando o sistema ainda nao tem cadastros. Ajuste nomes de telas caso o menu esteja diferente.</p>
+            <ol class="small mb-3">
+                <li><strong>Cadastros base:</strong>
+                    <ul class="mb-0">
+                        <li><a href="/Customers" class="link-primary">/Customers</a> criar cliente.</li>
+                        <li><a href="/Warehouses" class="link-primary">/Warehouses</a> criar armazem (codigo, endereco, capacidades).</li>
+                        <li>Estrutura fisica: <a href="/Sectors" class="link-primary">/Sectors</a> > <a href="/Sections" class="link-primary">/Sections</a> > <a href="/Structures" class="link-primary">/Structures</a> > <a href="/Locations" class="link-primary">/Locations</a>.</li>
+                        <li><a href="/Uoms" class="link-primary">/Uoms</a> criar unidades de medida (UN, CX, PAL).</li>
+                        <li><a href="/Products" class="link-primary">/Products</a> criar produtos e definir Tracking Mode (lote/validade).</li>
+                        <li><a href="/Lots" class="link-primary">/Lots</a> criar lote (se aplicavel) ou deixar para o recebimento.</li>
+                    </ul>
+                </li>
+                <li><strong>Pre-recebimento (ASN):</strong>
+                    <ul class="mb-0">
+                        <li><a href="/Asns" class="link-primary">/Asns</a> criar ASN com cliente/armazem e itens.</li>
+                        <li>Informar quantidades e lote/validade se exigido.</li>
+                    </ul>
+                </li>
+                <li><strong>Converter ASN em Inbound Order:</strong>
+                    <ul class="mb-0">
+                        <li>Na ASN, executar Submit/Approve/Convert (conforme status).</li>
+                        <li>Acompanhar em <a href="/InboundOrders" class="link-primary">/InboundOrders</a>.</li>
+                    </ul>
+                </li>
+                <li><strong>Recebimento fisico:</strong>
+                    <ul class="mb-0">
+                        <li><a href="/Receipts" class="link-primary">/Receipts</a> criar recebimento vinculado a Inbound Order.</li>
+                        <li>Iniciar recebimento, informar quantidades e lote/validade.</li>
+                        <li>Finalizar recebimento quando concluido.</li>
+                    </ul>
+                </li>
+                <li><strong>Qualidade (se aplicavel):</strong>
+                    <ul class="mb-0">
+                        <li><a href="/QualityInspections" class="link-primary">/QualityInspections</a> aprovar/rejeitar itens.</li>
+                        <li>Itens rejeitados ficam bloqueados.</li>
+                    </ul>
+                </li>
+                <li><strong>Enderecamento (Putaway):</strong>
+                    <ul class="mb-0">
+                        <li><a href="/PutawayTasks" class="link-primary">/PutawayTasks</a> selecionar tarefas.</li>
+                        <li>Confirmar endereco de destino (Locations) e finalizar.</li>
+                    </ul>
+                </li>
+                <li><strong>Conferencia final:</strong>
+                    <ul class="mb-0">
+                        <li><a href="/InventoryBalances" class="link-primary">/InventoryBalances</a> validar saldo por endereco.</li>
+                        <li>Confirmar disponibilidade para expedicao.</li>
+                    </ul>
+                </li>
+            </ol>
+            <div class="small">
+                <strong>Checklist rapido:</strong>
+                Cliente ✅ Armazem ✅ Estrutura fisica ✅ UoM/Produtos ✅ ASN ✅ Recebimento ✅ Putaway ✅ Saldo ✅
+            </div>
+        </div>
+
         <div class="accordion" id="inboundAccordion">
             <div class="accordion-item">
                 <h2 class="accordion-header" id="inbound-asn">

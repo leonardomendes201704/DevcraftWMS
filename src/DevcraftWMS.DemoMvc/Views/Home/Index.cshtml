@@ -3,15 +3,15 @@
 @model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-    ViewData["Subtitle"] = "Overview of API health and recent activity";
+    ViewData["Subtitle"] = "Visao geral da saude da API e atividade recente";
 
     var statusCard = new StatCardViewModel
     {
-        Title = "API Status",
-        Value = Model.ApiHealthy ? "Healthy" : "Unavailable",
-        BadgeText = Model.ApiHealthy ? "Up" : "Down",
+        Title = "Status da API",
+        Value = Model.ApiHealthy ? "Saudavel" : "Indisponivel",
+        BadgeText = Model.ApiHealthy ? "Online" : "Offline",
         BadgeCssClass = Model.ApiHealthy ? "text-bg-success" : "text-bg-danger",
-        ActionText = "Settings",
+        ActionText = "Configuracoes",
         ActionUrl = Url.Action("Index", "Settings"),
         IconClass = "bi bi-shield-check",
         IconCssClass = Model.ApiHealthy ? "text-bg-success-subtle text-success" : "text-bg-danger-subtle text-danger"
@@ -19,12 +19,12 @@
 
     var warehousesCard = new StatCardViewModel
     {
-        Title = "Active Warehouses",
+        Title = "Armazens ativos",
         Value = Model.ActiveWarehouses.ToString("N0"),
-        Subtitle = "Operational locations",
-        BadgeText = Model.ActiveWarehouses > 0 ? "Active" : "None",
+        Subtitle = "Locais operacionais",
+        BadgeText = Model.ActiveWarehouses > 0 ? "Ativos" : "Nenhum",
         BadgeCssClass = Model.ActiveWarehouses > 0 ? "text-bg-primary" : "text-bg-secondary",
-        ActionText = "Manage",
+        ActionText = "Gerenciar",
         ActionUrl = Url.Action("Index", "Warehouses"),
         IconClass = "bi bi-box-seam",
         IconCssClass = "text-bg-light border"
@@ -36,12 +36,12 @@
     var expiringFrom = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
     var expiringLotsCard = new StatCardViewModel
     {
-        Title = "Expiring Lots",
+        Title = "Lotes a vencer",
         Value = expiringLotsCount.ToString("N0"),
-        Subtitle = $"Next {expiringDays} days",
-        BadgeText = expiringLotsCount > 0 ? "Attention" : "Stable",
+        Subtitle = $"Proximos {expiringDays} dias",
+        BadgeText = expiringLotsCount > 0 ? "Atencao" : "Estavel",
         BadgeCssClass = expiringLotsCount > 0 ? "text-bg-warning" : "text-bg-success",
-        ActionText = "View lots",
+        ActionText = "Ver lotes",
         ActionUrl = Url.Action("Index", "Lots", new { ExpirationFrom = expiringFrom, ExpirationTo = expiringTo }),
         IconClass = "bi bi-calendar2-week",
         IconCssClass = expiringLotsCount > 0 ? "text-bg-warning-subtle text-warning" : "text-bg-success-subtle text-success"
@@ -62,10 +62,10 @@
 
     var inboundArrivalsCard = new StatCardViewModel
     {
-        Title = "Gate Arrivals",
+        Title = "Chegadas na portaria",
         Value = inboundArrivals.ToString("N0"),
-        Subtitle = $"Last {inboundWindowDays} days",
-        BadgeText = inboundArrivals > 0 ? "Inbound" : "None",
+        Subtitle = $"Ultimos {inboundWindowDays} dias",
+        BadgeText = inboundArrivals > 0 ? "Entrada" : "Nenhum",
         BadgeCssClass = inboundArrivals > 0 ? "text-bg-primary" : "text-bg-secondary",
         ActionText = "Portaria",
         ActionUrl = Url.Action("Index", "GateCheckins"),
@@ -75,12 +75,12 @@
 
     var inboundDockAssignedCard = new StatCardViewModel
     {
-        Title = "Dock Assigned",
+        Title = "Doca atribuida",
         Value = inboundDockAssigned.ToString("N0"),
-        Subtitle = $"Last {inboundWindowDays} days",
-        BadgeText = inboundDockAssigned > 0 ? "At Dock" : "None",
+        Subtitle = $"Ultimos {inboundWindowDays} dias",
+        BadgeText = inboundDockAssigned > 0 ? "Na doca" : "Nenhum",
         BadgeCssClass = inboundDockAssigned > 0 ? "text-bg-info" : "text-bg-secondary",
-        ActionText = "Queue",
+        ActionText = "Fila",
         ActionUrl = Url.Action("Queue", "GateCheckins"),
         IconClass = "bi bi-truck-front",
         IconCssClass = inboundDockAssigned > 0 ? "text-bg-info-subtle text-info" : "text-bg-light border"
@@ -88,12 +88,12 @@
 
     var inboundReceiptsCard = new StatCardViewModel
     {
-        Title = "Receipts Completed",
+        Title = "Recebimentos concluidos",
         Value = inboundReceiptsCompleted.ToString("N0"),
-        Subtitle = $"Last {inboundWindowDays} days",
-        BadgeText = inboundReceiptsCompleted > 0 ? "Completed" : "None",
+        Subtitle = $"Ultimos {inboundWindowDays} dias",
+        BadgeText = inboundReceiptsCompleted > 0 ? "Concluidos" : "Nenhum",
         BadgeCssClass = inboundReceiptsCompleted > 0 ? "text-bg-success" : "text-bg-secondary",
-        ActionText = "Receipts",
+        ActionText = "Recebimentos",
         ActionUrl = Url.Action("Index", "Receipts"),
         IconClass = "bi bi-receipt",
         IconCssClass = inboundReceiptsCompleted > 0 ? "text-bg-success-subtle text-success" : "text-bg-light border"
@@ -101,12 +101,12 @@
 
     var inboundPutawayCard = new StatCardViewModel
     {
-        Title = "Putaway Completed",
+        Title = "Enderecamentos concluidos",
         Value = inboundPutawayCompleted.ToString("N0"),
-        Subtitle = $"Last {inboundWindowDays} days",
-        BadgeText = inboundPutawayCompleted > 0 ? "Stored" : "None",
+        Subtitle = $"Ultimos {inboundWindowDays} dias",
+        BadgeText = inboundPutawayCompleted > 0 ? "Armazenado" : "Nenhum",
         BadgeCssClass = inboundPutawayCompleted > 0 ? "text-bg-warning" : "text-bg-secondary",
-        ActionText = "Putaway",
+        ActionText = "Enderecamento",
         ActionUrl = Url.Action("Index", "PutawayTasks"),
         IconClass = "bi bi-box-arrow-in-down",
         IconCssClass = inboundPutawayCompleted > 0 ? "text-bg-warning-subtle text-warning" : "text-bg-light border"
@@ -114,12 +114,12 @@
 
     var outboundPickingCard = new StatCardViewModel
     {
-        Title = "Picking Completed",
+        Title = "Separacoes concluidas",
         Value = outboundPickingCompleted.ToString("N0"),
-        Subtitle = $"Last {outboundWindowDays} days",
-        BadgeText = outboundPickingCompleted > 0 ? "Done" : "None",
+        Subtitle = $"Ultimos {outboundWindowDays} dias",
+        BadgeText = outboundPickingCompleted > 0 ? "Concluido" : "Nenhum",
         BadgeCssClass = outboundPickingCompleted > 0 ? "text-bg-primary" : "text-bg-secondary",
-        ActionText = "Picking",
+        ActionText = "Separacao",
         ActionUrl = Url.Action("Index", "PickingTasks"),
         IconClass = "bi bi-hand-index-thumb",
         IconCssClass = outboundPickingCompleted > 0 ? "text-bg-primary-subtle text-primary" : "text-bg-light border"
@@ -127,12 +127,12 @@
 
     var outboundChecksCard = new StatCardViewModel
     {
-        Title = "Checks Completed",
+        Title = "Conferencias concluidas",
         Value = outboundChecksCompleted.ToString("N0"),
-        Subtitle = $"Last {outboundWindowDays} days",
-        BadgeText = outboundChecksCompleted > 0 ? "Checked" : "None",
+        Subtitle = $"Ultimos {outboundWindowDays} dias",
+        BadgeText = outboundChecksCompleted > 0 ? "Conferido" : "Nenhum",
         BadgeCssClass = outboundChecksCompleted > 0 ? "text-bg-info" : "text-bg-secondary",
-        ActionText = "Checks",
+        ActionText = "Conferencias",
         ActionUrl = Url.Action("Index", "OutboundChecks"),
         IconClass = "bi bi-clipboard-check",
         IconCssClass = outboundChecksCompleted > 0 ? "text-bg-info-subtle text-info" : "text-bg-light border"
@@ -140,12 +140,12 @@
 
     var outboundShipmentsCard = new StatCardViewModel
     {
-        Title = "Shipments Completed",
+        Title = "Expedicoes concluidas",
         Value = outboundShipmentsCompleted.ToString("N0"),
-        Subtitle = $"Last {outboundWindowDays} days",
-        BadgeText = outboundShipmentsCompleted > 0 ? "Shipped" : "None",
+        Subtitle = $"Ultimos {outboundWindowDays} dias",
+        BadgeText = outboundShipmentsCompleted > 0 ? "Expedido" : "Nenhum",
         BadgeCssClass = outboundShipmentsCompleted > 0 ? "text-bg-success" : "text-bg-secondary",
-        ActionText = "Shipping",
+        ActionText = "Expedicao",
         ActionUrl = Url.Action("Index", "OutboundShipping"),
         IconClass = "bi bi-truck-flatbed",
         IconCssClass = outboundShipmentsCompleted > 0 ? "text-bg-success-subtle text-success" : "text-bg-light border"
@@ -153,21 +153,21 @@
 
     var quickLinks = new QuickLinksViewModel
     {
-        Title = "Quick Links",
+        Title = "Atalhos",
         Links = new List<QuickLinkItem>
         {
-            new() { Text = "Customers", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
-            new() { Text = "Products", Url = Url.Action("Index", "Products") ?? "#", IconClass = "bi bi-upc" },
-            new() { Text = "Lots", Url = Url.Action("Index", "Lots") ?? "#", IconClass = "bi bi-collection" },
-            new() { Text = "Receipts", Url = Url.Action("Index", "Receipts") ?? "#", IconClass = "bi bi-receipt" },
-            new() { Text = "UoM", Url = Url.Action("Index", "Uoms") ?? "#", IconClass = "bi bi-rulers" },
-            new() { Text = "Warehouses", Url = Url.Action("Index", "Warehouses") ?? "#", IconClass = "bi bi-box-seam" },
-            new() { Text = "Sectors", Url = Url.Action("Index", "Sectors") ?? "#", IconClass = "bi bi-grid-3x3-gap" },
-            new() { Text = "Sections", Url = Url.Action("Index", "Sections") ?? "#", IconClass = "bi bi-layout-text-sidebar" },
-            new() { Text = "Aisles", Url = Url.Action("Index", "Aisles") ?? "#", IconClass = "bi bi-arrow-up-down" },
-            new() { Text = "Structures", Url = Url.Action("Index", "Structures") ?? "#", IconClass = "bi bi-stack" },
-            new() { Text = "Locations", Url = Url.Action("Index", "Locations") ?? "#", IconClass = "bi bi-geo-alt" },
-            new() { Text = "Email Test", Url = Url.Action("Index", "Email") ?? "#", IconClass = "bi bi-envelope" },
+            new() { Text = "Clientes", Url = Url.Action("Index", "Customers") ?? "#", IconClass = "bi bi-people" },
+            new() { Text = "Produtos", Url = Url.Action("Index", "Products") ?? "#", IconClass = "bi bi-upc" },
+            new() { Text = "Lotes", Url = Url.Action("Index", "Lots") ?? "#", IconClass = "bi bi-collection" },
+            new() { Text = "Recebimentos", Url = Url.Action("Index", "Receipts") ?? "#", IconClass = "bi bi-receipt" },
+            new() { Text = "Unidades de medida", Url = Url.Action("Index", "Uoms") ?? "#", IconClass = "bi bi-rulers" },
+            new() { Text = "Armazens", Url = Url.Action("Index", "Warehouses") ?? "#", IconClass = "bi bi-box-seam" },
+            new() { Text = "Setores", Url = Url.Action("Index", "Sectors") ?? "#", IconClass = "bi bi-grid-3x3-gap" },
+            new() { Text = "Secoes", Url = Url.Action("Index", "Sections") ?? "#", IconClass = "bi bi-layout-text-sidebar" },
+            new() { Text = "Corredores", Url = Url.Action("Index", "Aisles") ?? "#", IconClass = "bi bi-arrow-up-down" },
+            new() { Text = "Estruturas", Url = Url.Action("Index", "Structures") ?? "#", IconClass = "bi bi-stack" },
+            new() { Text = "Enderecos", Url = Url.Action("Index", "Locations") ?? "#", IconClass = "bi bi-geo-alt" },
+            new() { Text = "Teste de email", Url = Url.Action("Index", "Email") ?? "#", IconClass = "bi bi-envelope" },
             new() { Text = "Logs", Url = Url.Action("Requests", "Logs") ?? "#", IconClass = "bi bi-activity" }
         }
     };
@@ -190,16 +190,16 @@
     };
 
     var requestGrid = new GridBuilder<RequestLogDto>()
-        .WithTitle("Recent Requests")
-        .WithSubtitle(Model.RecentRequests.Count == 0 ? "No request logs yet." : $"Total: {Model.RecentRequests.Count}")
+        .WithTitle("Requisicoes recentes")
+        .WithSubtitle(Model.RecentRequests.Count == 0 ? "Ainda nao ha requisicoes." : $"Total: {Model.RecentRequests.Count}")
         .WithItems(Model.RecentRequests)
         .WithPagination(requestPagination)
         .WithQueryOptions(requestQueryOptions)
-        .WithEmptyMessage("No request logs yet.")
+        .WithEmptyMessage("Ainda nao ha requisicoes.")
         .WithTableCssClass("table table-sm align-middle mb-0 grid-table")
-        .AddColumn("Time", item => new HtmlString(item.StartedAtUtc.ToLocalTime().ToString("g")))
-        .AddColumn("Method", item => new HtmlString(HtmlEncoder.Default.Encode(item.Method)))
-        .AddColumn("Path", item => new HtmlString(HtmlEncoder.Default.Encode(item.Path)))
+        .AddColumn("Hora", item => new HtmlString(item.StartedAtUtc.ToLocalTime().ToString("g")))
+        .AddColumn("Metodo", item => new HtmlString(HtmlEncoder.Default.Encode(item.Method)))
+        .AddColumn("Caminho", item => new HtmlString(HtmlEncoder.Default.Encode(item.Path)))
         .AddColumn("Status", item => new HtmlString($"<span class=\"badge text-bg-light border\">{item.StatusCode}</span>"))
         .Build();
 
@@ -221,16 +221,16 @@
     };
 
     var errorGrid = new GridBuilder<ErrorLogDto>()
-        .WithTitle("Recent Errors")
-        .WithSubtitle(Model.RecentErrors.Count == 0 ? "No errors logged." : $"Total: {Model.RecentErrors.Count}")
+        .WithTitle("Erros recentes")
+        .WithSubtitle(Model.RecentErrors.Count == 0 ? "Ainda nao ha erros." : $"Total: {Model.RecentErrors.Count}")
         .WithItems(Model.RecentErrors)
         .WithPagination(errorPagination)
         .WithQueryOptions(errorQueryOptions)
-        .WithEmptyMessage("No errors logged.")
+        .WithEmptyMessage("Ainda nao ha erros.")
         .WithTableCssClass("table table-sm align-middle mb-0 grid-table")
-        .AddColumn("Time", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")))
-        .AddColumn("Type", item => new HtmlString(HtmlEncoder.Default.Encode(item.ExceptionType)))
-        .AddColumn("Message", item =>
+        .AddColumn("Hora", item => new HtmlString(item.CreatedAtUtc.ToLocalTime().ToString("g")))
+        .AddColumn("Tipo", item => new HtmlString(HtmlEncoder.Default.Encode(item.ExceptionType)))
+        .AddColumn("Mensagem", item =>
         {
             var message = HtmlEncoder.Default.Encode(item.Message);
             return new HtmlString($"<span class=\"text-truncate d-inline-block\" style=\"max-width: 240px;\">{message}</span>");
@@ -240,14 +240,14 @@
 
 <div class="d-flex justify-content-end mb-3">
     <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#dashboardHelp">
-        <i class="bi bi-question-circle me-1"></i>Help
+        <i class="bi bi-question-circle me-1"></i>Ajuda
     </button>
 </div>
 
 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
     <div>
-        <h5 class="mb-1">System & Inventory</h5>
-        <div class="text-muted small">Health, core resources, and expiring lots.</div>
+        <h5 class="mb-1">Sistema e estoque</h5>
+        <div class="text-muted small">Saude, recursos essenciais e lotes a vencer.</div>
     </div>
 </div>
 
@@ -265,20 +265,20 @@
 
 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
     <div>
-        <h5 class="mb-1">Inbound KPIs</h5>
-        <div class="text-muted small">Track inbound flow performance for the selected window.</div>
+        <h5 class="mb-1">KPIs de entrada</h5>
+        <div class="text-muted small">Acompanhe o desempenho do fluxo de entrada no periodo selecionado.</div>
     </div>
     <form method="get" class="d-flex align-items-center gap-2">
         <div class="input-group input-group-sm">
             <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
-            <select class="form-select" name="inboundDays" aria-label="Inbound window days">
-                <option value="7" selected="@(inboundWindowDays == 7)">Last 7 days</option>
-                <option value="14" selected="@(inboundWindowDays == 14)">Last 14 days</option>
-                <option value="30" selected="@(inboundWindowDays == 30)">Last 30 days</option>
-                <option value="90" selected="@(inboundWindowDays == 90)">Last 90 days</option>
+            <select class="form-select" name="inboundDays" aria-label="Dias do periodo de entrada">
+                <option value="7" selected="@(inboundWindowDays == 7)">Ultimos 7 dias</option>
+                <option value="14" selected="@(inboundWindowDays == 14)">Ultimos 14 dias</option>
+                <option value="30" selected="@(inboundWindowDays == 30)">Ultimos 30 dias</option>
+                <option value="90" selected="@(inboundWindowDays == 90)">Ultimos 90 dias</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+        <button type="submit" class="btn btn-outline-primary btn-sm">Aplicar</button>
     </form>
 </div>
 
@@ -299,20 +299,20 @@
 
 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
     <div>
-        <h5 class="mb-1">Outbound KPIs</h5>
-        <div class="text-muted small">Track outbound flow performance for the selected window.</div>
+        <h5 class="mb-1">KPIs de saida</h5>
+        <div class="text-muted small">Acompanhe o desempenho do fluxo de saida no periodo selecionado.</div>
     </div>
     <form method="get" class="d-flex align-items-center gap-2">
         <div class="input-group input-group-sm">
             <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
-            <select class="form-select" name="outboundDays" aria-label="Outbound window days">
-                <option value="7" selected="@(outboundWindowDays == 7)">Last 7 days</option>
-                <option value="14" selected="@(outboundWindowDays == 14)">Last 14 days</option>
-                <option value="30" selected="@(outboundWindowDays == 30)">Last 30 days</option>
-                <option value="90" selected="@(outboundWindowDays == 90)">Last 90 days</option>
+            <select class="form-select" name="outboundDays" aria-label="Dias do periodo de saida">
+                <option value="7" selected="@(outboundWindowDays == 7)">Ultimos 7 dias</option>
+                <option value="14" selected="@(outboundWindowDays == 14)">Ultimos 14 dias</option>
+                <option value="30" selected="@(outboundWindowDays == 30)">Ultimos 30 dias</option>
+                <option value="90" selected="@(outboundWindowDays == 90)">Ultimos 90 dias</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+        <button type="submit" class="btn btn-outline-primary btn-sm">Aplicar</button>
     </form>
 </div>
 
@@ -330,8 +330,8 @@
 
 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
     <div>
-        <h5 class="mb-1">Operations & Shortcuts</h5>
-        <div class="text-muted small">Access core screens and monitor recent API activity.</div>
+        <h5 class="mb-1">Operacoes e atalhos</h5>
+        <div class="text-muted small">Acesse telas principais e monitore a atividade recente da API.</div>
     </div>
 </div>
 
@@ -353,19 +353,19 @@
     <div class="col-lg-4">
         <div class="card">
             <div class="card-body">
-                <div class="text-muted small">UI Showcase</div>
-                <p class="mt-2">Explore reusable components for forms, tables, and empty states.</p>
-                <a class="btn btn-primary btn-sm" asp-controller="Ui" asp-action="Showcase">Open UI Showcase</a>
+                <div class="text-muted small">Vitrine de UI</div>
+                <p class="mt-2">Explore componentes reutilizaveis para formularios, tabelas e estados vazios.</p>
+                <a class="btn btn-primary btn-sm" asp-controller="Ui" asp-action="Showcase">Abrir vitrine de UI</a>
             </div>
         </div>
         <div class="card mt-3">
             <div class="card-body">
-                <div class="text-muted small">Telemetry Test</div>
-                <p class="mt-2">Force a UI exception to validate frontend log capture.</p>
+                <div class="text-muted small">Teste de telemetria</div>
+                <p class="mt-2">Forca uma excecao de UI para validar a captura de logs do frontend.</p>
                 <form asp-controller="Home" asp-action="Throw" method="post">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-outline-danger btn-sm">
-                        Force UI Error
+                        Forcar erro de UI
                     </button>
                 </form>
             </div>
