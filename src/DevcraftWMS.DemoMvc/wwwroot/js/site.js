@@ -225,15 +225,229 @@
         });
     };
 
+    const attachStructureWarehouseCascade = () => {
+        const warehouseSelect = document.querySelector("[data-structure-warehouse]");
+        const sectorSelect = document.querySelector("[data-structure-sector]");
+        const sectionSelect = document.querySelector("[data-structure-section]");
+
+        if (!(warehouseSelect instanceof HTMLSelectElement)
+            || !(sectorSelect instanceof HTMLSelectElement)
+            || !(sectionSelect instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const buildOption = (value, text, selected) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = text;
+            if (selected) {
+                option.selected = true;
+            }
+            return option;
+        };
+
+        const resetSectionSelect = (placeholder) => {
+            sectionSelect.innerHTML = "";
+            sectionSelect.append(buildOption("", placeholder, true));
+        };
+
+        const loadSectors = async (warehouseId) => {
+            sectorSelect.innerHTML = "";
+            sectorSelect.append(buildOption("", "Loading...", true));
+            sectorSelect.disabled = true;
+            resetSectionSelect("Select section");
+
+            if (!warehouseId) {
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", "Select sector", true));
+                sectorSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Structures/SectorOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sectors.");
+                }
+
+                const data = await response.json();
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", data.length ? "Select sector" : "No sectors found", true));
+                data.forEach(item => {
+                    sectorSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", "Failed to load sectors", true));
+            } finally {
+                sectorSelect.disabled = false;
+            }
+        };
+
+        const loadSections = async (sectorId) => {
+            resetSectionSelect("Loading...");
+            sectionSelect.disabled = true;
+
+            if (!sectorId) {
+                resetSectionSelect("Select section");
+                sectionSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Structures/SectionOptions?sectorId=${encodeURIComponent(sectorId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sections.");
+                }
+
+                const data = await response.json();
+                resetSectionSelect(data.length ? "Select section" : "No sections found");
+                data.forEach(item => {
+                    sectionSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSectionSelect("Failed to load sections");
+            } finally {
+                sectionSelect.disabled = false;
+            }
+        };
+
+        warehouseSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectorSelect.value = "";
+            resetSectionSelect("Select section");
+            loadSectors(target.value);
+        });
+
+        sectorSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectionSelect.value = "";
+            loadSections(target.value);
+        });
+    };
+
+    const attachStructureFilterCascade = () => {
+        const warehouseSelect = document.querySelector(".js-structure-warehouse-filter");
+        const sectorSelect = document.querySelector(".js-structure-sector-filter");
+        const sectionSelect = document.querySelector(".js-structure-section-filter");
+
+        if (!(warehouseSelect instanceof HTMLSelectElement)
+            || !(sectorSelect instanceof HTMLSelectElement)
+            || !(sectionSelect instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const buildOption = (value, text, selected) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = text;
+            if (selected) {
+                option.selected = true;
+            }
+            return option;
+        };
+
+        const resetSelect = (select, placeholder) => {
+            select.innerHTML = "";
+            select.append(buildOption("", placeholder, true));
+        };
+
+        const loadSectors = async (warehouseId) => {
+            resetSelect(sectorSelect, "Loading...");
+            resetSelect(sectionSelect, "All sections");
+            sectorSelect.disabled = true;
+
+            if (!warehouseId) {
+                resetSelect(sectorSelect, "All sectors");
+                sectorSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Structures/SectorOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sectors.");
+                }
+
+                const data = await response.json();
+                resetSelect(sectorSelect, data.length ? "All sectors" : "No sectors found");
+                data.forEach(item => {
+                    sectorSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectorSelect, "Failed to load sectors");
+            } finally {
+                sectorSelect.disabled = false;
+            }
+        };
+
+        const loadSections = async (sectorId) => {
+            resetSelect(sectionSelect, "Loading...");
+            sectionSelect.disabled = true;
+
+            if (!sectorId) {
+                resetSelect(sectionSelect, "All sections");
+                sectionSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Structures/SectionOptions?sectorId=${encodeURIComponent(sectorId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sections.");
+                }
+
+                const data = await response.json();
+                resetSelect(sectionSelect, data.length ? "All sections" : "No sections found");
+                data.forEach(item => {
+                    sectionSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                resetSelect(sectionSelect, "Failed to load sections");
+            } finally {
+                sectionSelect.disabled = false;
+            }
+        };
+
+        warehouseSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectorSelect.value = "";
+            sectionSelect.value = "";
+            loadSectors(target.value);
+        });
+
+        sectorSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            sectionSelect.value = "";
+            loadSections(target.value);
+        });
+    };
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             attachIndexHeaderActions();
             attachSectionWarehouseCascade();
             attachSectionFilterCascade();
+            attachStructureWarehouseCascade();
+            attachStructureFilterCascade();
         });
     } else {
         attachIndexHeaderActions();
         attachSectionWarehouseCascade();
         attachSectionFilterCascade();
+        attachStructureWarehouseCascade();
+        attachStructureFilterCascade();
     }
 })();

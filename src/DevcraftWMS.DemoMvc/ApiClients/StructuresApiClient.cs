@@ -19,9 +19,12 @@ public sealed class StructuresApiClient : ApiClientBase
 
     public Task<ApiResult<PagedResultDto<StructureListItemViewModel>>> ListAsync(StructureQuery query, CancellationToken cancellationToken)
     {
-        var basePath = $"/api/sections/{query.SectionId}/structures";
+        var basePath = "/api/structures";
         var queryParams = new Dictionary<string, string?>
         {
+            ["warehouseId"] = query.WarehouseId?.ToString(),
+            ["sectorId"] = query.SectorId?.ToString(),
+            ["sectionId"] = query.SectionId?.ToString(),
             ["pageNumber"] = query.PageNumber.ToString(),
             ["pageSize"] = query.PageSize.ToString(),
             ["orderBy"] = query.OrderBy,
@@ -42,6 +45,9 @@ public sealed class StructuresApiClient : ApiClientBase
         var basePath = "/api/structures";
         var queryParams = new Dictionary<string, string?>
         {
+            ["warehouseId"] = query.WarehouseId?.ToString(),
+            ["sectorId"] = query.SectorId?.ToString(),
+            ["sectionId"] = query.SectionId?.ToString(),
             ["pageNumber"] = query.PageNumber.ToString(),
             ["pageSize"] = query.PageSize.ToString(),
             ["orderBy"] = query.OrderBy,

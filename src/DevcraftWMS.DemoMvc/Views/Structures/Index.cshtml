@@ -15,9 +15,9 @@
         PageSize = Model.Query.PageSize,
         Query = new Dictionary<string, string?>
         {
-            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
-            ["SectorId"] = Model.Query.SectorId == Guid.Empty ? null : Model.Query.SectorId.ToString(),
-            ["SectionId"] = Model.Query.SectionId == Guid.Empty ? null : Model.Query.SectionId.ToString(),
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
+            ["SectorId"] = Model.Query.SectorId?.ToString(),
+            ["SectionId"] = Model.Query.SectionId?.ToString(),
             ["Code"] = Model.Query.Code,
             ["Name"] = Model.Query.Name,
             ["StructureType"] = Model.Query.StructureType?.ToString(),
@@ -36,7 +36,7 @@
         })
         .ToList();
 
-    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All warehouses", Selected = Model.Query.WarehouseId is null });
 
     var sectorOptions = Model.Sectors
         .Select(option => new GridSelectOption
@@ -47,7 +47,7 @@
         })
         .ToList();
 
-    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select sector", Selected = Model.Query.SectorId == Guid.Empty });
+    sectorOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All sectors", Selected = Model.Query.SectorId is null });
 
     var sectionOptions = Model.Sections
         .Select(option => new GridSelectOption
@@ -58,7 +58,7 @@
         })
         .ToList();
 
-    sectionOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select section", Selected = Model.Query.SectionId == Guid.Empty });
+    sectionOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All sections", Selected = Model.Query.SectionId is null });
 
     var typeOptions = Enum.GetValues<StructureType>()
         .Select(t => new GridSelectOption
@@ -91,21 +91,24 @@
                 Label = "Warehouse",
                 Name = "WarehouseId",
                 Type = GridFilterType.Select,
-                Options = warehouseOptions
+                Options = warehouseOptions,
+                CssClass = "js-structure-warehouse-filter"
             },
             new()
             {
                 Label = "Sector",
                 Name = "SectorId",
                 Type = GridFilterType.Select,
-                Options = sectorOptions
+                Options = sectorOptions,
+                CssClass = "js-structure-sector-filter"
             },
             new()
             {
                 Label = "Section",
                 Name = "SectionId",
                 Type = GridFilterType.Select,
-                Options = sectionOptions
+                Options = sectionOptions,
+                CssClass = "js-structure-section-filter"
             },
             new()
             {
@@ -178,6 +181,9 @@
         .WithPagination(Model.Pagination)
         .WithQueryOptions(queryOptions)
         .WithFilters(filters)
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Sector", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectorName)), "SectorName")
+        .AddColumn("Section", item => new HtmlString(HtmlEncoder.Default.Encode(item.SectionName)), "SectionName")
         .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
         .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
         .AddColumn("Type", item => new HtmlString(item.StructureType.ToString()), "StructureType")

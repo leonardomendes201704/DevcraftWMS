@@ -12,7 +12,9 @@ public interface IStructureRepository
     Task<Structure?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Structure?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
-        Guid sectionId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
@@ -20,6 +22,9 @@ public interface IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task<int> CountForCustomerAsync(
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
@@ -27,7 +32,9 @@ public interface IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Structure>> ListAsync(
-        Guid sectionId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -39,6 +46,9 @@ public interface IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Structure>> ListForCustomerAsync(
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         int pageNumber,
         int pageSize,
         string orderBy,

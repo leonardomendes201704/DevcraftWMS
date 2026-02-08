@@ -6,9 +6,9 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Structures;
 
 public sealed record StructureQuery(
-    Guid WarehouseId = default,
-    Guid SectorId = default,
-    Guid SectionId = default,
+    Guid? WarehouseId = null,
+    Guid? SectorId = null,
+    Guid? SectionId = null,
     int PageNumber = 1,
     int PageSize = 20,
     string OrderBy = "CreatedAtUtc",
@@ -22,6 +22,11 @@ public sealed record StructureQuery(
 public sealed record StructureListItemViewModel(
     Guid Id,
     Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     StructureType StructureType,
@@ -42,6 +47,12 @@ public sealed record StructureDetailViewModel(
 public sealed class StructureFormViewModel
 {
     public Guid? Id { get; set; }
+
+    [Required]
+    public Guid WarehouseId { get; set; }
+
+    [Required]
+    public Guid SectorId { get; set; }
 
     [Required]
     public Guid SectionId { get; set; }
@@ -68,7 +79,7 @@ public sealed class StructureListPageViewModel
 {
     public IReadOnlyList<StructureListItemViewModel> Items { get; init; } = Array.Empty<StructureListItemViewModel>();
     public PaginationViewModel Pagination { get; init; } = new();
-    public StructureQuery Query { get; init; } = new(Guid.Empty, Guid.Empty, Guid.Empty, 1, 20, "CreatedAtUtc", "desc", null, null, null, null, false);
+    public StructureQuery Query { get; init; } = new(null, null, null, 1, 20, "CreatedAtUtc", "desc", null, null, null, null, false);
     public IReadOnlyList<SelectListItem> Warehouses { get; init; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sectors { get; init; } = Array.Empty<SelectListItem>();
     public IReadOnlyList<SelectListItem> Sections { get; init; } = Array.Empty<SelectListItem>();

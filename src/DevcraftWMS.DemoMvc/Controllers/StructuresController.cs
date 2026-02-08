@@ -42,45 +42,15 @@ public sealed class StructuresController : Controller
             });
         }
 
-        var selectedWarehouseId = query.WarehouseId == Guid.Empty
-            ? Guid.Parse(warehouseOptions[0].Value!)
-            : query.WarehouseId;
+        var sectorOptions = query.WarehouseId.HasValue
+            ? await LoadSectorOptionsAsync(query.WarehouseId.Value, query.SectorId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var sectorOptions = await LoadSectorOptionsAsync(selectedWarehouseId, query.SectorId, cancellationToken);
-        if (sectorOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a sector before managing structures.";
-            return View(new StructureListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Query = query with { WarehouseId = selectedWarehouseId }
-            });
-        }
+        var sectionOptions = query.SectorId.HasValue
+            ? await LoadSectionOptionsAsync(query.SectorId.Value, query.SectionId, cancellationToken)
+            : Array.Empty<SelectListItem>();
 
-        var selectedSectorId = query.SectorId == Guid.Empty
-            ? Guid.Parse(sectorOptions[0].Value!)
-            : query.SectorId;
-
-        var sectionOptions = await LoadSectionOptionsAsync(selectedSectorId, query.SectionId, cancellationToken);
-        if (sectionOptions.Count == 0)
-        {
-            TempData["Warning"] = "Create a section before managing structures.";
-            return View(new StructureListPageViewModel
-            {
-                Warehouses = warehouseOptions,
-                Sectors = sectorOptions,
-                Sections = sectionOptions,
-                Query = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId }
-            });
-        }
-
-        var selectedSectionId = query.SectionId == Guid.Empty
-            ? Guid.Parse(sectionOptions[0].Value!)
-            : query.SectionId;
-
-        var normalizedQuery = query with { WarehouseId = selectedWarehouseId, SectorId = selectedSectorId, SectionId = selectedSectionId };
-        var result = await _structuresClient.ListAsync(normalizedQuery, cancellationToken);
+        var result = await _structuresClient.ListForCustomerAsync(query, cancellationToken);
         if (!result.IsSuccess || result.Data is null)
         {
             TempData["Error"] = result.Error ?? "Failed to load structures.";
@@ -89,7 +59,7 @@ public sealed class StructuresController : Controller
                 Warehouses = warehouseOptions,
                 Sectors = sectorOptions,
                 Sections = sectionOptions,
-                Query = normalizedQuery
+                Query = query
             });
         }
 
@@ -102,24 +72,24 @@ public sealed class StructuresController : Controller
             Controller = "Structures",
             Query = new Dictionary<string, string?>
             {
-                ["WarehouseId"] = normalizedQuery.WarehouseId.ToString(),
-                ["SectorId"] = normalizedQuery.SectorId.ToString(),
-                ["SectionId"] = normalizedQuery.SectionId.ToString(),
-                ["OrderBy"] = normalizedQuery.OrderBy,
-                ["OrderDir"] = normalizedQuery.OrderDir,
-                ["Code"] = normalizedQuery.Code,
-                ["Name"] = normalizedQuery.Name,
-                ["StructureType"] = normalizedQuery.StructureType?.ToString(),
-                ["IsActive"] = normalizedQuery.IsActive?.ToString(),
-                ["IncludeInactive"] = normalizedQuery.IncludeInactive.ToString(),
-                ["PageSize"] = normalizedQuery.PageSize.ToString()
+                ["WarehouseId"] = query.WarehouseId?.ToString(),
+                ["SectorId"] = query.SectorId?.ToString(),
+                ["SectionId"] = query.SectionId?.ToString(),
+                ["OrderBy"] = query.OrderBy,
+                ["OrderDir"] = query.OrderDir,
+                ["Code"] = query.Code,
+                ["Name"] = query.Name,
+                ["StructureType"] = query.StructureType?.ToString(),
+                ["IsActive"] = query.IsActive?.ToString(),
+                ["IncludeInactive"] = query.IncludeInactive.ToString(),
+                ["PageSize"] = query.PageSize.ToString()
             }
         };
 
         var model = new StructureListPageViewModel
         {
             Items = result.Data.Items,
-            Query = normalizedQuery,
+            Query = query,
             Pagination = pagination,
             Warehouses = warehouseOptions,
             Sectors = sectorOptions,
@@ -207,6 +177,8 @@ public sealed class StructuresController : Controller
 
         var model = new StructureFormViewModel
         {
+            WarehouseId = selectedWarehouseId,
+            SectorId = selectedSectorId,
             SectionId = selectedSectionId,
             Warehouses = warehouses,
             Sectors = sectors,
@@ -347,9 +319,25 @@ public sealed class StructuresController : Controller
             ? Array.Empty<SelectListItem>()
             : await LoadSectionOptionsAsync(sectorId, sectionId, cancellationToken);
 
+        model.WarehouseId = warehouseId == Guid.Empty ? model.WarehouseId : warehouseId;
+        model.SectorId = sectorId == Guid.Empty ? model.SectorId : sectorId;
         model.Warehouses = warehouses;
         model.Sectors = sectors;
         model.Sections = sections;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SectorOptions(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var sectors = await LoadSectorOptionsAsync(warehouseId, null, cancellationToken);
+        return Json(sectors.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SectionOptions(Guid sectorId, CancellationToken cancellationToken)
+    {
+        var sections = await LoadSectionOptionsAsync(sectorId, null, cancellationToken);
+        return Json(sections.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
     }
 
     private async Task<IReadOnlyList<SelectListItem>> LoadWarehouseOptionsAsync(Guid? selectedId, CancellationToken cancellationToken)
@@ -414,7 +402,7 @@ public sealed class StructuresController : Controller
     {
         var result = await _sectionsClient.ListAsync(
             new SectionQuery(
-                Guid.Empty,
+                null,
                 sectorId,
                 1,
                 100,

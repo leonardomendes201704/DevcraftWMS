@@ -19,6 +19,9 @@ public sealed class ListStructuresForCustomerPagedQueryHandler
         CancellationToken cancellationToken)
     {
         var totalCount = await _structureRepository.CountForCustomerAsync(
+            request.WarehouseId,
+            request.SectorId,
+            request.SectionId,
             request.Code,
             request.Name,
             request.StructureType,
@@ -27,6 +30,9 @@ public sealed class ListStructuresForCustomerPagedQueryHandler
             cancellationToken);
 
         var items = await _structureRepository.ListForCustomerAsync(
+            request.WarehouseId,
+            request.SectorId,
+            request.SectionId,
             request.PageNumber,
             request.PageSize,
             request.OrderBy,

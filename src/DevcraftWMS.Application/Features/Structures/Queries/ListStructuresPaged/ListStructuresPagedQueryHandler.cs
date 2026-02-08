@@ -16,6 +16,8 @@ public sealed class ListStructuresPagedQueryHandler : MediatR.IRequestHandler<Li
     public async Task<RequestResult<PagedResult<StructureListItemDto>>> Handle(ListStructuresPagedQuery request, CancellationToken cancellationToken)
     {
         var totalCount = await _structureRepository.CountAsync(
+            request.WarehouseId,
+            request.SectorId,
             request.SectionId,
             request.Code,
             request.Name,
@@ -25,6 +27,8 @@ public sealed class ListStructuresPagedQueryHandler : MediatR.IRequestHandler<Li
             cancellationToken);
 
         var items = await _structureRepository.ListAsync(
+            request.WarehouseId,
+            request.SectorId,
             request.SectionId,
             request.PageNumber,
             request.PageSize,

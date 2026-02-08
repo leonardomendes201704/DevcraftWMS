@@ -59,7 +59,9 @@ public sealed class StructureRepository : IStructureRepository
     }
 
     public async Task<int> CountAsync(
-        Guid sectionId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
@@ -67,11 +69,14 @@ public sealed class StructureRepository : IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(sectionId, code, name, structureType, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, sectionId, code, name, structureType, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
     public async Task<int> CountForCustomerAsync(
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
@@ -79,12 +84,14 @@ public sealed class StructureRepository : IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildCustomerQuery(code, name, structureType, isActive, includeInactive);
+        var query = BuildCustomerQuery(warehouseId, sectorId, sectionId, code, name, structureType, isActive, includeInactive);
         return await query.CountAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Structure>> ListAsync(
-        Guid sectionId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -96,7 +103,7 @@ public sealed class StructureRepository : IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(sectionId, code, name, structureType, isActive, includeInactive);
+        var query = BuildQuery(warehouseId, sectorId, sectionId, code, name, structureType, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -106,6 +113,9 @@ public sealed class StructureRepository : IStructureRepository
     }
 
     public async Task<IReadOnlyList<Structure>> ListForCustomerAsync(
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -117,7 +127,7 @@ public sealed class StructureRepository : IStructureRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildCustomerQuery(code, name, structureType, isActive, includeInactive);
+        var query = BuildCustomerQuery(warehouseId, sectorId, sectionId, code, name, structureType, isActive, includeInactive);
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
@@ -155,7 +165,9 @@ public sealed class StructureRepository : IStructureRepository
     }
 
     private IQueryable<Structure> BuildQuery(
-        Guid sectionId,
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
@@ -163,8 +175,29 @@ public sealed class StructureRepository : IStructureRepository
         bool includeInactive)
     {
         var customerId = GetCustomerId();
-        var query = _dbContext.Structures.AsNoTracking()
-            .Where(s => s.SectionId == sectionId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+        var query = _dbContext.Structures
+            .AsNoTracking()
+            .Include(s => s.Section)
+            .ThenInclude(section => section!.Sector)
+            .ThenInclude(sector => sector!.Warehouse)
+            .Where(s => s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (warehouseId.HasValue && warehouseId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.Section != null
+                && s.Section.Sector != null
+                && s.Section.Sector.WarehouseId == warehouseId.Value);
+        }
+
+        if (sectorId.HasValue && sectorId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.Section != null && s.Section.SectorId == sectorId.Value);
+        }
+
+        if (sectionId.HasValue && sectionId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.SectionId == sectionId.Value);
+        }
 
         if (isActive.HasValue)
         {
@@ -194,42 +227,15 @@ public sealed class StructureRepository : IStructureRepository
     }
 
     private IQueryable<Structure> BuildCustomerQuery(
+        Guid? warehouseId,
+        Guid? sectorId,
+        Guid? sectionId,
         string? code,
         string? name,
         StructureType? structureType,
         bool? isActive,
         bool includeInactive)
-    {
-        var customerId = GetCustomerId();
-        var query = _dbContext.Structures.AsNoTracking()
-            .Where(s => s.CustomerAccesses.Any(a => a.CustomerId == customerId));
-
-        if (isActive.HasValue)
-        {
-            query = query.Where(s => s.IsActive == isActive.Value);
-        }
-        else if (!includeInactive)
-        {
-            query = query.Where(s => s.IsActive);
-        }
-
-        if (!string.IsNullOrWhiteSpace(code))
-        {
-            query = query.Where(s => s.Code.Contains(code));
-        }
-
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            query = query.Where(s => s.Name.Contains(name));
-        }
-
-        if (structureType.HasValue)
-        {
-            query = query.Where(s => s.StructureType == structureType);
-        }
-
-        return query;
-    }
+        => BuildQuery(warehouseId, sectorId, sectionId, code, name, structureType, isActive, includeInactive);
 
     private Guid GetCustomerId()
     {

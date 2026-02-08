@@ -55,7 +55,7 @@ public sealed class StructuresController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListStructuresPagedQuery(sectionId, pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
+            new ListStructuresPagedQuery(null, null, sectionId, pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);
@@ -63,6 +63,9 @@ public sealed class StructuresController : ControllerBase
 
     [HttpGet("structures")]
     public async Task<IActionResult> ListStructuresForCustomer(
+        [FromQuery] Guid? warehouseId = null,
+        [FromQuery] Guid? sectorId = null,
+        [FromQuery] Guid? sectionId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string orderBy = "CreatedAtUtc",
@@ -75,7 +78,7 @@ public sealed class StructuresController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListStructuresForCustomerPagedQuery(pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
+            new ListStructuresForCustomerPagedQuery(warehouseId, sectorId, sectionId, pageNumber, pageSize, orderBy, orderDir, code, name, structureType, isActive, includeInactive),
             cancellationToken);
 
         return this.ToActionResult(result);

@@ -15,6 +15,11 @@ public sealed record StructureDto(
 public sealed record StructureListItemDto(
     Guid Id,
     Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     StructureType StructureType,
