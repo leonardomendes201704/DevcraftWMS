@@ -5,6 +5,7 @@ html, body {
 body {
   font-size: 0.95rem;
   color: #1f2937;
+  overflow: hidden;
 }
 
 .readonly-select {
@@ -31,7 +32,8 @@ body {
 
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -41,6 +43,14 @@ body {
   display: flex;
   flex-direction: column;
   padding: 1.25rem 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 1030;
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -64,6 +74,34 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 0.25rem;
+}
+
+.sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.65);
 }
 
 .sidebar-nav .nav-link {
@@ -94,6 +132,50 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: 260px;
+  transition: margin-left 0.2s ease;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content-shell > main {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+.sidebar-collapsed .content-shell {
+  margin-left: 0;
+}
+
+html.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+html.sidebar-collapsed .content-shell {
+  margin-left: 0;
+}
+
+.sidebar-toggle {
+  border-color: #e5e7eb;
+}
+
+@media (max-width: 992px) {
+  .content-shell {
+    margin-left: 0;
+  }
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  .sidebar-open .content-shell {
+    margin-left: 0;
+  }
 }
 
 .topbar {

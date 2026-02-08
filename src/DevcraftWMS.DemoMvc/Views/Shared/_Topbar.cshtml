@@ -4,9 +4,14 @@
 }
 <header class="topbar">
     <div class="d-flex align-items-center justify-content-between">
-        <div>
-            <div class="page-title">@ViewData["Title"]</div>
-            <div class="text-muted small">@ViewData["Subtitle"]</div>
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-outline-secondary sidebar-toggle" type="button" id="sidebarToggle" aria-label="Toggle menu" data-sidebar-toggle onclick="window.toggleSidebar && window.toggleSidebar(event)">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
+            <div>
+                <div class="page-title">@ViewData["Title"]</div>
+                <div class="text-muted small">@ViewData["Subtitle"]</div>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-3">
             @await Component.InvokeAsync("CustomerSelector")
