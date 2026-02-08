@@ -164,6 +164,7 @@ public sealed class SectionsController : Controller
 
         var model = new SectionFormViewModel
         {
+            WarehouseId = selectedWarehouseId,
             SectorId = selectedSectorId,
             Warehouses = warehouses,
             Sectors = sectors
@@ -264,6 +265,13 @@ public sealed class SectionsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> SectorOptions(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var sectors = await LoadSectorOptionsAsync(warehouseId, null, cancellationToken);
+        return Json(sectors.Select(item => new { value = item.Value ?? string.Empty, text = item.Text ?? string.Empty }));
+    }
+
     private async Task PopulateSectionFormOptionsAsync(SectionFormViewModel model, CancellationToken cancellationToken)
     {
         var warehouses = await LoadWarehouseOptionsAsync(null, cancellationToken);
@@ -289,6 +297,7 @@ public sealed class SectionsController : Controller
             selectedSectorId,
             cancellationToken);
 
+        model.WarehouseId = warehouseId == Guid.Empty ? model.WarehouseId : warehouseId;
         model.Warehouses = warehouses;
         model.Sectors = sectors;
     }

@@ -38,6 +38,9 @@ public sealed class SectionFormViewModel
     public Guid? Id { get; set; }
 
     [Required]
+    public Guid WarehouseId { get; set; }
+
+    [Required]
     public Guid SectorId { get; set; }
 
     [Required]

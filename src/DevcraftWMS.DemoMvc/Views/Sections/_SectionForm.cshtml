@@ -2,10 +2,20 @@
 
 <div class="row g-3">
     <div class="col-md-6">
+        <label class="form-label">Warehouse</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+            <select class="form-select" asp-for="WarehouseId" asp-items="Model.Warehouses" data-section-warehouse>
+                <option value="">Select</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="WarehouseId"></span>
+    </div>
+    <div class="col-md-6">
         <label class="form-label">Sector</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-grid-3x3-gap"></i></span>
-            <select class="form-select" asp-for="SectorId" asp-items="Model.Sectors">
+            <select class="form-select" asp-for="SectorId" asp-items="Model.Sectors" data-section-sector>
                 <option value="">Select</option>
             </select>
         </div>
