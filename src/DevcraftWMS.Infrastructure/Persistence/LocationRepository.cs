@@ -107,7 +107,7 @@ public sealed class LocationRepository : ILocationRepository
         bool includeInactive,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildQuery(structureId, zoneId, null, null, isActive, includeInactive);
+        var query = BuildQuery(null, null, null, structureId, zoneId, null, null, isActive, includeInactive);
         return await query.ToListAsync(cancellationToken);
     }
 
