@@ -60,20 +60,42 @@ public sealed record DockScheduleListQueryViewModel(
     string OrderBy,
     string OrderDir)
 {
+    public DockScheduleListQueryViewModel Normalize()
+    {
+        var pageNumber = PageNumber <= 0 ? 1 : PageNumber;
+        var pageSize = PageSize <= 0 ? 20 : PageSize;
+        if (pageSize > 200)
+        {
+            pageSize = 200;
+        }
+
+        var orderBy = string.IsNullOrWhiteSpace(OrderBy) ? "SlotStartUtc" : OrderBy;
+        var orderDir = string.IsNullOrWhiteSpace(OrderDir) ? "asc" : OrderDir;
+
+        return this with
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            OrderBy = orderBy,
+            OrderDir = orderDir
+        };
+    }
+
     public string ToQueryString()
     {
+        var normalized = Normalize();
         var sb = new StringBuilder();
-        Append(sb, "warehouseId", WarehouseId);
-        Append(sb, "dockCode", DockCode);
-        Append(sb, "status", Status);
-        Append(sb, "fromUtc", FromUtc);
-        Append(sb, "toUtc", ToUtc);
-        Append(sb, "isActive", IsActive);
-        Append(sb, "includeInactive", IncludeInactive);
-        Append(sb, "pageNumber", PageNumber);
-        Append(sb, "pageSize", PageSize);
-        Append(sb, "orderBy", OrderBy);
-        Append(sb, "orderDir", OrderDir);
+        Append(sb, "warehouseId", normalized.WarehouseId);
+        Append(sb, "dockCode", normalized.DockCode);
+        Append(sb, "status", normalized.Status);
+        Append(sb, "fromUtc", normalized.FromUtc);
+        Append(sb, "toUtc", normalized.ToUtc);
+        Append(sb, "isActive", normalized.IsActive);
+        Append(sb, "includeInactive", normalized.IncludeInactive);
+        Append(sb, "pageNumber", normalized.PageNumber);
+        Append(sb, "pageSize", normalized.PageSize);
+        Append(sb, "orderBy", normalized.OrderBy);
+        Append(sb, "orderDir", normalized.OrderDir);
         return sb.Length == 0 ? string.Empty : $"?{sb}";
     }
 

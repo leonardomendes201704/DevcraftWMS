@@ -17,6 +17,7 @@ public sealed class DockSchedulesController : Controller
 
     public async Task<IActionResult> Index([FromQuery] DockScheduleListQueryViewModel query, CancellationToken cancellationToken)
     {
+        query = query.Normalize();
         if (!HasCustomerContext())
         {
             TempData["Warning"] = "Select a customer to load dock schedules.";

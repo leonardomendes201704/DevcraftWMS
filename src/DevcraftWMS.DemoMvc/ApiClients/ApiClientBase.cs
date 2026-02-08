@@ -151,7 +151,30 @@ public abstract class ApiClientBase
             }
         }
 
+        NormalizePagination(filtered);
         return filtered.Count == 0 ? basePath : QueryHelpers.AddQueryString(basePath, filtered);
+    }
+
+    private static void NormalizePagination(Dictionary<string, string?> query)
+    {
+        const int defaultPageNumber = 1;
+        const int defaultPageSize = 20;
+
+        foreach (var key in query.Keys.ToList())
+        {
+            if (!string.Equals(key, "pageNumber", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(key, "pageSize", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!int.TryParse(query[key], out var value) || value <= 0)
+            {
+                query[key] = string.Equals(key, "pageSize", StringComparison.OrdinalIgnoreCase)
+                    ? defaultPageSize.ToString()
+                    : defaultPageNumber.ToString();
+            }
+        }
     }
 
     private void AddAuthHeader(HttpRequestMessage request)

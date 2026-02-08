@@ -1,6 +1,8 @@
 # History Log
 
 ## 2026-02-06
+- 2026-02-06 - Normalized Returns/DockSchedules query defaults to prevent pagination validation errors.
+- 2026-02-06 - Normalized DemoMvc pagination defaults to avoid pageNumber/pageSize validation errors.
 - 2026-02-06 - Added inline sidebar toggle fallback to ensure button works.
 - 2026-02-06 - Enabled cache-busting for DemoMvc assets to ensure sidebar JS updates load.
 - 2026-02-06 - Ensured sidebar toggle applies collapse state on desktop.

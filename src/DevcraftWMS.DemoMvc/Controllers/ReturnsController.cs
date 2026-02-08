@@ -21,6 +21,7 @@ public sealed class ReturnsController : Controller
 
     public async Task<IActionResult> Index([FromQuery] ReturnListQueryViewModel query, CancellationToken cancellationToken)
     {
+        query = query.Normalize();
         if (!HasCustomerContext())
         {
             TempData["Warning"] = "Select a customer to load returns.";

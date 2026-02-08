@@ -77,18 +77,40 @@ public sealed record ReturnListQueryViewModel(
     string OrderBy,
     string OrderDir)
 {
+    public ReturnListQueryViewModel Normalize()
+    {
+        var pageNumber = PageNumber <= 0 ? 1 : PageNumber;
+        var pageSize = PageSize <= 0 ? 20 : PageSize;
+        if (pageSize > 200)
+        {
+            pageSize = 200;
+        }
+
+        var orderBy = string.IsNullOrWhiteSpace(OrderBy) ? "CreatedAtUtc" : OrderBy;
+        var orderDir = string.IsNullOrWhiteSpace(OrderDir) ? "desc" : OrderDir;
+
+        return this with
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            OrderBy = orderBy,
+            OrderDir = orderDir
+        };
+    }
+
     public string ToQueryString()
     {
+        var normalized = Normalize();
         var sb = new StringBuilder();
-        Append(sb, "warehouseId", WarehouseId);
-        Append(sb, "returnNumber", ReturnNumber);
-        Append(sb, "status", Status);
-        Append(sb, "isActive", IsActive);
-        Append(sb, "includeInactive", IncludeInactive);
-        Append(sb, "pageNumber", PageNumber);
-        Append(sb, "pageSize", PageSize);
-        Append(sb, "orderBy", OrderBy);
-        Append(sb, "orderDir", OrderDir);
+        Append(sb, "warehouseId", normalized.WarehouseId);
+        Append(sb, "returnNumber", normalized.ReturnNumber);
+        Append(sb, "status", normalized.Status);
+        Append(sb, "isActive", normalized.IsActive);
+        Append(sb, "includeInactive", normalized.IncludeInactive);
+        Append(sb, "pageNumber", normalized.PageNumber);
+        Append(sb, "pageSize", normalized.PageSize);
+        Append(sb, "orderBy", normalized.OrderBy);
+        Append(sb, "orderDir", normalized.OrderDir);
         return sb.Length == 0 ? string.Empty : $"?{sb}";
     }
 
