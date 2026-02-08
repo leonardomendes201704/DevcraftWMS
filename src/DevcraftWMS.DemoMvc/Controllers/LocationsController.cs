@@ -184,7 +184,7 @@ public sealed class LocationsController : Controller
                 : Guid.Empty;
 
         var sections = await LoadSectionOptionsAsync(selectedSectorId, sectionId, cancellationToken);
-        if (sections.Count == 0)
+        if (sections.Count == 0 && selectedSectorId != Guid.Empty)
         {
             var anySections = await LoadSectionOptionsAsync(null, null, cancellationToken);
             if (anySections.Count == 0)
@@ -212,7 +212,7 @@ public sealed class LocationsController : Controller
                 : Guid.Empty;
 
         var structures = await LoadStructureOptionsAsync(selectedSectionId, structureId, cancellationToken);
-        if (structures.Count == 0)
+        if (structures.Count == 0 && selectedSectionId != Guid.Empty)
         {
             var anyStructures = await LoadStructureOptionsAsync(null, null, cancellationToken);
             if (anyStructures.Count == 0)
@@ -506,11 +506,6 @@ public sealed class LocationsController : Controller
 
     private async Task<IReadOnlyList<SelectListItem>> LoadSectionOptionsAsync(Guid? sectorId, Guid? selectedSectionId, CancellationToken cancellationToken)
     {
-        if (!sectorId.HasValue || sectorId.Value == Guid.Empty)
-        {
-            return Array.Empty<SelectListItem>();
-        }
-
         var result = await _sectionsClient.ListAsync(
             new SectionQuery(
                 null,
@@ -537,26 +532,37 @@ public sealed class LocationsController : Controller
 
     private async Task<IReadOnlyList<SelectListItem>> LoadStructureOptionsAsync(Guid? sectionId, Guid? selectedStructureId, CancellationToken cancellationToken)
     {
-        if (!sectionId.HasValue || sectionId.Value == Guid.Empty)
-        {
-            return Array.Empty<SelectListItem>();
-        }
-
-        var result = await _structuresClient.ListAsync(
-            new StructureQuery(
-                null,
-                null,
-                sectionId,
-                1,
-                100,
-                "Name",
-                "asc",
-                null,
-                null,
-                null,
-                null,
-                false),
-            cancellationToken);
+        var result = sectionId.HasValue && sectionId.Value != Guid.Empty
+            ? await _structuresClient.ListAsync(
+                new StructureQuery(
+                    null,
+                    null,
+                    sectionId,
+                    1,
+                    100,
+                    "Name",
+                    "asc",
+                    null,
+                    null,
+                    null,
+                    null,
+                    false),
+                cancellationToken)
+            : await _structuresClient.ListForCustomerAsync(
+                new StructureQuery(
+                    null,
+                    null,
+                    null,
+                    1,
+                    100,
+                    "Name",
+                    "asc",
+                    null,
+                    null,
+                    null,
+                    null,
+                    false),
+                cancellationToken);
 
         if (!result.IsSuccess || result.Data is null)
         {
