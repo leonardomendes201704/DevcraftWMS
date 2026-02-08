@@ -2,6 +2,7 @@
 
 ## 2026-02-08
 - Added sectors list support across all warehouses and included Warehouse column in DemoMvc grid.
+- Allowed section creation to select sectors across warehouses when none exist for the selected warehouse.
 
 ## 2026-02-06
 - 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.

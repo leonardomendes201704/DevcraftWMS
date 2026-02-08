@@ -140,6 +140,11 @@ public sealed class SectionsController : Controller
         var sectors = await LoadSectorOptionsAsync(selectedWarehouseId, null, cancellationToken);
         if (sectors.Count == 0)
         {
+            sectors = await LoadSectorOptionsAsync(null, null, cancellationToken);
+        }
+
+        if (sectors.Count == 0)
+        {
             var prompt = new DependencyPromptViewModel
             {
                 Title = "No sector found",
@@ -279,9 +284,10 @@ public sealed class SectionsController : Controller
         }
 
         var selectedSectorId = model.SectorId;
-        var sectors = warehouseId == Guid.Empty
-            ? Array.Empty<SelectListItem>()
-            : await LoadSectorOptionsAsync(warehouseId, selectedSectorId, cancellationToken);
+        var sectors = await LoadSectorOptionsAsync(
+            warehouseId == Guid.Empty ? null : warehouseId,
+            selectedSectorId,
+            cancellationToken);
 
         model.Warehouses = warehouses;
         model.Sectors = sectors;
@@ -319,7 +325,7 @@ public sealed class SectionsController : Controller
             .ToList();
     }
 
-    private async Task<IReadOnlyList<SelectListItem>> LoadSectorOptionsAsync(Guid warehouseId, Guid? selectedSectorId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<SelectListItem>> LoadSectorOptionsAsync(Guid? warehouseId, Guid? selectedSectorId, CancellationToken cancellationToken)
     {
         var result = await _sectorsClient.ListAsync(
             new SectorQuery(
@@ -340,8 +346,17 @@ public sealed class SectionsController : Controller
             return Array.Empty<SelectListItem>();
         }
 
+        var includeWarehouse = !warehouseId.HasValue || warehouseId.Value == Guid.Empty;
+
         return result.Data.Items
-            .Select(item => new SelectListItem($"{item.Code} - {item.Name}", item.Id.ToString(), selectedSectorId.HasValue && item.Id == selectedSectorId.Value))
+            .Select(item =>
+            {
+                var label = includeWarehouse
+                    ? $"{item.WarehouseName} - {item.Code} - {item.Name}"
+                    : $"{item.Code} - {item.Name}";
+
+                return new SelectListItem(label, item.Id.ToString(), selectedSectorId.HasValue && item.Id == selectedSectorId.Value);
+            })
             .ToList();
     }
 }
