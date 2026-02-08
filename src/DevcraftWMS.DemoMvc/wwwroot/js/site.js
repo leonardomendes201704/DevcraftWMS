@@ -165,13 +165,74 @@
         });
     };
 
+    const attachSectionFilterCascade = () => {
+        const warehouseSelect = document.querySelector(".js-section-warehouse-filter");
+        const sectorSelect = document.querySelector(".js-section-sector-filter");
+
+        if (!(warehouseSelect instanceof HTMLSelectElement) || !(sectorSelect instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const buildOption = (value, text, selected) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = text;
+            if (selected) {
+                option.selected = true;
+            }
+            return option;
+        };
+
+        const loadSectors = async (warehouseId) => {
+            sectorSelect.innerHTML = "";
+            sectorSelect.append(buildOption("", "Loading...", true));
+            sectorSelect.disabled = true;
+
+            if (!warehouseId) {
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", "Select sector", true));
+                sectorSelect.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Sections/SectorOptions?warehouseId=${encodeURIComponent(warehouseId)}`);
+                if (!response.ok) {
+                    throw new Error("Failed to load sectors.");
+                }
+
+                const data = await response.json();
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", data.length ? "Select sector" : "No sectors found", true));
+                data.forEach(item => {
+                    sectorSelect.append(buildOption(item.value, item.text, false));
+                });
+            } catch (error) {
+                sectorSelect.innerHTML = "";
+                sectorSelect.append(buildOption("", "Failed to load sectors", true));
+            } finally {
+                sectorSelect.disabled = false;
+            }
+        };
+
+        warehouseSelect.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLSelectElement)) {
+                return;
+            }
+            loadSectors(target.value);
+        });
+    };
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             attachIndexHeaderActions();
             attachSectionWarehouseCascade();
+            attachSectionFilterCascade();
         });
     } else {
         attachIndexHeaderActions();
         attachSectionWarehouseCascade();
+        attachSectionFilterCascade();
     }
 })();
