@@ -220,6 +220,7 @@
             if (!(target instanceof HTMLSelectElement)) {
                 return;
             }
+            sectorSelect.value = "";
             loadSectors(target.value);
         });
     };

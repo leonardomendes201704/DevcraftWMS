@@ -5,6 +5,7 @@
 - Allowed section creation to select sectors across warehouses when none exist for the selected warehouse.
 - Added warehouse-to-sector cascading dropdown on Sections create/edit.
 - Added warehouse-to-sector cascading filter on Sections index.
+- Reset sector selection when warehouse changes on Sections filters.
 
 ## 2026-02-06
 - 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.
