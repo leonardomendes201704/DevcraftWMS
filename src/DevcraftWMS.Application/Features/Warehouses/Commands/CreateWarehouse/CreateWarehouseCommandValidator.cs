@@ -19,6 +19,7 @@ public sealed class CreateWarehouseCommandValidator : AbstractValidator<CreateWa
         When(x => x.Address is not null, () =>
         {
             RuleFor(x => x.Address!.AddressLine1).NotEmpty().MaximumLength(200);
+            RuleFor(x => x.Address!.AddressNumber).MaximumLength(20);
             RuleFor(x => x.Address!.AddressLine2).MaximumLength(200);
             RuleFor(x => x.Address!.District).MaximumLength(100);
             RuleFor(x => x.Address!.City).NotEmpty().MaximumLength(100);

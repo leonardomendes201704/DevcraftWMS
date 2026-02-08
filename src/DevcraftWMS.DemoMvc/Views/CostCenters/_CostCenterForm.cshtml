@@ -1,0 +1,28 @@
+@model DevcraftWMS.DemoMvc.ViewModels.CostCenters.CostCenterFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Code</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-diagram-2"></i></span>
+            <input class="form-control" asp-for="Code" />
+        </div>
+        <span class="text-danger" asp-validation-for="Code"></span>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-fonts"></i></span>
+            <input class="form-control" asp-for="Name" />
+        </div>
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+    <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+            <textarea class="form-control" asp-for="Description" rows="2"></textarea>
+        </div>
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+</div>

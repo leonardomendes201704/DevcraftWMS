@@ -7,7 +7,7 @@ public static class WarehouseMapping
     public static WarehouseDto MapWarehouse(Warehouse warehouse)
     {
         var addresses = warehouse.Addresses
-            .Select(a => new WarehouseAddressDto(a.Id, a.IsPrimary, a.AddressLine1, a.AddressLine2, a.District, a.City, a.State, a.PostalCode, a.Country, a.Latitude, a.Longitude))
+            .Select(a => new WarehouseAddressDto(a.Id, a.IsPrimary, a.AddressLine1, a.AddressNumber, a.AddressLine2, a.District, a.City, a.State, a.PostalCode, a.Country, a.Latitude, a.Longitude))
             .ToList();
         var contacts = warehouse.Contacts
             .Select(c => new WarehouseContactDto(c.Id, c.IsPrimary, c.ContactName, c.ContactEmail, c.ContactPhone))

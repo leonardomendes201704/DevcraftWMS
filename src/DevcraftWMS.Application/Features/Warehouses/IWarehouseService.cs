@@ -55,6 +55,7 @@ public interface IWarehouseService
 
 public sealed record WarehouseAddressInput(
     string AddressLine1,
+    string? AddressNumber,
     string? AddressLine2,
     string? District,
     string City,

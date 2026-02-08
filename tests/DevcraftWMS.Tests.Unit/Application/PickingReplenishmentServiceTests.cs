@@ -144,6 +144,8 @@ public sealed class PickingReplenishmentServiceTests
             => Task.FromResult<IReadOnlyList<Warehouse>>(Array.Empty<Warehouse>());
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
     }
 
     private sealed class FakeCustomerContext : ICustomerContext
@@ -156,3 +158,5 @@ public sealed class PickingReplenishmentServiceTests
         public Guid? CustomerId { get; }
     }
 }
+
+

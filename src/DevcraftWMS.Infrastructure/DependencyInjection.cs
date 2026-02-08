@@ -48,6 +48,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        services.AddScoped<ICostCenterRepository, CostCenterRepository>();
         services.AddScoped<ISectorRepository, SectorRepository>();
         services.AddScoped<ISectionRepository, SectionRepository>();
         services.AddScoped<IAisleRepository, AisleRepository>();

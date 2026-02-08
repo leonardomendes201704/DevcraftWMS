@@ -156,6 +156,8 @@ public sealed class InventoryCountServiceTests
 
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
         public Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpdateAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<Warehouse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -283,3 +285,5 @@ public sealed class InventoryCountServiceTests
         public string? Email => null;
     }
 }
+
+

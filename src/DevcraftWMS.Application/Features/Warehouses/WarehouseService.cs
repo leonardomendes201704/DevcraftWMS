@@ -36,7 +36,8 @@ public sealed class WarehouseService : IWarehouseService
         WarehouseCapacityInput? capacity,
         CancellationToken cancellationToken)
     {
-        var normalizedCode = code.Trim().ToUpperInvariant();
+        var resolvedCode = await ResolveWarehouseCodeAsync(code, cancellationToken);
+        var normalizedCode = resolvedCode.Trim().ToUpperInvariant();
         var exists = await _warehouseRepository.CodeExistsAsync(normalizedCode, cancellationToken);
         if (exists)
         {
@@ -169,6 +170,7 @@ public sealed class WarehouseService : IWarehouseService
         }
 
         existing.AddressLine1 = input.AddressLine1.Trim();
+        existing.AddressNumber = string.IsNullOrWhiteSpace(input.AddressNumber) ? null : input.AddressNumber.Trim();
         existing.AddressLine2 = string.IsNullOrWhiteSpace(input.AddressLine2) ? null : input.AddressLine2.Trim();
         existing.District = string.IsNullOrWhiteSpace(input.District) ? null : input.District.Trim();
         existing.City = input.City.Trim();
@@ -223,6 +225,36 @@ public sealed class WarehouseService : IWarehouseService
         existing.MaxWeightKg = input.MaxWeightKg;
         existing.OperationalArea = input.OperationalArea;
         existing.IsPrimary = true;
+    }
+
+    private async Task<string> ResolveWarehouseCodeAsync(string? code, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(code) && !string.Equals(code.Trim(), "AUTO", StringComparison.OrdinalIgnoreCase))
+        {
+            return code;
+        }
+
+        var prefix = $"WH-{DateTime.UtcNow:yyyy}-";
+        var latestCode = await _warehouseRepository.GetLatestCodeAsync(prefix, cancellationToken);
+        var nextNumber = 1;
+
+        if (!string.IsNullOrWhiteSpace(latestCode) && latestCode.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var suffix = latestCode.Substring(prefix.Length);
+            if (int.TryParse(suffix, out var parsed))
+            {
+                nextNumber = parsed + 1;
+            }
+        }
+
+        var candidate = $"{prefix}{nextNumber:0000}";
+        while (await _warehouseRepository.CodeExistsAsync(candidate, cancellationToken))
+        {
+            nextNumber++;
+            candidate = $"{prefix}{nextNumber:0000}";
+        }
+
+        return candidate;
     }
 
 }

@@ -40,18 +40,56 @@ public sealed class WarehouseServiceTests
         result.ErrorCode.Should().Be("warehouses.warehouse.code_exists");
     }
 
+    [Fact]
+    public async Task CreateWarehouse_Should_Generate_Code_When_Auto()
+    {
+        var year = DateTime.UtcNow.ToString("yyyy");
+        var repository = new FakeWarehouseRepository(codeExists: false, latestCode: $"WH-{year}-0001");
+        var service = new WarehouseService(repository);
+
+        var result = await service.CreateWarehouseAsync(
+            "AUTO",
+            "Warehouse Auto",
+            null,
+            null,
+            WarehouseType.DistributionCenter,
+            false,
+            true,
+            true,
+            true,
+            true,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Code.Should().Be($"WH-{year}-0002");
+    }
+
     private sealed class FakeWarehouseRepository : IWarehouseRepository
     {
         private readonly bool _codeExists;
+        private readonly string? _latestCode;
 
-        public FakeWarehouseRepository(bool codeExists)
+        public FakeWarehouseRepository(bool codeExists, string? latestCode = null)
         {
             _codeExists = codeExists;
+            _latestCode = latestCode;
         }
 
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(_codeExists);
 
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(_codeExists);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult(_latestCode);
 
         public Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
@@ -97,3 +135,5 @@ public sealed class WarehouseServiceTests
     }
 
 }
+
+

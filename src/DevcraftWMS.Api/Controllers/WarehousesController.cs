@@ -145,6 +145,7 @@ public sealed class WarehousesController : ControllerBase
             ? null
             : new WarehouseAddressInput(
                 request.AddressLine1,
+                request.AddressNumber,
                 request.AddressLine2,
                 request.District,
                 request.City,

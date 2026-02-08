@@ -38,6 +38,7 @@ public sealed class SampleDataSeeder
         var normalizedWarehouseCode = _options.WarehouseCode.Trim().ToUpperInvariant();
         var customer = await EnsureCustomerAsync(cancellationToken);
         var uoms = await EnsureUomsAsync(cancellationToken);
+        await EnsureCostCenterAsync(cancellationToken);
 
         var warehouse = await EnsureWarehouseAsync(normalizedWarehouseCode, cancellationToken);
         var sector = await EnsureSectorAsync(warehouse.Id, cancellationToken);
@@ -222,6 +223,28 @@ public sealed class SampleDataSeeder
         return (baseUom, boxUom);
     }
 
+    private async Task EnsureCostCenterAsync(CancellationToken cancellationToken)
+    {
+        const string code = "CC-DEMO";
+        var existing = await _dbContext.CostCenters
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Code == code, cancellationToken);
+
+        if (existing is not null)
+        {
+            return;
+        }
+
+        _dbContext.CostCenters.Add(new CostCenter
+        {
+            Id = Guid.NewGuid(),
+            Code = code,
+            Name = "Demo Operations",
+            Description = "Default demo cost center"
+        });
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private Warehouse BuildWarehouse(string normalizedCode)
     {
         var warehouse = new Warehouse
@@ -249,6 +272,7 @@ public sealed class SampleDataSeeder
         {
             Id = Guid.NewGuid(),
             AddressLine1 = "Av. Demo, 1000",
+            AddressNumber = "1000",
             AddressLine2 = "Bloco A",
             District = "Centro",
             City = "Sao Paulo",

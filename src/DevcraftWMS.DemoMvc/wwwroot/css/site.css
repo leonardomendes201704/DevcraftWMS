@@ -7,6 +7,28 @@ body {
   color: #1f2937;
 }
 
+.readonly-select {
+  pointer-events: none;
+  background-color: #e9ecef;
+}
+
+.address-component[data-loading="true"] .address-lookup-icon {
+  display: none;
+}
+
+.address-component[data-loading="true"] .address-lookup-loading {
+  display: inline-flex !important;
+}
+
+.input-validation-error {
+  border-color: #dc3545;
+}
+
+.input-validation-error:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
 .app-shell {
   display: flex;
   min-height: 100vh;

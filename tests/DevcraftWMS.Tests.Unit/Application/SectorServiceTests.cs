@@ -136,6 +136,8 @@ public sealed class SectorServiceTests
 
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
 
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+
         public Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task UpdateAsync(Warehouse warehouse, CancellationToken cancellationToken = default) => Task.CompletedTask;
@@ -184,3 +186,5 @@ public sealed class SectorServiceTests
         public Guid? CustomerId { get; } = Guid.NewGuid();
     }
 }
+
+

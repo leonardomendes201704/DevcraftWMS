@@ -4,6 +4,7 @@ namespace DevcraftWMS.Api.Contracts;
 
 public sealed record WarehouseAddressRequest(
     string AddressLine1,
+    string? AddressNumber,
     string? AddressLine2,
     string? District,
     string City,

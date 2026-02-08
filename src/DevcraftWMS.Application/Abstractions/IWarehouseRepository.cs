@@ -7,6 +7,7 @@ public interface IWarehouseRepository
 {
     Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default);
     Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default);
+    Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default);
     Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default);
     Task UpdateAsync(Warehouse warehouse, CancellationToken cancellationToken = default);
     Task<Warehouse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

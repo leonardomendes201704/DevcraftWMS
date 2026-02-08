@@ -48,6 +48,41 @@
         const stateSelect = component.querySelector('[data-address-field="state"]');
         const countryInput = component.querySelector('[data-address-field="country"]');
         const lookupButton = component.querySelector('[data-address-lookup="cep"]');
+        const loadingText = component.querySelector('[data-address-loading-text="true"]');
+
+        const setLoading = (isLoading) => {
+            if (isLoading) {
+                component.dataset.loading = 'true';
+            } else {
+                component.dataset.loading = 'false';
+            }
+
+            if (lookupButton) {
+                lookupButton.disabled = isLoading;
+            }
+
+            if (postalCodeInput) {
+                postalCodeInput.readOnly = isLoading;
+            }
+
+            if (loadingText) {
+                loadingText.classList.toggle('d-none', !isLoading);
+            }
+        };
+
+        const lockCepFields = () => {
+            if (addressLine1Input) {
+                addressLine1Input.readOnly = true;
+            }
+            if (stateSelect) {
+                stateSelect.classList.add('readonly-select');
+                stateSelect.tabIndex = -1;
+            }
+            if (citySelect) {
+                citySelect.classList.add('readonly-select');
+                citySelect.tabIndex = -1;
+            }
+        };
 
         const loadStates = async () => {
             if (!ibgeEnabled || !stateSelect || !statesUrl) {
@@ -84,7 +119,13 @@
                 return;
             }
 
-            const data = await fetchJson(`${cepUrl}?cep=${encodeURIComponent(cep)}`);
+            setLoading(true);
+            let data;
+            try {
+                data = await fetchJson(`${cepUrl}?cep=${encodeURIComponent(cep)}`);
+            } finally {
+                setLoading(false);
+            }
             if (addressLine1Input && data.addressLine1) {
                 addressLine1Input.value = data.addressLine1;
             }
@@ -104,6 +145,7 @@
             if (postalCodeInput && data.postalCode) {
                 postalCodeInput.value = data.postalCode;
             }
+            lockCepFields();
         };
 
         if (lookupButton) {

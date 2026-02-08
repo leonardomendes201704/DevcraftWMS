@@ -11,6 +11,7 @@ public sealed class WarehouseAddressConfiguration : AuditableEntityConfiguration
         builder.ToTable("WarehouseAddresses");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.AddressLine1).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.AddressNumber).HasMaxLength(20);
         builder.Property(x => x.AddressLine2).HasMaxLength(200);
         builder.Property(x => x.District).HasMaxLength(100);
         builder.Property(x => x.City).HasMaxLength(100).IsRequired();

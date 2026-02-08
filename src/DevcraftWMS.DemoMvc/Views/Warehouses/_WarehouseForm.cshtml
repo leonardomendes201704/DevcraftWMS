@@ -6,7 +6,7 @@
         <label class="form-label">Code</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-hash"></i></span>
-            <input class="form-control" asp-for="Code" />
+            <input class="form-control" asp-for="Code" readonly />
         </div>
         <span class="text-danger" asp-validation-for="Code"></span>
     </div>
@@ -91,14 +91,20 @@
         <label class="form-label">Cost Center Code</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-diagram-2"></i></span>
-            <input class="form-control" asp-for="CostCenterCode" />
+            <select class="form-select" asp-for="CostCenterCode" data-cost-center-select="true">
+                <option value="">Select</option>
+                @foreach (var option in Model.CostCenters)
+                {
+                    <option value="@option.Code" data-cost-center-name="@option.Name" selected="@(option.Code == Model.CostCenterCode)">@option.Code - @option.Name</option>
+                }
+            </select>
         </div>
     </div>
     <div class="col-md-4">
         <label class="form-label">Cost Center Name</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-fonts"></i></span>
-            <input class="form-control" asp-for="CostCenterName" />
+            <input class="form-control" asp-for="CostCenterName" data-cost-center-name="true" readonly />
         </div>
     </div>
     <div class="col-md-2">
@@ -153,7 +159,7 @@
         <label class="form-label">Contact Phone</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-            <input class="form-control" asp-for="Contact!.ContactPhone" />
+            <input class="form-control" asp-for="Contact!.ContactPhone" data-mask="br-phone" />
         </div>
     </div>
 </div>
@@ -161,19 +167,19 @@
 <hr class="my-4" />
 
 <h6 class="text-muted">Capacity & Dimensions</h6>
-<div class="row g-3">
+<div class="row g-3" data-warehouse-capacity="true">
     <div class="col-md-3">
         <label class="form-label">Length (m)</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-rulers"></i></span>
-            <input class="form-control" asp-for="Capacity!.LengthMeters" type="number" step="0.01" />
+            <input class="form-control" asp-for="Capacity!.LengthMeters" type="number" step="0.01" data-capacity-length="true" />
         </div>
     </div>
     <div class="col-md-3">
         <label class="form-label">Width (m)</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-rulers"></i></span>
-            <input class="form-control" asp-for="Capacity!.WidthMeters" type="number" step="0.01" />
+            <input class="form-control" asp-for="Capacity!.WidthMeters" type="number" step="0.01" data-capacity-width="true" />
         </div>
     </div>
     <div class="col-md-3">
@@ -187,7 +193,7 @@
         <label class="form-label">Total Area (m2)</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-bounding-box"></i></span>
-            <input class="form-control" asp-for="Capacity!.TotalAreaM2" type="number" step="0.01" />
+            <input class="form-control" asp-for="Capacity!.TotalAreaM2" type="number" step="0.01" data-capacity-area="true" readonly />
         </div>
     </div>
     <div class="col-md-3">

@@ -60,6 +60,8 @@ public sealed class WarehouseCapacityViewModel
     public decimal? OperationalArea { get; set; }
 }
 
+public sealed record WarehouseCostCenterOptionViewModel(string Code, string Name);
+
 public sealed class WarehouseFormViewModel
 {
     public Guid? Id { get; set; }
@@ -105,6 +107,8 @@ public sealed class WarehouseFormViewModel
     public AddressInputViewModel? Address { get; set; } = new();
     public WarehouseContactViewModel? Contact { get; set; } = new();
     public WarehouseCapacityViewModel? Capacity { get; set; } = new();
+
+    public IReadOnlyList<WarehouseCostCenterOptionViewModel> CostCenters { get; set; } = Array.Empty<WarehouseCostCenterOptionViewModel>();
 }
 
 public sealed record WarehouseDetailsViewModel(

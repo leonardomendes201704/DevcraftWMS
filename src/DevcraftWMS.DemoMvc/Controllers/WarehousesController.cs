@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using DevcraftWMS.DemoMvc.ApiClients;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
 using DevcraftWMS.DemoMvc.ViewModels.Warehouses;
@@ -8,10 +9,17 @@ namespace DevcraftWMS.DemoMvc.Controllers;
 public sealed class WarehousesController : Controller
 {
     private readonly WarehousesApiClient _client;
+    private readonly CostCentersApiClient _costCentersClient;
+    private readonly ILogger<WarehousesController> _logger;
 
-    public WarehousesController(WarehousesApiClient client)
+    public WarehousesController(
+        WarehousesApiClient client,
+        CostCentersApiClient costCentersClient,
+        ILogger<WarehousesController> logger)
     {
         _client = client;
+        _costCentersClient = costCentersClient;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -75,9 +83,14 @@ public sealed class WarehousesController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        return View(new WarehouseFormViewModel());
+        var model = new WarehouseFormViewModel
+        {
+            Code = "AUTO"
+        };
+        await LoadCostCentersAsync(model, cancellationToken);
+        return View(model);
     }
 
     [HttpPost]
@@ -85,6 +98,8 @@ public sealed class WarehousesController : Controller
     {
         if (!ModelState.IsValid)
         {
+            LogModelStateErrors("Create", model);
+            await LoadCostCentersAsync(model, cancellationToken);
             return View(model);
         }
 
@@ -92,6 +107,8 @@ public sealed class WarehousesController : Controller
         if (!result.IsSuccess || result.Data is null)
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "Failed to create warehouse.");
+            LogModelStateErrors("Create.ApiFailure", model, result.Error);
+            await LoadCostCentersAsync(model, cancellationToken);
             return View(model);
         }
 
@@ -131,6 +148,7 @@ public sealed class WarehousesController : Controller
             Address = result.Data.Addresses.FirstOrDefault() is { } address ? new AddressInputViewModel
             {
                 AddressLine1 = address.AddressLine1,
+                AddressNumber = address.AddressNumber,
                 AddressLine2 = address.AddressLine2,
                 District = address.District,
                 City = address.City,
@@ -159,6 +177,7 @@ public sealed class WarehousesController : Controller
             } : new WarehouseCapacityViewModel()
         };
 
+        await LoadCostCentersAsync(model, cancellationToken);
         return View(model);
     }
 
@@ -167,6 +186,8 @@ public sealed class WarehousesController : Controller
     {
         if (!ModelState.IsValid || model.Id is null)
         {
+            LogModelStateErrors("Edit", model);
+            await LoadCostCentersAsync(model, cancellationToken);
             return View(model);
         }
 
@@ -174,6 +195,8 @@ public sealed class WarehousesController : Controller
         if (!result.IsSuccess || result.Data is null)
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "Failed to update warehouse.");
+            LogModelStateErrors("Edit.ApiFailure", model, result.Error);
+            await LoadCostCentersAsync(model, cancellationToken);
             return View(model);
         }
 
@@ -206,5 +229,36 @@ public sealed class WarehousesController : Controller
 
         TempData["Success"] = "Warehouse deactivated successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task LoadCostCentersAsync(WarehouseFormViewModel model, CancellationToken cancellationToken)
+    {
+        var result = await _costCentersClient.ListAsync(new ViewModels.CostCenters.CostCenterQuery(PageNumber: 1, PageSize: 200, OrderBy: "Code", OrderDir: "asc", IncludeInactive: false), cancellationToken);
+        model.CostCenters = result.Data?.Items
+            .Select(item => new WarehouseCostCenterOptionViewModel(item.Code, item.Name))
+            .ToList()
+            ?? new List<WarehouseCostCenterOptionViewModel>();
+    }
+
+    private void LogModelStateErrors(string context, WarehouseFormViewModel model, string? apiError = null)
+    {
+        var errors = ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .SelectMany(entry => entry.Value!.Errors.Select(error => new { Field = entry.Key, error.ErrorMessage }))
+            .ToList();
+
+        if (errors.Count == 0)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Warehouse form validation failed ({Context}). Errors: {@Errors}. Code={Code} Name={Name} CostCenter={CostCenterCode} ApiError={ApiError}",
+            context,
+            errors,
+            model.Code,
+            model.Name,
+            model.CostCenterCode,
+            apiError);
     }
 }

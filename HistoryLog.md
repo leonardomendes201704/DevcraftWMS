@@ -17,6 +17,26 @@
   - Key changes: added dedicated login layout for DemoMvc, Portal, and Portaria.
 
 ## 2026-02-06
+- TASK-0125 - Dashboard KPIs reorganizados por contexto (DemoMvc).
+
+## 2026-02-06
+- TASK-0126 - Melhorias no cadastro de Armazens (Warehouses).
+  - Key changes: added cost center CRUD, auto warehouse code generation, address number support, CEP loading UX, phone mask, and total area auto-calc.
+
+## 2026-02-06
+- TASK-0126 - Warehouse create/edit feedback.
+  - Key changes: added validation banner and server-side ModelState logging for create/edit failures.
+
+## 2026-02-06
+- TASK-0126 - Warehouse validation UX.
+  - Key changes: show validation error list in banner and highlight invalid inputs.
+
+## 2026-02-06
+- TASK-0126 - Warehouse form fixes.
+  - Key changes: corrected address field binding and fixed BR phone mask caret handling.
+  - Key changes: grouped KPI cards by context and reorganized dashboard layout.
+
+## 2026-02-06
 - Fix - Portal/Portaria API base URL for login in development.
   - Key changes: pointed ApiBaseUrl to http://localhost:5137 in dev settings.
 

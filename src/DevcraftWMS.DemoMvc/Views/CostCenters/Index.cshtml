@@ -1,0 +1,88 @@
+@model DevcraftWMS.DemoMvc.ViewModels.CostCenters.CostCenterListPageViewModel
+@{
+    ViewData["Title"] = "Cost Centers";
+    ViewData["Subtitle"] = "Manage cost center master data";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">Cost Centers</h4>
+        <small class="text-muted">Total: @Model.Pagination.TotalCount</small>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">New Cost Center</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <input class="form-control" name="Code" value="@Model.Query.Code" placeholder="Code" />
+            </div>
+            <div class="col-md-4">
+                <input class="form-control" name="Name" value="@Model.Query.Name" placeholder="Name" />
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="IsActive">
+                    <option value="">All</option>
+                    <option value="true" selected="@(Model.Query.IsActive == true)">Active</option>
+                    <option value="false" selected="@(Model.Query.IsActive == false)">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-outline-primary" type="submit">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No cost centers found.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>@item.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<partial name="_Pagination" model="Model.Pagination" />

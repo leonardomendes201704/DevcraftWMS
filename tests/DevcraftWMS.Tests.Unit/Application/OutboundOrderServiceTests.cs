@@ -481,6 +481,8 @@ public sealed class OutboundOrderServiceTests
             => Task.FromResult<IReadOnlyList<Warehouse>>(Array.Empty<Warehouse>());
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
     }
 
     private sealed class FakeProductRepository : IProductRepository
@@ -501,6 +503,8 @@ public sealed class OutboundOrderServiceTests
         public Task<Product?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult<Product?>(null);
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
         public Task<bool> EanExistsAsync(string ean, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> EanExistsAsync(string ean, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> ErpCodeExistsAsync(string erpCode, CancellationToken cancellationToken = default) => Task.FromResult(false);
@@ -561,6 +565,8 @@ public sealed class OutboundOrderServiceTests
             => Task.FromResult<IReadOnlyList<Uom>>(Array.Empty<Uom>());
         public Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> CodeExistsAsync(string code, Guid excludeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
     }
 
     private sealed class FakeCustomerContext : ICustomerContext
@@ -714,3 +720,5 @@ public sealed class OutboundOrderServiceTests
             => Task.FromResult(0);
     }
 }
+
+

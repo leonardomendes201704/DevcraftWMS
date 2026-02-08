@@ -26,7 +26,7 @@
             ? new List<InfoListItem> { new() { Label = "Address", Value = "Not provided" } }
             : new List<InfoListItem>
             {
-                new() { Label = "Address", Value = $"{primaryAddress.AddressLine1} {primaryAddress.AddressLine2}".Trim() },
+                new() { Label = "Address", Value = $"{primaryAddress.AddressLine1} {primaryAddress.AddressNumber} {primaryAddress.AddressLine2}".Trim() },
                 new() { Label = "District", Value = primaryAddress.District ?? "-" },
                 new() { Label = "City", Value = primaryAddress.City },
                 new() { Label = "State", Value = primaryAddress.State },

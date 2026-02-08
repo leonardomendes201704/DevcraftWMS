@@ -6,6 +6,7 @@ public sealed record WarehouseAddressDto(
     Guid Id,
     bool IsPrimary,
     string AddressLine1,
+    string? AddressNumber,
     string? AddressLine2,
     string? District,
     string City,

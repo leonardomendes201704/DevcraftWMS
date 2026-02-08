@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using DevcraftWMS.Application.Common.Behaviors;
 using DevcraftWMS.Application.Features.Customers;
+using DevcraftWMS.Application.Features.CostCenters;
 using DevcraftWMS.Application.Features.Notifications;
 using DevcraftWMS.Application.Abstractions.Notifications;
 using DevcraftWMS.Application.Abstractions.Auth;
@@ -67,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<ILotService, LotService>();
         services.AddScoped<IUomService, UomService>();
         services.AddScoped<IProductUomService, ProductUomService>();
+        services.AddScoped<ICostCenterService, CostCenterService>();
         services.AddScoped<IInventoryBalanceService, InventoryBalanceService>();
         services.AddScoped<IInventoryMovementService, InventoryMovementService>();
         services.AddScoped<IReceiptService, ReceiptService>();

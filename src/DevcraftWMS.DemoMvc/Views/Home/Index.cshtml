@@ -244,21 +244,22 @@
     </button>
 </div>
 
+<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
+    <div>
+        <h5 class="mb-1">System & Inventory</h5>
+        <div class="text-muted small">Health, core resources, and expiring lots.</div>
+    </div>
+</div>
+
 <div class="row g-3 mb-4">
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <partial name="_StatCard" model="statusCard" />
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <partial name="_StatCard" model="warehousesCard" />
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-lg-4 col-md-6">
         <partial name="_StatCard" model="expiringLotsCard" />
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <partial name="_QuickLinks" model="quickLinks" />
-    </div>
-    <div class="col-lg-6">
-        <partial name="_Grid" model="requestGrid" />
     </div>
 </div>
 
@@ -324,6 +325,22 @@
     </div>
     <div class="col-lg-4 col-md-6">
         <partial name="_StatCard" model="outboundShipmentsCard" />
+    </div>
+</div>
+
+<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-2 gap-2">
+    <div>
+        <h5 class="mb-1">Operations & Shortcuts</h5>
+        <div class="text-muted small">Access core screens and monitor recent API activity.</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <partial name="_QuickLinks" model="quickLinks" />
+    </div>
+    <div class="col-lg-8">
+        <partial name="_Grid" model="requestGrid" />
     </div>
 </div>
 

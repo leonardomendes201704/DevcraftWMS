@@ -8,6 +8,21 @@
     @Html.AntiForgeryToken()
     <div class="card">
         <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <div class="fw-semibold mb-1">Please review the highlighted fields and try again.</div>
+                    <ul class="mb-0">
+                        @foreach (var entry in ViewData.ModelState.Where(e => e.Value?.Errors.Count > 0))
+                        {
+                            foreach (var error in entry.Value!.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <partial name="_WarehouseForm" model="Model" />
         </div>
@@ -21,4 +36,5 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/address-lookup.js" asp-append-version="true"></script>
+    <script src="~/js/warehouse-form.js" asp-append-version="true"></script>
 }

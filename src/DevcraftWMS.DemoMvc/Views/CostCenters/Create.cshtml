@@ -1,0 +1,23 @@
+@model DevcraftWMS.DemoMvc.ViewModels.CostCenters.CostCenterFormViewModel
+@{
+    ViewData["Title"] = "New Cost Center";
+    ViewData["Subtitle"] = "Register a new cost center";
+}
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="card">
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <partial name="_CostCenterForm" model="Model" />
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a class="btn btn-light border" asp-action="Index">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

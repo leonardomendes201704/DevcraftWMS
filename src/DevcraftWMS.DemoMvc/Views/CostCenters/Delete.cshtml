@@ -1,0 +1,18 @@
+@model DevcraftWMS.DemoMvc.ViewModels.CostCenters.CostCenterDetailsViewModel
+@{
+    ViewData["Title"] = "Deactivate Cost Center";
+    ViewData["Subtitle"] = Model.Name;
+}
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <div class="card">
+        <div class="card-body">
+            <p class="mb-0">Are you sure you want to deactivate this cost center?</p>
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <button type="submit" class="btn btn-danger">Deactivate</button>
+            <a class="btn btn-light border" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </div>
+    </div>
+</form>

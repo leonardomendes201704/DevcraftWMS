@@ -29,6 +29,7 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<WarehouseAddress> WarehouseAddresses => Set<WarehouseAddress>();
     public DbSet<WarehouseContact> WarehouseContacts => Set<WarehouseContact>();
     public DbSet<WarehouseCapacity> WarehouseCapacities => Set<WarehouseCapacity>();
+    public DbSet<CostCenter> CostCenters => Set<CostCenter>();
     public DbSet<Sector> Sectors => Set<Sector>();
     public DbSet<Section> Sections => Set<Section>();
     public DbSet<Structure> Structures => Set<Structure>();

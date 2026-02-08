@@ -5,6 +5,7 @@ public sealed class WarehouseAddress : AuditableEntity
     public Guid WarehouseId { get; set; }
     public bool IsPrimary { get; set; }
     public string AddressLine1 { get; set; } = string.Empty;
+    public string? AddressNumber { get; set; }
     public string? AddressLine2 { get; set; }
     public string? District { get; set; }
     public string City { get; set; } = string.Empty;

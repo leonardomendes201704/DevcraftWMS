@@ -8,6 +8,9 @@ public sealed class AddressInputViewModel
     [MaxLength(200)]
     public string AddressLine1 { get; set; } = string.Empty;
 
+    [MaxLength(20)]
+    public string? AddressNumber { get; set; }
+
     [MaxLength(200)]
     public string? AddressLine2 { get; set; }
 

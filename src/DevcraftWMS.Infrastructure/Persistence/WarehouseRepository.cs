@@ -28,6 +28,16 @@ public sealed class WarehouseRepository : IWarehouseRepository
             .AnyAsync(w => w.Code == code && w.Id != excludeId, cancellationToken);
     }
 
+    public async Task<string?> GetLatestCodeAsync(string prefix, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Warehouses
+            .AsNoTracking()
+            .Where(w => w.Code.StartsWith(prefix))
+            .OrderByDescending(w => w.Code)
+            .Select(w => w.Code)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task AddAsync(Warehouse warehouse, CancellationToken cancellationToken = default)
     {
         _dbContext.Warehouses.Add(warehouse);
