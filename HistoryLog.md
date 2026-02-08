@@ -1,6 +1,7 @@
 # History Log
 
 ## 2026-02-06
+- 2026-02-06 - Traduzidos os itens do menu lateral do DemoMvc para PT-BR.
 - 2026-02-06 - Normalized Returns/DockSchedules query defaults to prevent pagination validation errors.
 - 2026-02-06 - Normalized DemoMvc pagination defaults to avoid pageNumber/pageSize validation errors.
 - 2026-02-06 - Added inline sidebar toggle fallback to ensure button works.
