@@ -32,20 +32,32 @@ public sealed class SectorsController : Controller
             });
         }
 
-        var selectedWarehouseId = query.WarehouseId == Guid.Empty
-            ? Guid.Parse(warehouseOptions[0].Value!)
-            : query.WarehouseId;
-
-        var normalizedQuery = query with { WarehouseId = selectedWarehouseId };
-        var result = await _sectorsClient.ListAsync(normalizedQuery, cancellationToken);
+        var result = await _sectorsClient.ListAsync(query, cancellationToken);
         if (!result.IsSuccess || result.Data is null)
         {
             TempData["Error"] = result.Error ?? "Failed to load sectors.";
             return View(new SectorListPageViewModel
             {
                 Warehouses = warehouseOptions,
-                Query = normalizedQuery
+                Query = query
             });
+        }
+
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["OrderBy"] = query.OrderBy,
+            ["OrderDir"] = query.OrderDir,
+            ["Code"] = query.Code,
+            ["Name"] = query.Name,
+            ["SectorType"] = query.SectorType?.ToString(),
+            ["IsActive"] = query.IsActive?.ToString(),
+            ["IncludeInactive"] = query.IncludeInactive.ToString(),
+            ["PageSize"] = query.PageSize.ToString()
+        };
+
+        if (query.WarehouseId.HasValue)
+        {
+            queryParams["WarehouseId"] = query.WarehouseId.Value.ToString();
         }
 
         var pagination = new PaginationViewModel
@@ -55,24 +67,13 @@ public sealed class SectorsController : Controller
             TotalCount = result.Data.TotalCount,
             Action = nameof(Index),
             Controller = "Sectors",
-            Query = new Dictionary<string, string?>
-            {
-                ["WarehouseId"] = normalizedQuery.WarehouseId.ToString(),
-                ["OrderBy"] = normalizedQuery.OrderBy,
-                ["OrderDir"] = normalizedQuery.OrderDir,
-                ["Code"] = normalizedQuery.Code,
-                ["Name"] = normalizedQuery.Name,
-                ["SectorType"] = normalizedQuery.SectorType?.ToString(),
-                ["IsActive"] = normalizedQuery.IsActive?.ToString(),
-                ["IncludeInactive"] = normalizedQuery.IncludeInactive.ToString(),
-                ["PageSize"] = normalizedQuery.PageSize.ToString()
-            }
+            Query = queryParams
         };
 
         var model = new SectorListPageViewModel
         {
             Items = result.Data.Items,
-            Query = normalizedQuery,
+            Query = query,
             Pagination = pagination,
             Warehouses = warehouseOptions
         };

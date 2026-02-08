@@ -60,6 +60,27 @@ public sealed class SectorsController : ControllerBase
         return this.ToActionResult(result);
     }
 
+    [HttpGet("sectors")]
+    public async Task<IActionResult> ListSectorsAll(
+        [FromQuery] Guid? warehouseId = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string orderBy = "CreatedAtUtc",
+        [FromQuery] string orderDir = "desc",
+        [FromQuery] string? code = null,
+        [FromQuery] string? name = null,
+        [FromQuery] SectorType? sectorType = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ListSectorsPagedQuery(warehouseId, pageNumber, pageSize, orderBy, orderDir, code, name, sectorType, isActive, includeInactive),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
     [HttpGet("sectors/{id:guid}")]
     public async Task<IActionResult> GetSectorById(Guid id, CancellationToken cancellationToken)
     {

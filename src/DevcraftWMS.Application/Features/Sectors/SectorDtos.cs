@@ -5,6 +5,7 @@ namespace DevcraftWMS.Application.Features.Sectors;
 public sealed record SectorListItemDto(
     Guid Id,
     Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     SectorType SectorType,

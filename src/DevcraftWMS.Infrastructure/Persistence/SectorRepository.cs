@@ -59,7 +59,7 @@ public sealed class SectorRepository : ISectorRepository
     }
 
     public async Task<int> CountAsync(
-        Guid warehouseId,
+        Guid? warehouseId,
         string? code,
         string? name,
         SectorType? sectorType,
@@ -72,7 +72,7 @@ public sealed class SectorRepository : ISectorRepository
     }
 
     public async Task<IReadOnlyList<Sector>> ListAsync(
-        Guid warehouseId,
+        Guid? warehouseId,
         int pageNumber,
         int pageSize,
         string orderBy,
@@ -94,7 +94,7 @@ public sealed class SectorRepository : ISectorRepository
     }
 
     private IQueryable<Sector> BuildQuery(
-        Guid warehouseId,
+        Guid? warehouseId,
         string? code,
         string? name,
         SectorType? sectorType,
@@ -102,8 +102,15 @@ public sealed class SectorRepository : ISectorRepository
         bool includeInactive)
     {
         var customerId = GetCustomerId();
-        var query = _dbContext.Sectors.AsNoTracking()
-            .Where(s => s.WarehouseId == warehouseId && s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+        var query = _dbContext.Sectors
+            .AsNoTracking()
+            .Include(s => s.Warehouse)
+            .Where(s => s.CustomerAccesses.Any(a => a.CustomerId == customerId));
+
+        if (warehouseId.HasValue && warehouseId.Value != Guid.Empty)
+        {
+            query = query.Where(s => s.WarehouseId == warehouseId.Value);
+        }
 
         if (isActive.HasValue)
         {

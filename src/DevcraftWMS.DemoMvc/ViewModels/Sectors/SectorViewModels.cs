@@ -6,7 +6,7 @@ using DevcraftWMS.DemoMvc.ViewModels.Shared;
 namespace DevcraftWMS.DemoMvc.ViewModels.Sectors;
 
 public sealed record SectorQuery(
-    Guid WarehouseId = default,
+    Guid? WarehouseId = null,
     int PageNumber = 1,
     int PageSize = 20,
     string OrderBy = "CreatedAtUtc",
@@ -20,6 +20,7 @@ public sealed record SectorQuery(
 public sealed record SectorListItemViewModel(
     Guid Id,
     Guid WarehouseId,
+    string WarehouseName,
     string Code,
     string Name,
     SectorType SectorType,
@@ -63,6 +64,6 @@ public sealed class SectorListPageViewModel
 {
     public IReadOnlyList<SectorListItemViewModel> Items { get; init; } = Array.Empty<SectorListItemViewModel>();
     public PaginationViewModel Pagination { get; init; } = new();
-    public SectorQuery Query { get; init; } = new(Guid.Empty, 1, 20, "CreatedAtUtc", "desc", null, null, null, null, false);
+    public SectorQuery Query { get; init; } = new(null, 1, 20, "CreatedAtUtc", "desc", null, null, null, null, false);
     public IReadOnlyList<SelectListItem> Warehouses { get; init; } = Array.Empty<SelectListItem>();
 }

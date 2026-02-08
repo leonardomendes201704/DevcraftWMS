@@ -1,6 +1,11 @@
 # History Log
 
+## 2026-02-08
+- Added sectors list support across all warehouses and included Warehouse column in DemoMvc grid.
+
 ## 2026-02-06
+- 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.
+- 2026-02-06 - Aligned Help/Filters/New actions into the grid header line across index pages.
 - 2026-02-06 - Added inbound quickstart (zero-to-receipt) section to manual.
 - 2026-02-06 - Traduzido o dashboard do DemoMvc para PT-BR.
 - 2026-02-06 - Traduzidos os itens do menu lateral do DemoMvc para PT-BR.

@@ -19,6 +19,7 @@ public static class SectorMapping
         => new(
             sector.Id,
             sector.WarehouseId,
+            sector.Warehouse?.Name ?? string.Empty,
             sector.Code,
             sector.Name,
             sector.SectorType,

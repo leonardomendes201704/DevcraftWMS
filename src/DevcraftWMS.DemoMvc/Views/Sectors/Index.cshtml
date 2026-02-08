@@ -15,7 +15,7 @@
         PageSize = Model.Query.PageSize,
         Query = new Dictionary<string, string?>
         {
-            ["WarehouseId"] = Model.Query.WarehouseId == Guid.Empty ? null : Model.Query.WarehouseId.ToString(),
+            ["WarehouseId"] = Model.Query.WarehouseId?.ToString(),
             ["Code"] = Model.Query.Code,
             ["Name"] = Model.Query.Name,
             ["SectorType"] = Model.Query.SectorType?.ToString(),
@@ -34,7 +34,7 @@
         })
         .ToList();
 
-    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "Select warehouse", Selected = Model.Query.WarehouseId == Guid.Empty });
+    warehouseOptions.Insert(0, new GridSelectOption { Value = string.Empty, Text = "All warehouses", Selected = Model.Query.WarehouseId is null });
 
     var sectorTypeOptions = Enum.GetValues<SectorType>()
         .Select(t => new GridSelectOption
@@ -140,6 +140,7 @@
         .WithPagination(Model.Pagination)
         .WithQueryOptions(queryOptions)
         .WithFilters(filters)
+        .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
         .AddColumn("Code", item => new HtmlString(HtmlEncoder.Default.Encode(item.Code)), "Code")
         .AddColumn("Name", item => new HtmlString(HtmlEncoder.Default.Encode(item.Name)), "Name")
         .AddColumn("Type", item => new HtmlString(item.SectorType.ToString()), "SectorType")

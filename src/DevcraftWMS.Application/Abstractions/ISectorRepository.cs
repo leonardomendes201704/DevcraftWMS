@@ -12,7 +12,7 @@ public interface ISectorRepository
     Task<Sector?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Sector?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> CountAsync(
-        Guid warehouseId,
+        Guid? warehouseId,
         string? code,
         string? name,
         SectorType? sectorType,
@@ -20,7 +20,7 @@ public interface ISectorRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Sector>> ListAsync(
-        Guid warehouseId,
+        Guid? warehouseId,
         int pageNumber,
         int pageSize,
         string orderBy,

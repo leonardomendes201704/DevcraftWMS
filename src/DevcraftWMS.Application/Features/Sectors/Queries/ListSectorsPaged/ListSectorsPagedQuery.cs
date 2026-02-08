@@ -6,7 +6,7 @@ using DevcraftWMS.Domain.Enums;
 namespace DevcraftWMS.Application.Features.Sectors.Queries.ListSectorsPaged;
 
 public sealed record ListSectorsPagedQuery(
-    Guid WarehouseId,
+    Guid? WarehouseId,
     int PageNumber = 1,
     int PageSize = 20,
     string OrderBy = "CreatedAtUtc",
