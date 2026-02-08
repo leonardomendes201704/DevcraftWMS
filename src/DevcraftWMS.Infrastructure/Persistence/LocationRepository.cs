@@ -48,6 +48,10 @@ public sealed class LocationRepository : ILocationRepository
         return await _dbContext.Locations
             .AsNoTracking()
             .Include(l => l.Zone)
+            .Include(l => l.Structure)
+            .ThenInclude(structure => structure!.Section)
+            .ThenInclude(section => section!.Sector)
+            .ThenInclude(sector => sector!.Warehouse)
             .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 
@@ -56,6 +60,10 @@ public sealed class LocationRepository : ILocationRepository
         var customerId = GetCustomerId();
         return await _dbContext.Locations
             .Include(l => l.Zone)
+            .Include(l => l.Structure)
+            .ThenInclude(structure => structure!.Section)
+            .ThenInclude(section => section!.Sector)
+            .ThenInclude(sector => sector!.Warehouse)
             .SingleOrDefaultAsync(l => l.Id == id && l.CustomerAccesses.Any(a => a.CustomerId == customerId), cancellationToken);
     }
 

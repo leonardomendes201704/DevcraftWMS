@@ -3,6 +3,13 @@ namespace DevcraftWMS.Application.Features.Locations;
 public sealed record LocationDto(
     Guid Id,
     Guid StructureId,
+    string StructureName,
+    Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     Guid? ZoneId,
     string? ZoneName,
     string Code,

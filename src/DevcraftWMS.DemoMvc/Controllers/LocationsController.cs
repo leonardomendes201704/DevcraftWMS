@@ -158,62 +158,80 @@ public sealed class LocationsController : Controller
         var sectors = await LoadSectorOptionsAsync(selectedWarehouseId, sectorId, cancellationToken);
         if (sectors.Count == 0)
         {
-            var prompt = new DependencyPromptViewModel
+            var anySectors = await LoadSectorOptionsAsync(null, null, cancellationToken);
+            if (anySectors.Count == 0)
             {
-                Title = "No sector found",
-                Message = "Locations depend on a sector, section, and structure. Do you want to create a sector now?",
-                PrimaryActionText = "Create sector",
-                PrimaryActionUrl = Url.Action("Create", "Sectors", new { warehouseId = selectedWarehouseId }) ?? "#",
-                SecondaryActionText = "Back to locations",
-                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId }) ?? "#",
-                IconClass = "bi bi-grid-3x3-gap"
-            };
-            return View("DependencyPrompt", prompt);
+                var prompt = new DependencyPromptViewModel
+                {
+                    Title = "No sector found",
+                    Message = "Locations depend on a sector, section, and structure. Do you want to create a sector now?",
+                    PrimaryActionText = "Create sector",
+                    PrimaryActionUrl = Url.Action("Create", "Sectors", new { warehouseId = selectedWarehouseId }) ?? "#",
+                    SecondaryActionText = "Back to locations",
+                    SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId }) ?? "#",
+                    IconClass = "bi bi-grid-3x3-gap"
+                };
+                return View("DependencyPrompt", prompt);
+            }
         }
 
         var selectedSectorId = sectorId.HasValue && sectors.Any(s => s.Value == sectorId.Value.ToString())
             ? sectorId.Value
-            : Guid.Parse(sectors[0].Value!);
+            : sectors.Count > 0
+                ? Guid.Parse(sectors[0].Value!)
+                : Guid.Empty;
 
         var sections = await LoadSectionOptionsAsync(selectedSectorId, sectionId, cancellationToken);
         if (sections.Count == 0)
         {
-            var prompt = new DependencyPromptViewModel
+            var anySections = await LoadSectionOptionsAsync(null, null, cancellationToken);
+            if (anySections.Count == 0)
             {
-                Title = "No section found",
-                Message = "Locations depend on a section and structure. Do you want to create a section now?",
-                PrimaryActionText = "Create section",
-                PrimaryActionUrl = Url.Action("Create", "Sections", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
-                SecondaryActionText = "Back to locations",
-                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
-                IconClass = "bi bi-layout-text-sidebar"
-            };
-            return View("DependencyPrompt", prompt);
+                var prompt = new DependencyPromptViewModel
+                {
+                    Title = "No section found",
+                    Message = "Locations depend on a section and structure. Do you want to create a section now?",
+                    PrimaryActionText = "Create section",
+                    PrimaryActionUrl = Url.Action("Create", "Sections", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
+                    SecondaryActionText = "Back to locations",
+                    SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId }) ?? "#",
+                    IconClass = "bi bi-layout-text-sidebar"
+                };
+                return View("DependencyPrompt", prompt);
+            }
         }
 
         var selectedSectionId = sectionId.HasValue && sections.Any(s => s.Value == sectionId.Value.ToString())
             ? sectionId.Value
-            : Guid.Parse(sections[0].Value!);
+            : sections.Count > 0
+                ? Guid.Parse(sections[0].Value!)
+                : Guid.Empty;
 
         var structures = await LoadStructureOptionsAsync(selectedSectionId, structureId, cancellationToken);
         if (structures.Count == 0)
         {
-            var prompt = new DependencyPromptViewModel
+            var anyStructures = await LoadStructureOptionsAsync(null, null, cancellationToken);
+            if (anyStructures.Count == 0)
             {
-                Title = "No structure found",
-                Message = "Locations depend on a structure. Do you want to create a structure now?",
-                PrimaryActionText = "Create structure",
-                PrimaryActionUrl = Url.Action("Create", "Structures", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
-                SecondaryActionText = "Back to locations",
-                SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
-                IconClass = "bi bi-stack"
-            };
-            return View("DependencyPrompt", prompt);
+                var prompt = new DependencyPromptViewModel
+                {
+                    Title = "No structure found",
+                    Message = "Locations depend on a structure. Do you want to create a structure now?",
+                    PrimaryActionText = "Create structure",
+                    PrimaryActionUrl = Url.Action("Create", "Structures", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
+                    SecondaryActionText = "Back to locations",
+                    SecondaryActionUrl = Url.Action("Index", "Locations", new { warehouseId = selectedWarehouseId, sectorId = selectedSectorId, sectionId = selectedSectionId }) ?? "#",
+                    IconClass = "bi bi-stack"
+                };
+                return View("DependencyPrompt", prompt);
+            }
         }
 
         var selectedStructureId = structureId.HasValue && structures.Any(s => s.Value == structureId.Value.ToString())
             ? structureId.Value
-            : Guid.Parse(structures[0].Value!);
+            : structures.Count > 0
+                ? Guid.Parse(structures[0].Value!)
+                : Guid.Empty;
 
         var model = new LocationFormViewModel
         {
@@ -454,7 +472,7 @@ public sealed class LocationsController : Controller
             .ToList();
     }
 
-    private async Task<IReadOnlyList<SelectListItem>> LoadSectorOptionsAsync(Guid warehouseId, Guid? selectedSectorId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<SelectListItem>> LoadSectorOptionsAsync(Guid? warehouseId, Guid? selectedSectorId, CancellationToken cancellationToken)
     {
         var result = await _sectorsClient.ListAsync(
             new SectorQuery(
@@ -480,8 +498,13 @@ public sealed class LocationsController : Controller
             .ToList();
     }
 
-    private async Task<IReadOnlyList<SelectListItem>> LoadSectionOptionsAsync(Guid sectorId, Guid? selectedSectionId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<SelectListItem>> LoadSectionOptionsAsync(Guid? sectorId, Guid? selectedSectionId, CancellationToken cancellationToken)
     {
+        if (!sectorId.HasValue || sectorId.Value == Guid.Empty)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
         var result = await _sectionsClient.ListAsync(
             new SectionQuery(
                 null,
@@ -506,8 +529,13 @@ public sealed class LocationsController : Controller
             .ToList();
     }
 
-    private async Task<IReadOnlyList<SelectListItem>> LoadStructureOptionsAsync(Guid sectionId, Guid? selectedStructureId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<SelectListItem>> LoadStructureOptionsAsync(Guid? sectionId, Guid? selectedStructureId, CancellationToken cancellationToken)
     {
+        if (!sectionId.HasValue || sectionId.Value == Guid.Empty)
+        {
+            return Array.Empty<SelectListItem>();
+        }
+
         var result = await _structuresClient.ListAsync(
             new StructureQuery(
                 null,

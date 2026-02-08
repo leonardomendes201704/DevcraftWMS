@@ -10,6 +10,7 @@
 - Updated Structures index/create to list all by default and use warehouse/sector/section cascading selection with columns for Warehouse/Sector/Section.
 - Ensured Structures edit cascades reload options when preselected lists are empty.
 - Updated Locations index/create/edit to list all by default, show Warehouse/Sector/Section/Structure columns, and cascade warehouse/sector/section/structure/zone filters.
+- Added hierarchy details (warehouse/sector/section/structure) to Location details view and DTOs.
 - Fix - LocationRepository ListByStructure uses new query signature.
 
 ## 2026-02-06

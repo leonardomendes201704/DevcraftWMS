@@ -8,6 +8,13 @@ public static class LocationMapping
         => new(
             location.Id,
             location.StructureId,
+            location.Structure?.Name ?? string.Empty,
+            location.Structure?.SectionId ?? Guid.Empty,
+            location.Structure?.Section?.Name ?? string.Empty,
+            location.Structure?.Section?.SectorId ?? Guid.Empty,
+            location.Structure?.Section?.Sector?.Name ?? string.Empty,
+            location.Structure?.Section?.Sector?.WarehouseId ?? Guid.Empty,
+            location.Structure?.Section?.Sector?.Warehouse?.Name ?? string.Empty,
             location.ZoneId,
             location.Zone?.Name,
             location.Code,

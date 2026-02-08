@@ -46,6 +46,13 @@ public sealed record LocationListItemViewModel(
 public sealed record LocationDetailViewModel(
     Guid Id,
     Guid StructureId,
+    string StructureName,
+    Guid SectionId,
+    string SectionName,
+    Guid SectorId,
+    string SectorName,
+    Guid WarehouseId,
+    string WarehouseName,
     Guid? ZoneId,
     string? ZoneName,
     string Code,
