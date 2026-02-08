@@ -173,6 +173,8 @@ public sealed class LocationsController : Controller
                 };
                 return View("DependencyPrompt", prompt);
             }
+            // Keep empty sector list; user can switch warehouse to load valid sectors.
+            sectors = Array.Empty<SelectListItem>();
         }
 
         var selectedSectorId = sectorId.HasValue && sectors.Any(s => s.Value == sectorId.Value.ToString())
@@ -199,6 +201,8 @@ public sealed class LocationsController : Controller
                 };
                 return View("DependencyPrompt", prompt);
             }
+            // Keep empty section list until a sector is selected.
+            sections = Array.Empty<SelectListItem>();
         }
 
         var selectedSectionId = sectionId.HasValue && sections.Any(s => s.Value == sectionId.Value.ToString())
@@ -225,6 +229,8 @@ public sealed class LocationsController : Controller
                 };
                 return View("DependencyPrompt", prompt);
             }
+            // Keep empty structure list until a section is selected.
+            structures = Array.Empty<SelectListItem>();
         }
 
         var selectedStructureId = structureId.HasValue && structures.Any(s => s.Value == structureId.Value.ToString())
