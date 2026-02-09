@@ -3,6 +3,10 @@ using Microsoft.Extensions.Logging;
 using DevcraftWMS.DemoMvc.ApiClients;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
 using DevcraftWMS.DemoMvc.ViewModels.Warehouses;
+using DevcraftWMS.DemoMvc.ViewModels.Locations;
+using DevcraftWMS.DemoMvc.ViewModels.Sections;
+using DevcraftWMS.DemoMvc.ViewModels.Sectors;
+using DevcraftWMS.DemoMvc.ViewModels.Structures;
 
 namespace DevcraftWMS.DemoMvc.Controllers;
 
@@ -10,15 +14,27 @@ public sealed class WarehousesController : Controller
 {
     private readonly WarehousesApiClient _client;
     private readonly CostCentersApiClient _costCentersClient;
+    private readonly SectorsApiClient _sectorsClient;
+    private readonly SectionsApiClient _sectionsClient;
+    private readonly StructuresApiClient _structuresClient;
+    private readonly LocationsApiClient _locationsClient;
     private readonly ILogger<WarehousesController> _logger;
 
     public WarehousesController(
         WarehousesApiClient client,
         CostCentersApiClient costCentersClient,
+        SectorsApiClient sectorsClient,
+        SectionsApiClient sectionsClient,
+        StructuresApiClient structuresClient,
+        LocationsApiClient locationsClient,
         ILogger<WarehousesController> logger)
     {
         _client = client;
         _costCentersClient = costCentersClient;
+        _sectorsClient = sectorsClient;
+        _sectionsClient = sectionsClient;
+        _structuresClient = structuresClient;
+        _locationsClient = locationsClient;
         _logger = logger;
     }
 
@@ -79,7 +95,93 @@ public sealed class WarehousesController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        return View(result.Data);
+        var sectorsResult = await _sectorsClient.ListAsync(new SectorQuery(
+            WarehouseId: id,
+            PageNumber: 1,
+            PageSize: 100,
+            OrderBy: "Code",
+            OrderDir: "asc",
+            Code: null,
+            Name: null,
+            SectorType: null,
+            IsActive: null,
+            IncludeInactive: false), cancellationToken);
+
+        var sectionsResult = await _sectionsClient.ListAsync(new SectionQuery(
+            WarehouseId: id,
+            SectorId: null,
+            PageNumber: 1,
+            PageSize: 100,
+            OrderBy: "Code",
+            OrderDir: "asc",
+            Code: null,
+            Name: null,
+            IsActive: null,
+            IncludeInactive: false), cancellationToken);
+
+        var structuresResult = await _structuresClient.ListAsync(new StructureQuery(
+            WarehouseId: id,
+            SectorId: null,
+            SectionId: null,
+            PageNumber: 1,
+            PageSize: 100,
+            OrderBy: "Code",
+            OrderDir: "asc",
+            Code: null,
+            Name: null,
+            StructureType: null,
+            IsActive: null,
+            IncludeInactive: false), cancellationToken);
+
+        var locationsResult = await _locationsClient.ListAsync(new LocationQuery(
+            WarehouseId: id,
+            SectorId: null,
+            SectionId: null,
+            StructureId: null,
+            ZoneId: null,
+            PageNumber: 1,
+            PageSize: 100,
+            OrderBy: "Code",
+            OrderDir: "asc",
+            Code: null,
+            Barcode: null,
+            IsActive: null,
+            IncludeInactive: false), cancellationToken);
+
+        if (!sectorsResult.IsSuccess)
+        {
+            TempData["Warning"] = sectorsResult.Error ?? "Failed to load sectors.";
+        }
+
+        if (!sectionsResult.IsSuccess)
+        {
+            TempData["Warning"] = sectionsResult.Error ?? "Failed to load sections.";
+        }
+
+        if (!structuresResult.IsSuccess)
+        {
+            TempData["Warning"] = structuresResult.Error ?? "Failed to load structures.";
+        }
+
+        if (!locationsResult.IsSuccess)
+        {
+            TempData["Warning"] = locationsResult.Error ?? "Failed to load locations.";
+        }
+
+        var model = new WarehouseDetailsPageViewModel
+        {
+            Warehouse = result.Data,
+            Sectors = sectorsResult.Data?.Items ?? Array.Empty<SectorListItemViewModel>(),
+            SectorsTotal = sectorsResult.Data?.TotalCount ?? 0,
+            Sections = sectionsResult.Data?.Items ?? Array.Empty<SectionListItemViewModel>(),
+            SectionsTotal = sectionsResult.Data?.TotalCount ?? 0,
+            Structures = structuresResult.Data?.Items ?? Array.Empty<StructureListItemViewModel>(),
+            StructuresTotal = structuresResult.Data?.TotalCount ?? 0,
+            Locations = locationsResult.Data?.Items ?? Array.Empty<LocationListItemViewModel>(),
+            LocationsTotal = locationsResult.Data?.TotalCount ?? 0
+        };
+
+        return View(model);
     }
 
     [HttpGet]

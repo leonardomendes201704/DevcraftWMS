@@ -98,6 +98,7 @@ When implementing a new endpoint:
 - All form fields must use Bootstrap input groups with a left icon (no plain inputs).
 - Address blocks must use the reusable Address component with CEP lookup and IBGE-driven UF/city selection.
 - Respect API pagination validators: UI lookups must never request PageSize above the API max (default 100). If unsure, cap to 100 for dropdown/lookup queries.
+- For paginated API calls, use `PageSize=100` by default unless a feature explicitly needs a smaller value.
 - All dropdowns must include a default "Selecione..." option and must not auto-select real items on create forms (only preselect on edit/details when data already exists).
 - Numeric/decimal fields must accept numbers only and apply correct masks: use `type="number"`, proper `step`, and normalize decimal input (comma/dot) on submit when needed.
 

@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using DevcraftWMS.DemoMvc.Enums;
+using DevcraftWMS.DemoMvc.ViewModels.Locations;
+using DevcraftWMS.DemoMvc.ViewModels.Sections;
+using DevcraftWMS.DemoMvc.ViewModels.Sectors;
 using DevcraftWMS.DemoMvc.ViewModels.Shared;
+using DevcraftWMS.DemoMvc.ViewModels.Structures;
 
 namespace DevcraftWMS.DemoMvc.ViewModels.Warehouses;
 
@@ -134,6 +138,19 @@ public sealed record WarehouseDetailsViewModel(
     IReadOnlyList<AddressInputViewModel> Addresses,
     IReadOnlyList<WarehouseContactViewModel> Contacts,
     IReadOnlyList<WarehouseCapacityViewModel> Capacities);
+
+public sealed class WarehouseDetailsPageViewModel
+{
+    public WarehouseDetailsViewModel Warehouse { get; init; } = default!;
+    public IReadOnlyList<SectorListItemViewModel> Sectors { get; init; } = Array.Empty<SectorListItemViewModel>();
+    public int SectorsTotal { get; init; }
+    public IReadOnlyList<SectionListItemViewModel> Sections { get; init; } = Array.Empty<SectionListItemViewModel>();
+    public int SectionsTotal { get; init; }
+    public IReadOnlyList<StructureListItemViewModel> Structures { get; init; } = Array.Empty<StructureListItemViewModel>();
+    public int StructuresTotal { get; init; }
+    public IReadOnlyList<LocationListItemViewModel> Locations { get; init; } = Array.Empty<LocationListItemViewModel>();
+    public int LocationsTotal { get; init; }
+}
 
 public sealed class WarehouseListPageViewModel
 {

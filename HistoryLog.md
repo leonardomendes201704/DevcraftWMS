@@ -14,6 +14,7 @@
 - Prevented Location create from blocking when default warehouse has no sectors; allow user to select warehouse to load hierarchy.
 - Fix - LocationRepository ListByStructure uses new query signature.
 - Adjusted Locations create dependency prompts to only trigger when a selected sector/section is present.
+- Added warehouse details hierarchy report (sectors, sections, structures, locations) with summary counts.
 
 ## 2026-02-06
 - 2026-02-06 - Reordered DemoMvc sidebar to follow inbound setup step-by-step flow.

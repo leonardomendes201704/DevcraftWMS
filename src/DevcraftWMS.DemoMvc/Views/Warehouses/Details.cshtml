@@ -1,24 +1,24 @@
 @using DevcraftWMS.DemoMvc.ViewModels.Shared
-@model DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseDetailsViewModel
+@model DevcraftWMS.DemoMvc.ViewModels.Warehouses.WarehouseDetailsPageViewModel
 @{
     ViewData["Title"] = "Warehouse Details";
-    ViewData["Subtitle"] = $"{Model.Code} - {Model.Name}";
+    ViewData["Subtitle"] = $"{Model.Warehouse.Code} - {Model.Warehouse.Name}";
 
     var coreInfo = new InfoListViewModel
     {
         Title = "Core details",
         Items = new List<InfoListItem>
         {
-            new() { Label = "Code", Value = Model.Code },
-            new() { Label = "Name", Value = Model.Name },
-            new() { Label = "Short name", Value = Model.ShortName ?? "-" },
-            new() { Label = "Type", Value = Model.WarehouseType.ToString() },
-            new() { Label = "Status", Value = Model.IsActive ? "Active" : "Inactive", BadgeText = Model.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.IsActive ? "text-bg-success" : "text-bg-secondary" },
-            new() { Label = "Primary", Value = Model.IsPrimary ? "Yes" : "No" }
+            new() { Label = "Code", Value = Model.Warehouse.Code },
+            new() { Label = "Name", Value = Model.Warehouse.Name },
+            new() { Label = "Short name", Value = Model.Warehouse.ShortName ?? "-" },
+            new() { Label = "Type", Value = Model.Warehouse.WarehouseType.ToString() },
+            new() { Label = "Status", Value = Model.Warehouse.IsActive ? "Active" : "Inactive", BadgeText = Model.Warehouse.IsActive ? "Active" : "Inactive", BadgeCssClass = Model.Warehouse.IsActive ? "text-bg-success" : "text-bg-secondary" },
+            new() { Label = "Primary", Value = Model.Warehouse.IsPrimary ? "Yes" : "No" }
         }
     };
 
-    var primaryAddress = Model.Addresses.FirstOrDefault();
+    var primaryAddress = Model.Warehouse.Addresses.FirstOrDefault();
     var addressInfo = new InfoListViewModel
     {
         Title = "Primary address",
@@ -37,7 +37,7 @@
             }
     };
 
-    var primaryContact = Model.Contacts.FirstOrDefault();
+    var primaryContact = Model.Warehouse.Contacts.FirstOrDefault();
     var contactInfo = new InfoListViewModel
     {
         Title = "Primary contact",
@@ -51,7 +51,7 @@
             }
     };
 
-    var primaryCapacity = Model.Capacities.FirstOrDefault();
+    var primaryCapacity = Model.Warehouse.Capacities.FirstOrDefault();
     var capacityInfo = new InfoListViewModel
     {
         Title = "Capacity & dimensions",
@@ -69,12 +69,24 @@
                 new() { Label = "Operational area", Value = primaryCapacity.OperationalArea?.ToString() ?? "-" }
             }
     };
+
+    var sectionsBySector = Model.Sections
+        .GroupBy(section => section.SectorId)
+        .ToDictionary(group => group.Key, group => group.ToList());
+
+    var structuresBySection = Model.Structures
+        .GroupBy(structure => structure.SectionId)
+        .ToDictionary(group => group.Key, group => group.ToList());
+
+    var locationsByStructure = Model.Locations
+        .GroupBy(location => location.StructureId)
+        .ToDictionary(group => group.Key, group => group.ToList());
 }
 
 <div class="card mb-3">
     <div class="card-body d-flex gap-2">
-        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Deactivate</a>
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Warehouse.Id">Edit</a>
+        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Warehouse.Id">Deactivate</a>
         <a class="btn btn-light border" asp-action="Index">Back</a>
     </div>
 </div>
@@ -91,5 +103,354 @@
     </div>
     <div class="col-lg-6">
         <partial name="_InfoList" model="capacityInfo" />
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <div class="fw-semibold">Hierarchy view</div>
+        <div class="text-muted small">Sectors → Sections → Structures → Locations.</div>
+    </div>
+    <div class="card-body">
+        @if (Model.Sectors.Count == 0)
+        {
+            <div class="text-muted">No sectors found for this warehouse.</div>
+        }
+        else
+        {
+            <div class="accordion" id="warehouseHierarchyTree">
+                @foreach (var sector in Model.Sectors)
+                {
+                    var sectorSections = sectionsBySector.TryGetValue(sector.Id, out var sectorSectionList)
+                        ? sectorSectionList
+                        : new List<DevcraftWMS.DemoMvc.ViewModels.Sections.SectionListItemViewModel>();
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="sector-@sector.Id">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sector-body-@sector.Id" aria-expanded="false" aria-controls="sector-body-@sector.Id">
+                                <span class="fw-semibold">@sector.Code</span>
+                                <span class="ms-2">@sector.Name</span>
+                                <span class="badge text-bg-secondary ms-auto">Sections: @sectorSections.Count</span>
+                            </button>
+                        </h2>
+                        <div id="sector-body-@sector.Id" class="accordion-collapse collapse" aria-labelledby="sector-@sector.Id" data-bs-parent="#warehouseHierarchyTree">
+                            <div class="accordion-body">
+                                @if (sectorSections.Count == 0)
+                                {
+                                    <div class="text-muted">No sections under this sector.</div>
+                                }
+                                else
+                                {
+                                    <div class="accordion" id="sector-@sector.Id-sections">
+                                        @foreach (var sectionItem in sectorSections)
+                                        {
+                                            var sectionStructures = structuresBySection.TryGetValue(sectionItem.Id, out var sectionStructureList)
+                                                ? sectionStructureList
+                                                : new List<DevcraftWMS.DemoMvc.ViewModels.Structures.StructureListItemViewModel>();
+
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="section-@sectionItem.Id">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section-body-@sectionItem.Id" aria-expanded="false" aria-controls="section-body-@sectionItem.Id">
+                                                        <span class="fw-semibold">@sectionItem.Code</span>
+                                                        <span class="ms-2">@sectionItem.Name</span>
+                                                        <span class="badge text-bg-secondary ms-auto">Structures: @sectionStructures.Count</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="section-body-@sectionItem.Id" class="accordion-collapse collapse" aria-labelledby="section-@sectionItem.Id" data-bs-parent="#sector-@sector.Id-sections">
+                                                    <div class="accordion-body">
+                                                        @if (sectionStructures.Count == 0)
+                                                        {
+                                                            <div class="text-muted">No structures under this section.</div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="accordion" id="section-@sectionItem.Id-structures">
+                                                                @foreach (var structure in sectionStructures)
+                                                                {
+                                                                    var structureLocations = locationsByStructure.TryGetValue(structure.Id, out var structureLocationList)
+                                                                        ? structureLocationList
+                                                                        : new List<DevcraftWMS.DemoMvc.ViewModels.Locations.LocationListItemViewModel>();
+
+                                                                    <div class="accordion-item">
+                                                                        <h2 class="accordion-header" id="structure-@structure.Id">
+                                                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#structure-body-@structure.Id" aria-expanded="false" aria-controls="structure-body-@structure.Id">
+                                                                                <span class="fw-semibold">@structure.Code</span>
+                                                                                <span class="ms-2">@structure.Name</span>
+                                                                                <span class="badge text-bg-secondary ms-auto">Locations: @structureLocations.Count</span>
+                                                                            </button>
+                                                                        </h2>
+                                                                        <div id="structure-body-@structure.Id" class="accordion-collapse collapse" aria-labelledby="structure-@structure.Id" data-bs-parent="#section-@sectionItem.Id-structures">
+                                                                            <div class="accordion-body">
+                                                                                @if (structureLocations.Count == 0)
+                                                                                {
+                                                                                    <div class="text-muted">No locations under this structure.</div>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <div class="table-responsive">
+                                                                                        <table class="table table-sm align-middle mb-0">
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th>Code</th>
+                                                                                                    <th>Barcode</th>
+                                                                                                    <th>Zone</th>
+                                                                                                    <th>Status</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                @foreach (var location in structureLocations)
+                                                                                                {
+                                                                                                    <tr>
+                                                                                                        <td>@location.Code</td>
+                                                                                                        <td>@location.Barcode</td>
+                                                                                                        <td>@(string.IsNullOrWhiteSpace(location.ZoneName) ? "-" : location.ZoneName)</td>
+                                                                                                        <td>
+                                                                                                            <span class="badge @(location.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                                                                                @(location.IsActive ? "Active" : "Inactive")
+                                                                                                            </span>
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                }
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+            <div>
+                <div class="fw-semibold">Warehouse hierarchy report</div>
+                <div class="text-muted small">Sectors, sections, structures, and locations registered in this warehouse.</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge text-bg-primary">Sectors: @Model.SectorsTotal</span>
+                <span class="badge text-bg-info">Sections: @Model.SectionsTotal</span>
+                <span class="badge text-bg-secondary">Structures: @Model.StructuresTotal</span>
+                <span class="badge text-bg-dark">Locations: @Model.LocationsTotal</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="accordion" id="warehouseHierarchy">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingSectors">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSectors" aria-expanded="true" aria-controls="collapseSectors">
+                        Sectors
+                    </button>
+                </h2>
+                <div id="collapseSectors" class="accordion-collapse collapse show" aria-labelledby="headingSectors" data-bs-parent="#warehouseHierarchy">
+                    <div class="accordion-body">
+                        @if (Model.Sectors.Count == 0)
+                        {
+                            <div class="text-muted">No sectors found for this warehouse.</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var sector in Model.Sectors)
+                                        {
+                                            <tr>
+                                                <td>@sector.Code</td>
+                                                <td>@sector.Name</td>
+                                                <td>@sector.SectorType</td>
+                                                <td>
+                                                    <span class="badge @(sector.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                        @(sector.IsActive ? "Active" : "Inactive")
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingSections">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSections" aria-expanded="false" aria-controls="collapseSections">
+                        Sections
+                    </button>
+                </h2>
+                <div id="collapseSections" class="accordion-collapse collapse" aria-labelledby="headingSections" data-bs-parent="#warehouseHierarchy">
+                    <div class="accordion-body">
+                        @if (Model.Sections.Count == 0)
+                        {
+                            <div class="text-muted">No sections found for this warehouse.</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Sector</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var sectionItem in Model.Sections)
+                                        {
+                                            <tr>
+                                                <td>@sectionItem.Code</td>
+                                                <td>@sectionItem.Name</td>
+                                                <td>@sectionItem.SectorName</td>
+                                                <td>
+                                                    <span class="badge @(sectionItem.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                        @(sectionItem.IsActive ? "Active" : "Inactive")
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingStructures">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStructures" aria-expanded="false" aria-controls="collapseStructures">
+                        Structures
+                    </button>
+                </h2>
+                <div id="collapseStructures" class="accordion-collapse collapse" aria-labelledby="headingStructures" data-bs-parent="#warehouseHierarchy">
+                    <div class="accordion-body">
+                        @if (Model.Structures.Count == 0)
+                        {
+                            <div class="text-muted">No structures found for this warehouse.</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Levels</th>
+                                            <th>Section</th>
+                                            <th>Sector</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var structure in Model.Structures)
+                                        {
+                                            <tr>
+                                                <td>@structure.Code</td>
+                                                <td>@structure.Name</td>
+                                                <td>@structure.StructureType</td>
+                                                <td>@structure.Levels</td>
+                                                <td>@structure.SectionName</td>
+                                                <td>@structure.SectorName</td>
+                                                <td>
+                                                    <span class="badge @(structure.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                        @(structure.IsActive ? "Active" : "Inactive")
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingLocations">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocations" aria-expanded="false" aria-controls="collapseLocations">
+                        Locations
+                    </button>
+                </h2>
+                <div id="collapseLocations" class="accordion-collapse collapse" aria-labelledby="headingLocations" data-bs-parent="#warehouseHierarchy">
+                    <div class="accordion-body">
+                        @if (Model.Locations.Count == 0)
+                        {
+                            <div class="text-muted">No locations found for this warehouse.</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Barcode</th>
+                                            <th>Structure</th>
+                                            <th>Section</th>
+                                            <th>Sector</th>
+                                            <th>Zone</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var location in Model.Locations)
+                                        {
+                                            <tr>
+                                                <td>@location.Code</td>
+                                                <td>@location.Barcode</td>
+                                                <td>@location.StructureName</td>
+                                                <td>@location.SectionName</td>
+                                                <td>@location.SectorName</td>
+                                                <td>@(string.IsNullOrWhiteSpace(location.ZoneName) ? "-" : location.ZoneName)</td>
+                                                <td>
+                                                    <span class="badge @(location.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                                        @(location.IsActive ? "Active" : "Inactive")
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-muted small mt-3">
+            Showing up to 200 records per section. Use the dedicated lists for full pagination and filters.
+        </div>
     </div>
 </div>
