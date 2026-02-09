@@ -92,6 +92,65 @@ public sealed class AsnService : IAsnService
         return RequestResult<AsnDetailDto>.Success(AsnMapping.MapDetail(asn));
     }
 
+    public async Task<RequestResult<AsnDetailDto>> UpdateAsync(
+        Guid id,
+        Guid warehouseId,
+        string asnNumber,
+        string? documentNumber,
+        string? supplierName,
+        DateOnly? expectedArrivalDate,
+        string? notes,
+        CancellationToken cancellationToken)
+    {
+        if (!_customerContext.CustomerId.HasValue)
+        {
+            return RequestResult<AsnDetailDto>.Failure("customers.context.required", "Customer context is required.");
+        }
+
+        var asn = await _asnRepository.GetTrackedByIdAsync(id, cancellationToken);
+        if (asn is null)
+        {
+            return RequestResult<AsnDetailDto>.Failure("asns.asn.not_found", "ASN not found.");
+        }
+
+        if (asn.Status != AsnStatus.Registered)
+        {
+            return RequestResult<AsnDetailDto>.Failure("asns.asn.status_locked", "ASN status does not allow changes.");
+        }
+
+        if (warehouseId == Guid.Empty)
+        {
+            return RequestResult<AsnDetailDto>.Failure("asns.warehouse.required", "Warehouse is required.");
+        }
+
+        var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, cancellationToken);
+        if (warehouse is null)
+        {
+            return RequestResult<AsnDetailDto>.Failure("asns.warehouse.not_found", "Warehouse not found.");
+        }
+
+        if (!string.Equals(asn.AsnNumber, asnNumber, StringComparison.OrdinalIgnoreCase))
+        {
+            var numberExists = await _asnRepository.AsnNumberExistsAsync(asnNumber, asn.Id, cancellationToken);
+            if (numberExists)
+            {
+                return RequestResult<AsnDetailDto>.Failure("asns.asn.number_exists", "ASN number already exists.");
+            }
+        }
+
+        asn.WarehouseId = warehouseId;
+        asn.AsnNumber = asnNumber.Trim();
+        asn.DocumentNumber = string.IsNullOrWhiteSpace(documentNumber) ? null : documentNumber.Trim();
+        asn.SupplierName = string.IsNullOrWhiteSpace(supplierName) ? null : supplierName.Trim();
+        asn.ExpectedArrivalDate = expectedArrivalDate;
+        asn.Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+
+        await _asnRepository.UpdateAsync(asn, cancellationToken);
+        asn.Warehouse = warehouse;
+
+        return RequestResult<AsnDetailDto>.Success(AsnMapping.MapDetail(asn));
+    }
+
     public async Task<RequestResult<AsnDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var asn = await _asnRepository.GetByIdAsync(id, cancellationToken);

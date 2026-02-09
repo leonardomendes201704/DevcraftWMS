@@ -9,6 +9,7 @@ public static class InboundOrderMapping
             order.Id,
             order.OrderNumber,
             order.Asn?.AsnNumber ?? string.Empty,
+            order.Customer?.Name ?? string.Empty,
             order.Warehouse?.Name ?? string.Empty,
             order.Status,
             order.Priority,

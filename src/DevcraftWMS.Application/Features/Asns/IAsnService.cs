@@ -15,6 +15,16 @@ public interface IAsnService
         string? notes,
         CancellationToken cancellationToken);
 
+    Task<RequestResult<AsnDetailDto>> UpdateAsync(
+        Guid id,
+        Guid warehouseId,
+        string asnNumber,
+        string? documentNumber,
+        string? supplierName,
+        DateOnly? expectedArrivalDate,
+        string? notes,
+        CancellationToken cancellationToken);
+
     Task<RequestResult<AsnDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<RequestResult<PagedResult<AsnListItemDto>>> ListAsync(

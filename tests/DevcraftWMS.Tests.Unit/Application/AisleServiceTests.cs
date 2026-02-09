@@ -138,7 +138,8 @@ public sealed class AisleServiceTests
         public Task<Section?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_section);
 
         public Task<int> CountAsync(
-            Guid sectorId,
+            Guid? warehouseId,
+            Guid? sectorId,
             string? code,
             string? name,
             bool? isActive,
@@ -146,7 +147,8 @@ public sealed class AisleServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Section>> ListAsync(
-            Guid sectorId,
+            Guid? warehouseId,
+            Guid? sectorId,
             int pageNumber,
             int pageSize,
             string orderBy,

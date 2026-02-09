@@ -117,6 +117,7 @@
             : new HtmlString("<span class=\"text-muted\">-</span>"))
         .AddColumn("ASN", item => new HtmlString(HtmlEncoder.Default.Encode(item.AsnNumber ?? "-")), "AsnNumber")
         .AddColumn("Warehouse", item => new HtmlString(HtmlEncoder.Default.Encode(item.WarehouseName)), "WarehouseName")
+        .AddColumn("Customer", item => new HtmlString(HtmlEncoder.Default.Encode(item.CustomerName)), "CustomerName")
         .AddColumn("Status", item => new HtmlString(item.Status switch
         {
             0 => "Issued",

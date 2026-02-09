@@ -155,6 +155,69 @@ public sealed class AsnServiceTests
         result.ErrorCode.Should().Be("asns.item.expiration_required");
     }
 
+    [Fact]
+    public async Task UpdateAsn_Should_Fail_When_Status_Not_Registered()
+    {
+        var asn = new Asn { Id = Guid.NewGuid(), Status = AsnStatus.Pending, AsnNumber = "ASN-OLD" };
+        var warehouse = new Warehouse { Id = Guid.NewGuid(), Name = "WH" };
+
+        var service = new AsnService(
+            new FakeAsnRepository(asn: asn),
+            new FakeAsnAttachmentRepository(),
+            new FakeAsnItemRepository(),
+            new FakeWarehouseRepository(warehouse),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
+
+        var result = await service.UpdateAsync(
+            asn.Id,
+            warehouse.Id,
+            "ASN-UPDATED",
+            "DOC-1",
+            "Supplier",
+            new DateOnly(2026, 2, 10),
+            "Notes",
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("asns.asn.status_locked");
+    }
+
+    [Fact]
+    public async Task UpdateAsn_Should_Update_When_Registered()
+    {
+        var asn = new Asn { Id = Guid.NewGuid(), Status = AsnStatus.Registered, AsnNumber = "ASN-OLD" };
+        var warehouse = new Warehouse { Id = Guid.NewGuid(), Name = "WH" };
+
+        var service = new AsnService(
+            new FakeAsnRepository(asn: asn),
+            new FakeAsnAttachmentRepository(),
+            new FakeAsnItemRepository(),
+            new FakeWarehouseRepository(warehouse),
+            new FakeProductRepository(),
+            new FakeUomRepository(),
+            new FakeCustomerContext(Guid.NewGuid()),
+            new FakeFileStorage(),
+            CreateOptions());
+
+        var result = await service.UpdateAsync(
+            asn.Id,
+            warehouse.Id,
+            "ASN-UPDATED",
+            "DOC-2",
+            "Supplier",
+            new DateOnly(2026, 2, 11),
+            "Updated notes",
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.AsnNumber.Should().Be("ASN-UPDATED");
+    }
+
     private sealed class FakeAsnRepository : IAsnRepository
     {
         private readonly bool _asnNumberExists;

@@ -1,6 +1,22 @@
 # History Log
 
+## 2026-02-09
+- TASK-0130 - DemoMvc ASN screens and ASN update support.
+  - Key changes: added ASN update command/endpoint, DemoMvc ASN UI (list/create/edit/details), and ASN API client/viewmodels.
+  - Key changes: added ASN update coverage in unit/integration tests.
+- Fix - Inbound order active flag on ASN conversion and seed.
+  - Key changes: set IsActive=true when converting ASN to inbound order and in inbound flow seed.
+- Fix - Normalize SQLite relative paths to App_Data.
+  - Key changes: prefer App_Data folder when connection string uses a bare SQLite filename.
+- Fix - SQLite connection fallback to App_Data when missing.
+  - Key changes: fallback to App_Data/app.db + App_Data/logs.db when connection strings are empty; log normalized path on startup.
+- UI - Inbound Orders list shows customer name.
+  - Key changes: include customer name in inbound order list DTOs and add column in DemoMvc grid.
+  - Key changes: added Customer navigation to InboundOrder for list projection.
+
 ## 2026-02-08
+- TASK-0130 - DemoMvc ASN screens (List/Create/Edit/Details) planned.
+  - Key changes: created task definition for adding ASN management to DemoMvc.
 - Added sectors list support across all warehouses and included Warehouse column in DemoMvc grid.
 - Allowed section creation to select sectors across warehouses when none exist for the selected warehouse.
 - Added warehouse-to-sector cascading dropdown on Sections create/edit.

@@ -155,7 +155,10 @@ public sealed class LocationServiceTests
         public Task<Location?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_location);
 
         public Task<int> CountAsync(
-            Guid structureId,
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
+            Guid? structureId,
             Guid? zoneId,
             string? code,
             string? barcode,
@@ -164,7 +167,10 @@ public sealed class LocationServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Location>> ListAsync(
-            Guid structureId,
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
+            Guid? structureId,
             Guid? zoneId,
             int pageNumber,
             int pageSize,
@@ -206,7 +212,9 @@ public sealed class LocationServiceTests
         public Task<Structure?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_structure);
 
         public Task<int> CountAsync(
-            Guid sectionId,
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
             string? code,
             string? name,
             StructureType? structureType,
@@ -215,6 +223,9 @@ public sealed class LocationServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<int> CountForCustomerAsync(
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
             string? code,
             string? name,
             StructureType? structureType,
@@ -223,7 +234,9 @@ public sealed class LocationServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Structure>> ListAsync(
-            Guid sectionId,
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
             int pageNumber,
             int pageSize,
             string orderBy,
@@ -236,6 +249,9 @@ public sealed class LocationServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Structure>>(Array.Empty<Structure>());
 
         public Task<IReadOnlyList<Structure>> ListForCustomerAsync(
+            Guid? warehouseId,
+            Guid? sectorId,
+            Guid? sectionId,
             int pageNumber,
             int pageSize,
             string orderBy,

@@ -134,6 +134,7 @@ public sealed class InboundOrderRepository : IInboundOrderRepository
         query = ApplyOrdering(query, orderBy, orderDir);
 
         return await query
+            .Include(o => o.Customer)
             .Include(o => o.Warehouse)
             .Include(o => o.Asn)
             .Skip((pageNumber - 1) * pageSize)

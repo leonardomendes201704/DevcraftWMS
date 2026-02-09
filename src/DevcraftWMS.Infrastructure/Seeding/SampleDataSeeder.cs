@@ -129,42 +129,47 @@ public sealed class SampleDataSeeder
             }
         }
 
-        var seedPutawayTasks = await _dbContext.PutawayTasks
-            .Where(t => seedReceiptIds.Contains(t.ReceiptId))
-            .ToListAsync(cancellationToken);
-
-        var seedUnitLoads = await _dbContext.UnitLoads
-            .Where(ul => seedReceiptIds.Contains(ul.ReceiptId) && EF.Functions.Like(ul.SsccInternal, "SSCC-SEED-INB-%"))
-            .ToListAsync(cancellationToken);
-
-        var seedInboundOrders = await _dbContext.InboundOrders
-            .Where(o => o.OrderNumber != null && EF.Functions.Like(o.OrderNumber, "OE-SEED-INB-%"))
-            .ToListAsync(cancellationToken);
-
-        var seedInboundOrderIds = seedInboundOrders.Select(o => o.Id).ToList();
-        var seedInboundItems = await _dbContext.InboundOrderItems
-            .Where(i => seedInboundOrderIds.Contains(i.InboundOrderId))
-            .ToListAsync(cancellationToken);
-
-        var seedAsns = await _dbContext.Asns
-            .Where(a => a.AsnNumber != null && EF.Functions.Like(a.AsnNumber, "ASN-SEED-INB-%"))
-            .ToListAsync(cancellationToken);
-
-        var seedAsnIds = seedAsns.Select(a => a.Id).ToList();
-        var seedAsnItems = await _dbContext.AsnItems
-            .Where(i => seedAsnIds.Contains(i.AsnId))
-            .ToListAsync(cancellationToken);
-
-        _dbContext.PutawayTasks.RemoveRange(seedPutawayTasks);
-        _dbContext.UnitLoads.RemoveRange(seedUnitLoads);
-        _dbContext.ReceiptItems.RemoveRange(seedReceiptItems);
-        _dbContext.Receipts.RemoveRange(seedReceipts);
-        _dbContext.InboundOrderItems.RemoveRange(seedInboundItems);
-        _dbContext.InboundOrders.RemoveRange(seedInboundOrders);
-        _dbContext.AsnItems.RemoveRange(seedAsnItems);
-        _dbContext.Asns.RemoveRange(seedAsns);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        // Hard-delete inbound seed data to avoid soft-delete leftovers blocking re-seed.
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM PutawayTasks WHERE ReceiptId IN (SELECT Id FROM Receipts WHERE ReceiptNumber LIKE {0})",
+            new object[] { "RCV-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM UnitLoads WHERE ReceiptId IN (SELECT Id FROM Receipts WHERE ReceiptNumber LIKE {0}) OR SsccInternal LIKE {1}",
+            new object[] { "RCV-SEED-INB-%", "SSCC-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM ReceiptItems WHERE ReceiptId IN (SELECT Id FROM Receipts WHERE ReceiptNumber LIKE {0})",
+            new object[] { "RCV-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM Receipts WHERE ReceiptNumber LIKE {0}",
+            new object[] { "RCV-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM InboundOrderStatusEvents WHERE InboundOrderId IN (SELECT Id FROM InboundOrders WHERE OrderNumber LIKE {0})",
+            new object[] { "OE-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM InboundOrderItems WHERE InboundOrderId IN (SELECT Id FROM InboundOrders WHERE OrderNumber LIKE {0})",
+            new object[] { "OE-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM InboundOrders WHERE OrderNumber LIKE {0}",
+            new object[] { "OE-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM AsnStatusEvents WHERE AsnId IN (SELECT Id FROM Asns WHERE AsnNumber LIKE {0})",
+            new object[] { "ASN-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM AsnItems WHERE AsnId IN (SELECT Id FROM Asns WHERE AsnNumber LIKE {0})",
+            new object[] { "ASN-SEED-INB-%" },
+            cancellationToken);
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "DELETE FROM Asns WHERE AsnNumber LIKE {0}",
+            new object[] { "ASN-SEED-INB-%" },
+            cancellationToken);
     }
 
     private async Task<Customer> EnsureCustomerAsync(CancellationToken cancellationToken)
@@ -1064,7 +1069,8 @@ public sealed class SampleDataSeeder
                 ExpectedArrivalDate = asn.ExpectedArrivalDate,
                 Status = InboundOrderStatus.Completed,
                 Priority = InboundOrderPriority.Normal,
-                InspectionLevel = InboundOrderInspectionLevel.None
+                InspectionLevel = InboundOrderInspectionLevel.None,
+                IsActive = true
             };
 
             var receiptStarted = now.AddHours(-random.Next(12, 72));

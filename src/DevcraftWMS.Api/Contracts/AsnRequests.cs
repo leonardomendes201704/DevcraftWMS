@@ -8,6 +8,14 @@ public sealed record CreateAsnRequest(
     DateOnly? ExpectedArrivalDate,
     string? Notes);
 
+public sealed record UpdateAsnRequest(
+    Guid WarehouseId,
+    string AsnNumber,
+    string? DocumentNumber,
+    string? SupplierName,
+    DateOnly? ExpectedArrivalDate,
+    string? Notes);
+
 public sealed record AddAsnItemRequest(
     Guid ProductId,
     Guid UomId,

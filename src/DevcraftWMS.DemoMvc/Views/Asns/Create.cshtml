@@ -1,0 +1,28 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Asns.AsnFormViewModel
+@{
+    ViewData["Title"] = "Create ASN";
+    ViewData["Subtitle"] = "Register inbound pre-notice";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h4 mb-1">Create ASN</h1>
+                <div class="text-muted small">Register an inbound pre-notice for a warehouse.</div>
+            </div>
+            <a class="btn btn-light border" asp-action="Index">Back</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <partial name="_Form" model="Model" />
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check2-circle"></i> Create ASN
+                </button>
+                <a class="btn btn-light border" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

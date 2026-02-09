@@ -393,7 +393,10 @@ static void NormalizeSqliteConnectionString(WebApplicationBuilder builder, strin
     var connectionString = builder.Configuration[key];
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        return;
+        var fallbackFile = key.EndsWith("LogsDb", StringComparison.OrdinalIgnoreCase)
+            ? "logs.db"
+            : "app.db";
+        connectionString = $"Data Source=App_Data/{fallbackFile}";
     }
 
     var sqliteBuilder = new SqliteConnectionStringBuilder(connectionString);
@@ -403,6 +406,10 @@ static void NormalizeSqliteConnectionString(WebApplicationBuilder builder, strin
     }
 
     var dataSource = sqliteBuilder.DataSource;
+    if (!Path.IsPathRooted(dataSource) && string.IsNullOrWhiteSpace(Path.GetDirectoryName(dataSource)))
+    {
+        dataSource = Path.Combine("App_Data", dataSource);
+    }
     if (!Path.IsPathRooted(dataSource))
     {
         dataSource = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, dataSource));
@@ -416,6 +423,9 @@ static void NormalizeSqliteConnectionString(WebApplicationBuilder builder, strin
     }
 
     builder.Configuration[key] = sqliteBuilder.ToString();
+
+    Log.Information("SQLite connection normalized for {Key}: {DataSource}", key, sqliteBuilder.DataSource);
+    Console.WriteLine($"SQLite connection normalized for {key}: {sqliteBuilder.DataSource}");
 }
 
 public partial class Program { }

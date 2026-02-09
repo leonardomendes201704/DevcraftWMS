@@ -261,8 +261,10 @@ public sealed class InventoryMovementServiceTests
             return Task.FromResult<Location?>(null);
         }
         public Task<Location?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => GetByIdAsync(id, cancellationToken);
-        public Task<int> CountAsync(Guid structureId, Guid? zoneId, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult(0);
-        public Task<IReadOnlyList<Location>> ListAsync(Guid structureId, Guid? zoneId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
+        public Task<int> CountAsync(Guid? warehouseId, Guid? sectorId, Guid? sectionId, Guid? structureId, Guid? zoneId, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+        public Task<IReadOnlyList<Location>> ListAsync(Guid? warehouseId, Guid? sectorId, Guid? sectionId, Guid? structureId, Guid? zoneId, int pageNumber, int pageSize, string orderBy, string orderDir, string? code, string? barcode, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());
 
         public Task<IReadOnlyList<Location>> ListByStructureAsync(Guid structureId, Guid? zoneId, bool? isActive, bool includeInactive, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Location>>(Array.Empty<Location>());

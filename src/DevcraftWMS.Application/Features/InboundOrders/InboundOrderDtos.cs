@@ -6,6 +6,7 @@ public sealed record InboundOrderListItemDto(
     Guid Id,
     string OrderNumber,
     string AsnNumber,
+    string CustomerName,
     string WarehouseName,
     InboundOrderStatus Status,
     InboundOrderPriority Priority,

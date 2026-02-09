@@ -136,7 +136,8 @@ public sealed class InboundOrderService : IInboundOrderService
             Notes = string.IsNullOrWhiteSpace(notes) ? asn.Notes : notes.Trim(),
             Status = InboundOrderStatus.Issued,
             Priority = InboundOrderPriority.Normal,
-            InspectionLevel = InboundOrderInspectionLevel.None
+            InspectionLevel = InboundOrderInspectionLevel.None,
+            IsActive = true
         };
 
         await _inboundOrderRepository.AddAsync(order, cancellationToken);

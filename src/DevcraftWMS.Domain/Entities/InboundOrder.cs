@@ -21,6 +21,7 @@ public sealed class InboundOrder : AuditableEntity
     public DateTime? CanceledAtUtc { get; set; }
     public Guid? CanceledByUserId { get; set; }
 
+    public Customer? Customer { get; set; }
     public Warehouse? Warehouse { get; set; }
     public Asn? Asn { get; set; }
     public ICollection<InboundOrderItem> Items { get; set; } = new List<InboundOrderItem>();

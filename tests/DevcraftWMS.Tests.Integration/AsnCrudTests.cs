@@ -37,6 +37,20 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         using var createDoc = JsonDocument.Parse(createBody);
         var asnId = createDoc.RootElement.GetProperty("id").GetGuid();
 
+        var updatePayload = JsonSerializer.Serialize(new
+        {
+            warehouseId,
+            asnNumber = "ASN-TEST-001-UPDATED",
+            documentNumber = "DOC-002",
+            supplierName = "Updated Supplier",
+            expectedArrivalDate = new DateOnly(2026, 2, 12),
+            notes = "Updated ASN"
+        });
+
+        var updateResponse = await client.PutAsync($"/api/asns/{asnId}", new StringContent(updatePayload, Encoding.UTF8, "application/json"));
+        var updateBody = await updateResponse.Content.ReadAsStringAsync();
+        updateResponse.IsSuccessStatusCode.Should().BeTrue(updateBody);
+
         var listResponse = await client.GetAsync("/api/asns?pageNumber=1&pageSize=20&orderBy=CreatedAtUtc&orderDir=desc");
         var listBody = await listResponse.Content.ReadAsStringAsync();
         listResponse.IsSuccessStatusCode.Should().BeTrue(listBody);
@@ -49,7 +63,7 @@ public sealed class AsnCrudTests : IClassFixture<CustomWebApplicationFactory>
         getResponse.IsSuccessStatusCode.Should().BeTrue(getBody);
 
         using var getDoc = JsonDocument.Parse(getBody);
-        getDoc.RootElement.GetProperty("asnNumber").GetString().Should().Be("ASN-TEST-001");
+        getDoc.RootElement.GetProperty("asnNumber").GetString().Should().Be("ASN-TEST-001-UPDATED");
 
         using var form = new MultipartFormDataContent();
         var fileBytes = Encoding.UTF8.GetBytes("demo attachment");

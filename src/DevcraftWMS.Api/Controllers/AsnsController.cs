@@ -10,6 +10,7 @@ using DevcraftWMS.Application.Features.Asns.Commands.SubmitAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.ApproveAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.ConvertAsn;
 using DevcraftWMS.Application.Features.Asns.Commands.CancelAsn;
+using DevcraftWMS.Application.Features.Asns.Commands.UpdateAsn;
 using DevcraftWMS.Application.Features.Asns.Queries.GetAsnById;
 using DevcraftWMS.Application.Features.Asns.Queries.DownloadAsnAttachment;
 using DevcraftWMS.Application.Features.Asns.Queries.ListAsnAttachments;
@@ -49,6 +50,23 @@ public sealed class AsnsController : ControllerBase
         {
             return CreatedAtAction(nameof(GetAsnById), new { id = result.Value.Id }, result.Value);
         }
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPut("asns/{id:guid}")]
+    public async Task<IActionResult> UpdateAsn(Guid id, [FromBody] UpdateAsnRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new UpdateAsnCommand(
+                id,
+                request.WarehouseId,
+                request.AsnNumber,
+                request.DocumentNumber,
+                request.SupplierName,
+                request.ExpectedArrivalDate,
+                request.Notes),
+            cancellationToken);
 
         return this.ToActionResult(result);
     }

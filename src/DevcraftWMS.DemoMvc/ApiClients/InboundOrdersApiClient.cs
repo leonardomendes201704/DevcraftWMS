@@ -48,4 +48,7 @@ public sealed class InboundOrdersApiClient : ApiClientBase
 
     public Task<ApiResult<object>> ApproveEmergencyAsync(Guid id, string? notes, CancellationToken cancellationToken)
         => PostAsync<object>($"/api/inbound-orders/{id}/approve-emergency", new { notes }, cancellationToken);
+
+    public Task<ApiResult<InboundOrderListItemViewModel>> ConvertFromAsnAsync(Guid asnId, string? notes, CancellationToken cancellationToken)
+        => PostAsync<InboundOrderListItemViewModel>("/api/inbound-orders/from-asn", new { asnId, notes }, cancellationToken);
 }

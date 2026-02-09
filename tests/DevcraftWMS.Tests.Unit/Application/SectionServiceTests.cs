@@ -100,7 +100,8 @@ public sealed class SectionServiceTests
         public Task<Section?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_section);
 
         public Task<int> CountAsync(
-            Guid sectorId,
+            Guid? warehouseId,
+            Guid? sectorId,
             string? code,
             string? name,
             bool? isActive,
@@ -108,7 +109,8 @@ public sealed class SectionServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Section>> ListAsync(
-            Guid sectorId,
+            Guid? warehouseId,
+            Guid? sectorId,
             int pageNumber,
             int pageSize,
             string orderBy,
@@ -142,7 +144,7 @@ public sealed class SectionServiceTests
         public Task<Sector?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_sector);
 
         public Task<int> CountAsync(
-            Guid warehouseId,
+            Guid? warehouseId,
             string? code,
             string? name,
             SectorType? sectorType,
@@ -151,7 +153,7 @@ public sealed class SectionServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Sector>> ListAsync(
-            Guid warehouseId,
+            Guid? warehouseId,
             int pageNumber,
             int pageSize,
             string orderBy,

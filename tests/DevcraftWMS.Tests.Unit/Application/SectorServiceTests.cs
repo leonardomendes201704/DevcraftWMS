@@ -101,7 +101,7 @@ public sealed class SectorServiceTests
         public Task<Sector?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_sector);
 
         public Task<int> CountAsync(
-            Guid warehouseId,
+            Guid? warehouseId,
             string? code,
             string? name,
             SectorType? sectorType,
@@ -110,7 +110,7 @@ public sealed class SectorServiceTests
             CancellationToken cancellationToken = default) => Task.FromResult(0);
 
         public Task<IReadOnlyList<Sector>> ListAsync(
-            Guid warehouseId,
+            Guid? warehouseId,
             int pageNumber,
             int pageSize,
             string orderBy,

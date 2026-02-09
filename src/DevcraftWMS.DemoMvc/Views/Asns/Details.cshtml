@@ -1,0 +1,282 @@
+@using DevcraftWMS.DemoMvc.ViewModels.Shared
+@model DevcraftWMS.DemoMvc.ViewModels.Asns.AsnDetailsPageViewModel
+@{
+    ViewData["Title"] = Model.Asn?.AsnNumber ?? "ASN Details";
+    string StatusLabel(int status) => status switch
+    {
+        0 => "Registered",
+        1 => "Pending",
+        2 => "Approved",
+        3 => "Converted",
+        4 => "Canceled",
+        _ => $"Status {status}"
+    };
+}
+
+@if (Model.Asn is null)
+{
+    <div class="alert alert-warning">ASN data not available.</div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center justify-content-between">
+            <div>
+                <h1 class="h4 mb-1">ASN @Model.Asn.AsnNumber</h1>
+                <div class="text-muted">Warehouse: @Model.Asn.WarehouseName</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge text-bg-primary">@StatusLabel(Model.Asn.Status)</span>
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Asn.Id">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a class="btn btn-light border" asp-action="Index">Back</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Supplier</div>
+                    <div class="fw-semibold">@Model.Asn.SupplierName ?? "-"</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Document</div>
+                    <div class="fw-semibold">@Model.Asn.DocumentNumber ?? "-"</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Expected arrival</div>
+                    <div class="fw-semibold">@Model.Asn.ExpectedArrivalDate?.ToString("yyyy-MM-dd") ?? "-"</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Created</div>
+                    <div class="fw-semibold">@Model.Asn.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Updated</div>
+                    <div class="fw-semibold">@Model.Asn.UpdatedAtUtc?.ToLocalTime().ToString("g") ?? "-"</div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted small">Notes</div>
+                    <div>@(string.IsNullOrWhiteSpace(Model.Asn.Notes) ? "-" : Model.Asn.Notes)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        @if (Model.Asn.Status == 0)
+        {
+            <form asp-action="Submit" asp-route-id="@Model.Asn.Id" method="post">
+                <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-arrow-right-circle"></i> Submit
+                </button>
+            </form>
+        }
+        @if (Model.Asn.Status == 1)
+        {
+            <form asp-action="Approve" asp-route-id="@Model.Asn.Id" method="post">
+                <button class="btn btn-outline-success" type="submit">
+                    <i class="bi bi-check2-circle"></i> Approve
+                </button>
+            </form>
+        }
+        @if (Model.Asn.Status == 2)
+        {
+            <form asp-action="Convert" asp-route-id="@Model.Asn.Id" method="post">
+                <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-box-arrow-in-right"></i> Convert to Inbound
+                </button>
+            </form>
+        }
+        @if (Model.Asn.Status is 0 or 1 or 2)
+        {
+            <form asp-action="Cancel" asp-route-id="@Model.Asn.Id" method="post">
+                <button class="btn btn-outline-danger" type="submit">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+            </form>
+        }
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <div class="fw-semibold">Items</div>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Items.Any())
+                    {
+                        <div class="text-muted">No items registered.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>UoM</th>
+                                        <th>Qty</th>
+                                        <th>Lot</th>
+                                        <th>Expiry</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.ProductCode - @item.ProductName</td>
+                                            <td>@item.UomCode</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@(item.LotCode ?? "-")</td>
+                                            <td>@(item.ExpirationDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header">
+                    <div class="fw-semibold">Add item</div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="AddItem" asp-route-id="@Model.Asn.Id" method="post" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Product</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                                <select class="form-select" asp-for="NewItem.ProductId" asp-items="Model.NewItem.Products"></select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">UoM</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                                <select class="form-select" asp-for="NewItem.UomId" asp-items="Model.NewItem.Uoms"></select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Quantity</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-123"></i></span>
+                                <input class="form-control" asp-for="NewItem.Quantity" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Lot code</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-qr-code"></i></span>
+                                <input class="form-control" asp-for="NewItem.LotCode" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Expiration date</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                <input class="form-control" asp-for="NewItem.ExpirationDate" type="date" />
+                            </div>
+                        </div>
+                        <div class="col-12 d-grid">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="bi bi-plus-circle"></i> Add item
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-3">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="fw-semibold">Attachments</div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UploadAttachment" asp-route-id="@Model.Asn.Id" method="post" enctype="multipart/form-data" class="mb-3">
+                        <div class="input-group">
+                            <input class="form-control" type="file" name="file" />
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="bi bi-upload"></i> Upload
+                            </button>
+                        </div>
+                    </form>
+                    @if (!Model.Attachments.Any())
+                    {
+                        <div class="text-muted">No attachments uploaded.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>File</th>
+                                        <th>Size</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var attachment in Model.Attachments)
+                                    {
+                                        <tr>
+                                            <td>@attachment.FileName</td>
+                                            <td>@attachment.SizeBytes</td>
+                                            <td class="text-end">
+                                                <a class="btn btn-sm btn-outline-secondary" asp-action="PreviewAttachment" asp-route-id="@Model.Asn.Id" asp-route-attachmentId="@attachment.Id">
+                                                    <i class="bi bi-eye"></i> Preview
+                                                </a>
+                                                <a class="btn btn-sm btn-outline-primary" asp-action="DownloadAttachment" asp-route-id="@Model.Asn.Id" asp-route-attachmentId="@attachment.Id">
+                                                    <i class="bi bi-download"></i> Download
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="fw-semibold">Status timeline</div>
+                </div>
+                <div class="card-body">
+                    @if (!Model.StatusEvents.Any())
+                    {
+                        <div class="text-muted">No status events yet.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var evt in Model.StatusEvents)
+                            {
+                                <li class="list-group-item">
+                                    <div class="fw-semibold">@StatusLabel(evt.FromStatus) → @StatusLabel(evt.ToStatus)</div>
+                                    <div class="text-muted small">@evt.CreatedAtUtc.ToLocalTime().ToString("g")</div>
+                                    @if (!string.IsNullOrWhiteSpace(evt.Notes))
+                                    {
+                                        <div>@evt.Notes</div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

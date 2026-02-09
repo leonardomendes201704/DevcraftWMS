@@ -77,6 +77,7 @@ builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryBalancesApiCl
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryVisibilityApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryMovementsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.InventoryCountsApiClient>();
+builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.AsnsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.ReceiptsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.UnitLoadsApiClient>();
 builder.Services.AddScoped<DevcraftWMS.DemoMvc.ApiClients.PutawayTasksApiClient>();

@@ -21,6 +21,7 @@ public sealed record InboundOrderListItemViewModel(
     Guid Id,
     string OrderNumber,
     string AsnNumber,
+    string CustomerName,
     string WarehouseName,
     int Status,
     int Priority,

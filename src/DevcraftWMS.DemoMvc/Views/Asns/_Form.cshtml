@@ -1,0 +1,52 @@
+@model DevcraftWMS.DemoMvc.ViewModels.Asns.AsnFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Warehouse</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-building"></i></span>
+            <select class="form-select" asp-for="WarehouseId" asp-items="Model.Warehouses"></select>
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.WarehouseId)</span>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">ASN Number</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+            <input class="form-control" asp-for="AsnNumber" />
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.AsnNumber)</span>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Document Number</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-file-earmark-text"></i></span>
+            <input class="form-control" asp-for="DocumentNumber" />
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.DocumentNumber)</span>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Supplier Name</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+            <input class="form-control" asp-for="SupplierName" />
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.SupplierName)</span>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Expected Arrival</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+            <input class="form-control" asp-for="ExpectedArrivalDate" type="date" />
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.ExpectedArrivalDate)</span>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Notes</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+            <textarea class="form-control" asp-for="Notes" rows="3"></textarea>
+        </div>
+        <span class="text-danger small">@Html.ValidationMessageFor(m => m.Notes)</span>
+    </div>
+</div>
